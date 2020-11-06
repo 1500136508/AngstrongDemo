@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="/AngstrongDemo">
+    <file>image_ico/camera.jpg</file>
+    <file>image_ico/.DS_Store</file>
+    <file>image_ico/bg1.png.zip</file>
+    <file>image_ico/disconnect.png</file>
+    <file>image_ico/Option_act.png</file>
+    <file>image_ico/Option_normal.png</file>
+    <file>image_ico/save_click.png</file>
+    <file>image_ico/save_nor.png</file>
+    <file>image_ico/star_click.png</file>
+    <file>image_ico/star_nor.png</file>
+    <file>image_ico/stop_click.png</file>
+    <file>image_ico/stop_nor.png</file>
+    <file>image_ico/widthbackground.png</file>
+    <file>image_ico/yxj.png</file>
+    <file>image_ico/背景图.png</file>
+    <file>image_ico/标题栏.png</file>
+  </qresource>
+</RCC>
