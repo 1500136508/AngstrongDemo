@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>728</width>
-    <height>530</height>
+    <width>828</width>
+    <height>557</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -129,28 +129,6 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="LabView" name="label">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>160</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(198, 198, 198);</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QWidget" name="statusWidget" native="true">
      <property name="minimumSize">
@@ -187,13 +165,16 @@
      </layout>
     </widget>
    </item>
+   <item row="1" column="0">
+    <widget class="View" name="m_gView_ImageView"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LabView</class>
-   <extends>QLabel</extends>
-   <header location="global">labview.h</header>
+   <class>View</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">view.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

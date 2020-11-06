@@ -53,6 +53,9 @@
     <ClCompile Include="outputview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AngstrongDemo.ui">
@@ -85,6 +88,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="outputview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="View.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
