@@ -56,6 +56,12 @@
     <ClCompile Include="View.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="imagitem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imagescene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AngstrongDemo.ui">
@@ -91,6 +97,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="View.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="imagitem.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="imagescene.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

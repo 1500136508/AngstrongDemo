@@ -6,15 +6,15 @@
 View::View(QWidget *pParent /* = nullptr */)
 	:QGraphicsView(pParent)
 {
-	m_scene = new QGraphicsScene();
-	m_imageItem = new QGraphicsPixmapItem();
+	m_scene = new ImageScene();
+	m_ImageItem = new ImagItem();
 	//场景增加画布
-	m_scene->addItem(m_imageItem);
+	m_scene->addItem(m_ImageItem);
 	//控件绑定场景
 	setScene(m_scene);
 	//对QGraphcisView控件注册事件响应
 	installEventFilter(this);
-	//使能QGraphcisView控件的鼠标跟踪
+	////使能QGraphcisView控件的鼠标跟踪
 	setMouseTracking(true);
 }
 
@@ -26,16 +26,16 @@ View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
 
 View::~View()
 {
-	/*if (m_scene)
+	if (m_scene)
 	{
 		delete m_scene;
 		m_scene = nullptr;
 	}
 
-	if (m_imageItem)
+	/*if (m_ImageItem)
 	{
-		delete m_imageItem;
-		m_imageItem = nullptr;
+		delete m_ImageItem;
+		m_ImageItem = nullptr;
 	}*/
 }
 
@@ -65,6 +65,21 @@ void View::contextMenuEvent(QContextMenuEvent * ev)
 
 
 	m_menu.exec(QCursor::pos());//在当前鼠标位置显示
+}
+
+void View::mouseMoveEvent(QMouseEvent * event)
+{
+	QGraphicsView::mouseMoveEvent(event);
+}
+
+void View::mousePressEvent(QMouseEvent * event)
+{
+	QGraphicsView::mousePressEvent(event);
+}
+
+void View::mouseReleaseEvent(QMouseEvent * event)
+{
+	QGraphicsView::mouseReleaseEvent(event);
 }
 
 void View::on_Open_triggle()
@@ -109,40 +124,45 @@ bool View::Open()
 				std::string str = filename.toStdString();  // 将filename转变为string类型；
 				m_Image = cv::imread(str);
 				
+				QImage qImage = cvMat2QImage(m_Image);
+				m_ImageItem->SetImage(qImage);
+				int nwidth = this->width();
+				int nheight = this->height();
+				m_ImageItem->setQGraphicsViewWH(nwidth, nheight);
 				/*cv::cvtColor(m_Image, m_Image, CV_BGR2RGB);
 				cv::resize(m_Image, m_Image, cv::Size(300, 200));
 				QImage img = QImage((const unsigned char*)(m_Image.data), m_Image.cols, m_Image.rows, QImage::Format_RGB888);*/
-				if (m_Image.type() == CV_8UC3)//三通道RGB
-				{
-					if (!m_imageItem)//防呆处理
-					{
-						break;
-					}
-					cv::cvtColor(m_Image, m_Image, CV_BGR2RGB);
-					m_imageItem->setPixmap(QPixmap::fromImage(QImage((const unsigned char*)m_Image.data, m_Image.cols, m_Image.rows, QImage::Format::Format_RGB888)));
-				}
-				else if (m_Image.type() == CV_8UC4)//四通道RGBA
-				{
-					if (!m_imageItem)
-					{
-						break;
-					}
-					m_imageItem->setPixmap(QPixmap::fromImage(QImage((const unsigned char*)m_Image.data, m_Image.cols, m_Image.rows, QImage::Format::Format_RGBA8888_Premultiplied)));
-				}
-				else if (m_Image.type() == CV_8UC1)//单通道Gray
-				{
-					if (!m_imageItem)
-					{
-						break;
-					}
-					m_imageItem->setPixmap(QPixmap::fromImage(QImage((const unsigned char*)m_Image.data, m_Image.cols, m_Image.rows, QImage::Format::Format_Grayscale8)));
-				}
-				else
-				{
-					break;
-				}
-				//更新显示
-				show();
+				//if (m_Image.type() == CV_8UC3)//三通道RGB
+				//{
+				//	if (!m_ImageItem)//防呆处理
+				//	{
+				//		break;
+				//	}
+				//	cv::cvtColor(m_Image, m_Image, CV_BGR2RGB);
+				//	m_ImageItem->SetImage(&QPixmap::fromImage(QImage((const unsigned char*)m_Image.data, m_Image.cols, m_Image.rows, QImage::Format::Format_RGB888)));
+				//}
+				//else if (m_Image.type() == CV_8UC4)//四通道RGBA
+				//{
+				//	if (!m_ImageItem)
+				//	{
+				//		break;
+				//	}
+				//	m_ImageItem->SetImage(&QPixmap::fromImage(QImage((const unsigned char*)m_Image.data, m_Image.cols, m_Image.rows, QImage::Format::Format_RGBA8888_Premultiplied)));
+				//}
+				//else if (m_Image.type() == CV_8UC1)//单通道Gray
+				//{
+				//	if (!m_ImageItem)
+				//	{
+				//		break;
+				//	}
+				//	m_ImageItem->SetImage(&QPixmap::fromImage(QImage((const unsigned char*)m_Image.data, m_Image.cols, m_Image.rows, QImage::Format::Format_Grayscale8)));
+				//}
+				//else
+				//{
+				//	break;
+				//}
+				////更新显示
+				//show();
 			}
 		}
 		catch (cv::Exception &e)
@@ -165,4 +185,62 @@ bool View::Save()
 bool View::Close()
 {
 	return false;
+}
+
+QImage View::cvMat2QImage(const cv::Mat & mat)
+{
+	if (mat.type() == CV_8UC1)
+	{
+		QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
+		image.setColorCount(256);
+		for (int i = 0; i < 256; i++)
+		{
+			image.setColor(i, qRgb(i, i, i));
+		}
+		uchar *pSrc = mat.data;
+		for (int row = 0; row < mat.rows; row++)
+		{
+			uchar *pDest = image.scanLine(row);
+			memcpy(pDest, pSrc, mat.cols);
+			pSrc += mat.step;
+		}
+		return image;
+	}
+	else if (mat.type() == CV_8UC3)
+	{
+		const uchar *pSrc = (const uchar*)mat.data;
+		QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+		return image.rgbSwapped();
+	}
+	else if (mat.type() == CV_8UC4)
+	{
+		const uchar *pSrc = (const uchar*)mat.data;
+		QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
+		return image.copy();
+	}
+	else
+	{
+		return QImage();
+	}
+}
+
+cv::Mat View::QImage2cvMat(QImage image)
+{
+	cv::Mat mat;
+	switch (image.format())
+	{
+	case QImage::Format_ARGB32:
+	case QImage::Format_RGB32:
+	case QImage::Format_ARGB32_Premultiplied:
+		mat = cv::Mat(image.height(), image.width(), CV_8UC4, (void*)image.constBits(), image.bytesPerLine());
+		break;
+	case QImage::Format_RGB888:
+		mat = cv::Mat(image.height(), image.width(), CV_8UC3, (void*)image.constBits(), image.bytesPerLine());
+		cv::cvtColor(mat, mat, CV_BGR2RGB);
+		break;
+	case QImage::Format_Indexed8:
+		mat = cv::Mat(image.height(), image.width(), CV_8UC1, (void*)image.constBits(), image.bytesPerLine());
+		break;
+	}
+	return mat;
 }

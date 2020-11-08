@@ -1,11 +1,12 @@
 #pragma once
 
 #include <QGraphicsView>
-#include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <core.hpp>
 #include <highgui.hpp>
 #include <imgproc.hpp>
+#include "imagitem.h"
+#include "imagescene.h"
 
 class View : public QGraphicsView
 {
@@ -16,6 +17,10 @@ public:
 	virtual ~View();
 protected:
 	void contextMenuEvent(QContextMenuEvent *ev);
+
+	void mouseMoveEvent(QMouseEvent *event);
+	void mousePressEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 private slots:
 	void on_Open_triggle();
 	void on_Save_triggle();
@@ -25,10 +30,11 @@ public:
 	bool Save();
 	bool Close();
 
+	QImage cvMat2QImage(const cv::Mat& mat);
+	cv::Mat QImage2cvMat(QImage image);
 private:
 	cv::Mat m_Image;
-	QGraphicsScene * m_scene;
-	//»­²¼
-	QGraphicsPixmapItem * m_imageItem;
+	ImageScene *m_scene;//³¡¾°
+	ImagItem *m_ImageItem;
 };
 
