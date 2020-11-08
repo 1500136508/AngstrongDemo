@@ -107,8 +107,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="imagescene.cpp" />
+    <ClCompile Include="imagitem.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
+    <ClCompile Include="View.cpp" />
     <QtRcc Include="AngstrongDemo.qrc" />
     <QtUic Include="AngstrongDemo.ui" />
     <QtMoc Include="AngstrongDemo.h" />
@@ -136,6 +139,15 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="outputview.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="View.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="imagitem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="imagescene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
