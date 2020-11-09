@@ -71,7 +71,7 @@
          </size>
         </property>
         <property name="text">
-         <string>TextLabel</string>
+         <string>图像窗口</string>
         </property>
        </widget>
       </item>
@@ -102,8 +102,11 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true">image: url(:/AngstrongDemo/image_ico/btl/Minimize_normal.png);</string>
+        </property>
         <property name="text">
-         <string>max</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -121,8 +124,11 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true">image: url(:/AngstrongDemo/image_ico/btl/Close_normal.png);</string>
+        </property>
         <property name="text">
-         <string>PushButton</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -177,6 +183,8 @@
    <header location="global">view.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="AngstrongDemo.qrc"/>
+ </resources>
  <connections/>
 </ui>

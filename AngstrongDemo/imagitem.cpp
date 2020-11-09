@@ -74,6 +74,16 @@ void ImagItem::setQGraphicsViewWH(int nwidth, int nheight)
 	m_fScale = m_fScale;
 }
 
+int ImagItem::GetImageWidth() const
+{
+	return m_ImageWidth;
+}
+
+int ImagItem::GetImageHeight() const
+{
+	return m_ImageHeight;
+}
+
 QRectF ImagItem::boundingRect() const
 {
 	return QRectF(-m_ImageWidth / 2, -m_ImageHeight / 2,

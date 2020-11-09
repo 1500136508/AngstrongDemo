@@ -46,22 +46,38 @@ void View::contextMenuEvent(QContextMenuEvent * ev)
 	QAction Open("打开");
 	QAction Save("保存");
 	QAction Close("关闭");
+	QAction ZoomIn("放大");
+	QAction ZoomOut("缩小");
+	QAction ZoomFit("适应");
+	QAction Measure("测量");
 
-	//QMenu *m_child_menu = new QMenu();
-	//QAction *OpenImage = new QAction("打开图片");
+	QMenu m_child_menu;
+	QAction Line("直线");
+	QAction Angle("角度");
+	QAction Radian("弧度");
 
+	//一级菜单
 	m_menu.addAction(&Open);
-	//Open->setMenu(m_child_menu);
-	//m_child_menu->addAction(OpenImage);
-	//m_menu->addMenu(m_child_menu);
 	m_menu.addAction(&Save);
-	m_menu.addSeparator();
 	m_menu.addAction(&Close);
+	m_menu.addSeparator();
+	m_menu.addAction(&ZoomIn);
+	m_menu.addAction(&ZoomOut);
+	m_menu.addAction(&ZoomFit);
+	m_menu.addAction(&Measure);
+	//二级菜单
+	Measure.setMenu(&m_child_menu);
+	m_child_menu.addAction(&Line);
+	m_child_menu.addAction(&Angle);
+	m_child_menu.addAction(&Radian);
+	m_menu.addMenu(&m_child_menu);
 
-	//绑定菜单触发事件
+	//绑定一级菜单触发事件
 	connect(&Open, SIGNAL(triggered(bool)), this, SLOT(on_Open_triggle()));
 	connect(&Save, SIGNAL(triggered(bool)), this, SLOT(on_Save_triggle()));
 	connect(&Close, SIGNAL(triggered(bool)), this, SLOT(on_Close_triggle()));
+	//绑定一级菜单触发事件
+	//待续....
 
 
 	m_menu.exec(QCursor::pos());//在当前鼠标位置显示
@@ -88,10 +104,12 @@ void View::on_Open_triggle()
 }
 void View::on_Save_triggle()
 {
+	Save();
 }
 
 void View::on_Close_triggle()
 {
+	Close();
 }
 
 bool View::Open()
@@ -184,6 +202,8 @@ bool View::Save()
 
 bool View::Close()
 {
+	m_ImageItem->ResetItemPos();
+	m_ImageItem->setQGraphicsViewWH(m_ImageItem->GetImageWidth(), m_ImageItem->GetImageHeight());
 	return false;
 }
 

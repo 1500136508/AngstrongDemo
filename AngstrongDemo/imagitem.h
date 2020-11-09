@@ -23,6 +23,9 @@ public:
 	void ZoomFit();
 	void ResetItemPos();
 	void setQGraphicsViewWH(int nwidth, int nheight);
+
+	int GetImageWidth()const;
+	int GetImageHeight()const;
 protected:
 	QRectF  boundingRect() const;
 	void    paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
