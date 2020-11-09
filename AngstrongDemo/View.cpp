@@ -16,6 +16,11 @@ View::View(QWidget *pParent /* = nullptr */)
 	installEventFilter(this);
 	////使能QGraphcisView控件的鼠标跟踪
 	setMouseTracking(true);
+
+	m_reader = nullptr;
+	m_reader = new imageReader();
+	connect(m_reader, SIGNAL(sendImage(cv::Mat)), this, SLOT(setImage(cv::Mat)));
+	m_reader->run(0);
 }
 
 View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
@@ -37,6 +42,12 @@ View::~View()
 		delete m_ImageItem;
 		m_ImageItem = nullptr;
 	}*/
+
+	if (m_reader)
+	{
+		delete m_reader;
+		m_reader = nullptr;
+	}
 }
 
 void View::contextMenuEvent(QContextMenuEvent * ev)
@@ -105,11 +116,24 @@ void View::on_Open_triggle()
 void View::on_Save_triggle()
 {
 	Save();
+	if (m_reader)
+	{
+		m_reader->run(0);
+	}
 }
 
 void View::on_Close_triggle()
 {
 	Close();
+}
+
+void View::setImage(cv::Mat mat)
+{
+	QImage qImage = cvMat2QImage(mat);
+	m_ImageItem->SetImage(qImage);
+	int nwidth = this->width();
+	int nheight = this->height();
+	m_ImageItem->setQGraphicsViewWH(nwidth, nheight);
 }
 
 bool View::Open()

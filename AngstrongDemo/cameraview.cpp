@@ -58,6 +58,9 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 	if (event->button() == Qt::LeftButton)
 	{
 		QModelIndex index = currentIndex();
-		qDebug() << index.data().toString();
+		if (index.row() == 0)
+		{
+			qDebug() << index.data().toString();
+		}
 	}
 }

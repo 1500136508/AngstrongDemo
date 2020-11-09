@@ -8,10 +8,16 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(on_ShowDlg_clicked()));
+	BuildConnect();
+
 	setCentralWidget(&m_ImageView);
 	//setCentralWidget(&m_CameraView);
 	CreateDockWindow();
+	AddToolBar();
+
+	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
+	qRegisterMetaType<cv::Mat>("cv::Mat");
+	qRegisterMetaType<std::string>("std::string");
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -50,10 +56,22 @@ void AngstrongDemo::CreateDockWindow()
 	//m_dock_imageview->setWidget(&m_ImageView);
 }
 
-void AngstrongDemo::on_ShowDlg_clicked()
+void AngstrongDemo::AddToolBar()
 {
-	m_ImageView.setModal(false);
-	m_ImageView.setWindowTitle("图像窗口");
-	//m_ImageView.setParent(this);
-	m_ImageView.show();
+	QToolBar* pToolBar = ui.mainToolBar;
+
+	QAction* pActionC = new QAction(QIcon(QPixmap(":/AngstrongDemo/image_ico/Option_normal.png")), "打开");
+
+	pToolBar->addAction(pActionC);
+
+	//QObject::connect(pActionC, SIGNAL(triggered(bool)), this, SLOT(onMsg()));
+}
+
+void AngstrongDemo::BuildConnect()
+{
+	//connect(&m_ImageView.ui->m_gView_ImageView->m_reader, SIGNAL(sendImage(cv::Mat)), m_ImageView.ui->m_gView_ImageView, SLOT(setImage(cv::Mat)));
+}
+
+void AngstrongDemo::run_camera()
+{
 }

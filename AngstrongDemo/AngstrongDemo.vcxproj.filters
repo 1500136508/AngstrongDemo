@@ -22,6 +22,36 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Header Files\EventHandler">
+      <UniqueIdentifier>{3dd92754-4fee-48fd-9660-46fc40348945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\EventHandler">
+      <UniqueIdentifier>{a2906c83-19c0-43eb-97ff-f0c9a653d39d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FormView">
+      <UniqueIdentifier>{e868d24a-8048-4999-a608-f96f240d6ea8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FormView">
+      <UniqueIdentifier>{aef67656-ae65-456b-bd8d-6171b0967fe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sequence">
+      <UniqueIdentifier>{e8aba5ef-1b2b-4cea-947c-0ba1eb19cda8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sequence">
+      <UniqueIdentifier>{d224a5c8-62f9-4cca-821f-d59c9f8d06b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Device">
+      <UniqueIdentifier>{d9aa2a87-82e9-40eb-a9b5-ab4b60f891eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device">
+      <UniqueIdentifier>{fe77a097-9cf8-41cd-b50a-2671770c59cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device\Camera">
+      <UniqueIdentifier>{9434f661-eef4-487b-b61a-f34ba146e95a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Device\Camera">
+      <UniqueIdentifier>{a1347205-68df-46d3-a7f2-c81978a4f45e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="AngstrongDemo.qrc">
@@ -38,28 +68,40 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="imageview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="labview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cameraview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="parameterview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="outputview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="View.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="imagitem.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\FormView</Filter>
     </ClCompile>
     <ClCompile Include="imagescene.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="imageview.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="imagitem.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="labview.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="outputview.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="parameterview.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraDS.cpp">
+      <Filter>Source Files\Device\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="imagereader.cpp">
+      <Filter>Source Files\Device\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="datasaver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logwriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -81,29 +123,43 @@
     </QtUic>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="imageview.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="labview.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="cameraview.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="parameterview.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="outputview.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="View.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="imagitem.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FormView</Filter>
     </QtMoc>
     <QtMoc Include="imagescene.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FormView</Filter>
     </QtMoc>
+    <QtMoc Include="imageview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="imagitem.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="labview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="outputview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="parameterview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="View.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="imagereader.h">
+      <Filter>Header Files\Device\Camera</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CameraDS.h">
+      <Filter>Header Files\Device\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="datasaver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logwriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

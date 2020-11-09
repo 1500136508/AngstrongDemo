@@ -17,7 +17,7 @@ public:
     explicit ImageView(QWidget *parent = nullptr);
     ~ImageView();
 
-private:
+public:
     Ui::ImageView *ui;
 	cv::Mat m;
 };
