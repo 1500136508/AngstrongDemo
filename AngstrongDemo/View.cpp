@@ -3,6 +3,9 @@
 #include <QFileDialog>
 #include "View.h"
 
+static int INPUTWIDTH = 480;
+static int INPUTHEIGHT = 848;
+
 View::View(QWidget *pParent /* = nullptr */)
 	:QGraphicsView(pParent)
 {
@@ -20,7 +23,9 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_reader = nullptr;
 	m_reader = new imageReader();
 	connect(m_reader, SIGNAL(sendImage(cv::Mat)), this, SLOT(setImage(cv::Mat)));
-	m_reader->run(0);
+	connect(this, SIGNAL(sendPos(int, int)), m_reader, SLOT(acceptLocation(int, int)));
+	//connect(this, SIGNAL(moveWindow(QPoint)), this, SLOT(moveWindow(QPoint)));
+	connect(this, SIGNAL(sendArea(int, int, int, int, int)), m_reader, SLOT(acceptArea(int, int, int, int, int)));
 }
 
 View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
@@ -96,18 +101,130 @@ void View::contextMenuEvent(QContextMenuEvent * ev)
 
 void View::mouseMoveEvent(QMouseEvent * event)
 {
+	if (m_bPressed)
+	{
+		emit moveWindow(event->pos() - m_ptPress);
+	}
+	if (!this->hasMouseTracking())
+		return;
+	int x = event->localPos().x();
+	int y = event->localPos().y();
+	calcXY(x, y);
+	emit sendPos(x, y);
+	if (startPoint.x != -1 && m_drawArea && !getFirstArea) {
+		endPoint.x = x;
+		endPoint.y = y;
+		if (startPoint.x < INPUTWIDTH && endPoint.x > INPUTWIDTH) {
+			endPoint.x = INPUTWIDTH;
+		}
+		else if (startPoint.x < INPUTWIDTH * 2 && endPoint.x > INPUTWIDTH * 2) {
+			endPoint.x = INPUTWIDTH * 2;
+		}
+		else if (startPoint.x < INPUTWIDTH * 3 && endPoint.x > INPUTWIDTH * 3) {
+			endPoint.x = INPUTWIDTH * 3;
+		}
+		else if (startPoint.x > INPUTWIDTH && endPoint.x < INPUTWIDTH) {
+			endPoint.x = INPUTWIDTH;
+		}
+		else if (startPoint.x > INPUTWIDTH * 2 && endPoint.x < INPUTWIDTH * 2) {
+			endPoint.x = INPUTWIDTH * 2;
+		}
+	}
+
+	if (startPoint2.x != -1 && m_drawArea && getFirstArea && !getSecondArea) {
+		endPoint2.x = x;
+		endPoint2.y = y;
+		if (startPoint2.x < INPUTWIDTH && endPoint2.x > INPUTWIDTH) {
+			endPoint2.x = INPUTWIDTH;
+		}
+		else if (startPoint2.x < INPUTWIDTH * 2 && endPoint2.x > INPUTWIDTH * 2) {
+			endPoint2.x = INPUTWIDTH * 2;
+		}
+		else if (startPoint.x < INPUTWIDTH * 3 && endPoint2.x > INPUTWIDTH * 3) {
+			endPoint2.x = INPUTWIDTH * 3;
+		}
+		else if (startPoint.x > INPUTWIDTH && endPoint2.x < INPUTWIDTH) {
+			endPoint2.x = INPUTWIDTH;
+		}
+		else if (startPoint.x > INPUTWIDTH * 2 && endPoint2.x < INPUTWIDTH * 2) {
+			endPoint2.x = INPUTWIDTH * 2;
+		}
+	}
+
 	QGraphicsView::mouseMoveEvent(event);
 }
 
 void View::mousePressEvent(QMouseEvent * event)
 {
+	//startPoint.x = MIN(event->localPos().x() * 2, 800);
+	//startPoint.y = MIN(event->localPos().y() * 2, 1280);
+	//printf("start point %d-%d \n", startPoint.x, startPoint.y);
+	if (event->button() == Qt::LeftButton)
+	{
+		m_ptPress = event->pos();
+		m_areaMovable = QRect(0, 0, this->size().width(), 30);
+		m_bPressed = m_areaMovable.contains(m_ptPress);
+		m_drawArea = !m_bPressed;
+		if (!getFirstArea) {
+			startPoint.x = event->localPos().x();
+			startPoint.y = event->localPos().y();
+			if (startPoint.y < 30) {
+				startPoint.x = startPoint.y = -1;
+				return;
+			}
+			calcXY(startPoint.x, startPoint.y);
+			//if (startPoint.x < 400 || startPoint.x > 800) return;
+			endPoint.x = startPoint.x;
+			endPoint.y = startPoint.y;
+		}
+		else if (!getSecondArea) {
+			startPoint2.x = event->localPos().x();
+			startPoint2.y = event->localPos().y();
+			calcXY(startPoint2.x, startPoint2.y);
+			//if (startPoint2.x < 400 || startPoint2.x > 800) return;
+			endPoint2.x = startPoint2.x;
+			endPoint2.y = startPoint2.y;
+		}
+	}
+	else if (event->button() == Qt::RightButton) {
+		startPoint.x = startPoint.y = endPoint.x = endPoint.y = -1;
+		startPoint2.x = startPoint2.y = endPoint2.x = endPoint2.y = -1;
+		emit sendArea(startPoint2.x, startPoint2.y, endPoint2.x, endPoint2.y, 0);
+	}
+
 	QGraphicsView::mousePressEvent(event);
 }
 
 void View::mouseReleaseEvent(QMouseEvent * event)
 {
+	//endPoint.x = MIN(event->localPos().x() * 2, 800);
+	//endPoint.y = MIN(event->localPos().y() * 2, 1280);
+	//emit sendRange(startPoint, endPoint);
+	//printf("end point %d-%d \n", endPoint.x, endPoint.y);
+	m_bPressed = false;
+	m_drawArea = false;
+	if (!getFirstArea) {
+		emit sendArea(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 0);
+		getFirstArea = true;
+	}
+	else if (!getSecondArea) {
+		emit sendArea(startPoint2.x, startPoint2.y, endPoint2.x, endPoint2.y, 1);
+		getSecondArea = true;
+	}
+	else {
+		startPoint.x = startPoint.y = endPoint.x = endPoint.y = -1;
+		startPoint2.x = startPoint2.y = endPoint2.x = endPoint2.y = -1;
+		getFirstArea = getSecondArea = false;
+		emit sendArea(startPoint2.x, startPoint2.y, endPoint2.x, endPoint2.y, 0);
+	}
+
 	QGraphicsView::mouseReleaseEvent(event);
 }
+
+//void View::paintEvent(QPaintEvent * event)
+//{
+//	
+//}
 
 void View::on_Open_triggle()
 {
@@ -287,4 +404,32 @@ cv::Mat View::QImage2cvMat(QImage image)
 		break;
 	}
 	return mat;
+}
+
+void View::calcXY(int & x, int & y)
+{
+	QSize labelSize = this->size();
+	int labelHeight = labelSize.height();
+	int labelWidth = labelSize.width();
+	if (y_boundary) {
+		if (y < boundaryLength || y >= labelHeight - boundaryLength) {
+			x = y = 0;
+		}
+		else {
+			y = (y - boundaryLength) / ratio;
+			x = x / ratio;
+			x = x;
+		}
+	}
+	else {
+
+		if (x < boundaryLength || x >= labelWidth - boundaryLength) {
+			x = y = 0;
+		}
+		else {
+			x = (x - boundaryLength) / ratio;
+			y = y / ratio;
+			x = x;
+		}
+	}
 }

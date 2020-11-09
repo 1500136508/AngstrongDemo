@@ -14,6 +14,8 @@ ImagItem::ImagItem(QGraphicsItem *parent /* = nullptr */)
 	//setFlags(ItemIsSelectable | ItemIsMovable);
 	//setFlag(QGraphicsItem::ItemIsFocusable);
 	//setFlag(QGraphicsItem::ItemIsMovable);
+
+	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 }
 
 ImagItem::~ImagItem()
@@ -86,10 +88,10 @@ int ImagItem::GetImageHeight() const
 
 QRectF ImagItem::boundingRect() const
 {
-	return QRectF(-m_ImageWidth / 2, -m_ImageHeight / 2,
-		m_ImageWidth, m_ImageHeight);
-	/*return QRectF(-m_pix.width() / 2, -m_pix.height() / 2,
-				m_pix.width(), m_pix.height());*/
+	//return QRectF(-m_ImageWidth / 2, -m_ImageHeight / 2,
+	//	m_ImageWidth, m_ImageHeight);
+	return QRectF(-m_pix.width() / 2, -m_pix.height() / 2,
+				m_pix.width(), m_pix.height());
 	//QRectF rect;
 	//if (m_pix.size() != QSize(0,0))
 	//{
@@ -108,6 +110,7 @@ void ImagItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option
 {
 	//painter->drawPixmap(-m_pix.width() / 2, -m_pix.height() / 2, m_pix);
 	painter->drawPixmap(-m_ImageWidth / 2, -m_ImageHeight / 2, m_pix);
+	//painter->drawPixmap(m_ImageWidth, m_ImageHeight, m_pix);
 	/*if (hasFocus()) {
 		painter->setPen(QPen(QColor(255, 255, 255, 200)));
 	}
@@ -153,6 +156,7 @@ void ImagItem::wheelEvent(QGraphicsSceneWheelEvent * event)
 
 bool ImagItem::sceneEvent(QEvent * event)
 {
+	//return false;
 	if (event->type() == QEvent::GraphicsSceneMousePress)
 	{
 		mousePressEvent((QGraphicsSceneMouseEvent *)(event));
@@ -187,7 +191,7 @@ void ImagItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
 	}
 	else if (event->button() == Qt::RightButton)
 	{
-		//ResetItemPos();//右击鼠标重置大小
+		ResetItemPos();//右击鼠标重置大小
 	}
 }
 

@@ -267,6 +267,7 @@ void imageReader::buildDataThread()
 			cv::flip(RGBFrame, RGBFrame, -1);
 			RGBFrame.copyTo(container[2]);
 			//cv::imwrite("rgb.tiff", RGBFrame);
+			emit sendImage(RGBFrame);
 			ptr = datagroup;
 			int flag = ptr[frameHeight*frameWidth * 2 - 1];
 			unsigned short* tmp = (unsigned short*)ptr;
@@ -309,6 +310,7 @@ void imageReader::buildDataThread()
 				memcpy(depthDataRGB, depthFrame.data, frameWidthR*frameHeightR * sizeof(float));
 				depthFrame = dealDepthMapColor(depthDataRGB, frameHeightR, frameWidthR);
 				depthFrame.copyTo(container[1]);
+				//emit sendImage(depthFrame);
 				//cv::imwrite("depth.tiff", depthFrame);
 				depthGet = true;
 				thisRoundIR = false;
@@ -376,7 +378,10 @@ void imageReader::buildDataThread()
 					//                    emit sendLocationDepth(xhere,yhere,depthDataRGB[yhere*frameHeightR+xhere]);
 					//                qDebug()<<mouseX;
 					if (mouseX >= frameHeightR)
+					{
 						emit sendLocationDepth(xhere, yhere, depthDataRGB[yhere*frameHeightR + xhere]);
+						//qDebug() << "x=" << xhere << " y=" << yhere << " =depth" << depthDataRGB[yhere*frameHeightR + xhere];
+					}
 					else
 						emit sendLocationDepth(-1, -1, 0);
 				}
@@ -423,7 +428,7 @@ void imageReader::buildDataThread()
 					plus.copyTo(container[2]);
 				}
 				cv::hconcat(container, combineFrame);
-				emit sendImage(combineFrame);
+				//emit sendImage(combineFrame);
 			}
 			if (isGoingToSaveData) {
 				if (max_count != 0) {
@@ -467,7 +472,7 @@ void imageReader::buildDataThread()
 			if (t2 - t1 < 34)
 				Sleep(34 - t2 + t1);
 			else Sleep(10);
-			qDebug() << "ONE ROUND : " << t2 - t1;
+			//qDebug() << "ONE ROUND : " << t2 - t1;
 		}
 		catch (cv::Exception &e)
 		{
