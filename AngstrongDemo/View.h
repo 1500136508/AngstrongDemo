@@ -5,6 +5,7 @@
 #include <core.hpp>
 #include <highgui.hpp>
 #include <imgproc.hpp>
+#include "imagereader.h"
 #include "imagitem.h"
 #include "imagescene.h"
 
@@ -25,6 +26,8 @@ private slots:
 	void on_Open_triggle();
 	void on_Save_triggle();
 	void on_Close_triggle();
+
+	void setImage(cv::Mat mat);
 public:
 	bool Open();
 	bool Save();
@@ -32,9 +35,10 @@ public:
 
 	QImage cvMat2QImage(const cv::Mat& mat);
 	cv::Mat QImage2cvMat(QImage image);
-private:
+public:
 	cv::Mat m_Image;
 	ImageScene *m_scene;//³¡¾°
 	ImagItem *m_ImageItem;
+	imageReader *m_reader;
 };
 

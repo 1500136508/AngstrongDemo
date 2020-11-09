@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QDockWidget>
+#include <thread>
 #include "ui_AngstrongDemo.h"
 #include "imageview.h"
 #include "cameraview.h"
@@ -16,9 +17,12 @@ public:
     AngstrongDemo(QWidget *parent = Q_NULLPTR);
 	virtual ~AngstrongDemo();
 private slots:
-	void on_ShowDlg_clicked();
+
 private:
 	void CreateDockWindow();
+	void AddToolBar();
+	void BuildConnect();
+	void run_camera();
 private:
     Ui::AngstrongDemoClass ui;
 
@@ -26,4 +30,6 @@ private:
 	CameraView m_CameraView;
 	ParameterView m_ParamView;
 	OutputView m_OutputView;
+
+	std::thread m_thread_run;
 };

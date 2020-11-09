@@ -14,24 +14,10 @@
    <string>AngstrongDemo</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="AngstrongDemo.qrc">
     <normaloff>:/AngstrongDemo/image_ico/camera.jpg</normaloff>:/AngstrongDemo/image_ico/camera.jpg</iconset>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>770</x>
-      <y>150</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string> 显示对话框</string>
-    </property>
-   </widget>
-  </widget>
+  <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -67,8 +53,36 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionOpenCamera"/>
+   <addaction name="actionCloseCamera"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpenCamera">
+   <property name="icon">
+    <iconset>
+     <normalon>:/AngstrongDemo/image_ico/BG/BG1.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>OpenCamera</string>
+   </property>
+   <property name="toolTip">
+    <string>打开相机</string>
+   </property>
+  </action>
+  <action name="actionCloseCamera">
+   <property name="icon">
+    <iconset resource="AngstrongDemo.qrc">
+     <normaloff>:/AngstrongDemo/image_ico/BG/ConnectBG.png</normaloff>
+     <normalon>:/AngstrongDemo/image_ico/BG/BG1.png</normalon>:/AngstrongDemo/image_ico/BG/ConnectBG.png</iconset>
+   </property>
+   <property name="text">
+    <string>CloseCamera</string>
+   </property>
+   <property name="toolTip">
+    <string>关闭相机</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
