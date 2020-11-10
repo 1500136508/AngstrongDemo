@@ -11,6 +11,9 @@ View::View(QWidget *pParent /* = nullptr */)
 {
 	m_scene = new ImageScene();
 	m_ImageItem = new ImagItem();
+	int w = width();
+	int h = height();
+	m_scene->setSceneRect(0, 0, width(), height());
 	//场景增加画布
 	m_scene->addItem(m_ImageItem);
 	//控件绑定场景
@@ -221,10 +224,14 @@ void View::mouseReleaseEvent(QMouseEvent * event)
 	QGraphicsView::mouseReleaseEvent(event);
 }
 
-//void View::paintEvent(QPaintEvent * event)
-//{
-//	
-//}
+void View::paintEvent(QPaintEvent * event)
+{
+	int w = width();
+	int h = height();
+	m_scene->setSceneRect(0, 0, w, h);
+	m_ImageItem->setQGraphicsViewWH(w, h);
+	return QGraphicsView::paintEvent(event);
+}
 
 void View::on_Open_triggle()
 {
