@@ -463,9 +463,10 @@ void imageReader::buildDataThread()
 				//            else
 				//                lwriter->writeAlog("depth",false,save_count,-1);
 			}
+			long ltime = 40;
 			clock_t t2 = clock();
-			if (t2 - t1 < 34)
-				Sleep(34 - t2 + t1);
+			if (t2 - t1 < ltime)
+				Sleep(ltime - t2 + t1);
 			else Sleep(10);
 			qDebug() << "ONE ROUND : " << t2 - t1;
 		}

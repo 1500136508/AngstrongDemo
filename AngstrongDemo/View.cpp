@@ -20,7 +20,7 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_reader = nullptr;
 	m_reader = new imageReader();
 	connect(m_reader, SIGNAL(sendImage(cv::Mat)), this, SLOT(setImage(cv::Mat)));
-	m_reader->run(0);
+	//m_reader->run(0);
 }
 
 View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
