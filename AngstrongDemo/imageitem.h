@@ -7,13 +7,13 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QMouseEvent>
 
-class ImagItem : public QObject, public QGraphicsItem
+class ImageItem : public QObject, public QGraphicsItem
 {
 	Q_OBJECT
 	Q_INTERFACES(QGraphicsItem)
 public:
-	explicit ImagItem(QGraphicsItem *parent = nullptr);
-	virtual ~ImagItem();
+	explicit ImageItem(QGraphicsItem *parent = nullptr);
+	virtual ~ImageItem();
 public:
 	void SetImage(QImage qImage);
 	void SetImage(QPixmap *pix);

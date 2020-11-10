@@ -3,21 +3,9 @@
 #include <QFileDialog>
 #include "View.h"
 
-static int INPUTWIDTH = 480;
-static int INPUTHEIGHT = 848;
-
 View::View(QWidget *pParent /* = nullptr */)
 	:QGraphicsView(pParent)
 {
-	m_scene = new ImageScene();
-	m_ImageItem = new ImagItem();
-	int w = width();
-	int h = height();
-	m_scene->setSceneRect(0, 0, width(), height());
-	//场景增加画布
-	m_scene->addItem(m_ImageItem);
-	//控件绑定场景
-	setScene(m_scene);
 	//对QGraphcisView控件注册事件响应
 	installEventFilter(this);
 	////使能QGraphcisView控件的鼠标跟踪
@@ -26,9 +14,6 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_reader = nullptr;
 	m_reader = new imageReader();
 	connect(m_reader, SIGNAL(sendImage(cv::Mat)), this, SLOT(setImage(cv::Mat)));
-	connect(this, SIGNAL(sendPos(int, int)), m_reader, SLOT(acceptLocation(int, int)));
-	//connect(this, SIGNAL(moveWindow(QPoint)), this, SLOT(moveWindow(QPoint)));
-	connect(this, SIGNAL(sendArea(int, int, int, int, int)), m_reader, SLOT(acceptArea(int, int, int, int, int)));
 }
 
 View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
@@ -39,18 +24,6 @@ View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
 
 View::~View()
 {
-	if (m_scene)
-	{
-		delete m_scene;
-		m_scene = nullptr;
-	}
-
-	/*if (m_ImageItem)
-	{
-		delete m_ImageItem;
-		m_ImageItem = nullptr;
-	}*/
-
 	if (m_reader)
 	{
 		delete m_reader;
@@ -58,178 +31,67 @@ View::~View()
 	}
 }
 
-void View::contextMenuEvent(QContextMenuEvent * ev)
-{
-	//Create Menu
-	QMenu m_menu;
-	QAction Open("打开");
-	QAction Save("保存");
-	QAction Close("关闭");
-	QAction ZoomIn("放大");
-	QAction ZoomOut("缩小");
-	QAction ZoomFit("适应");
-	QAction Measure("测量");
-
-	QMenu m_child_menu;
-	QAction Line("直线");
-	QAction Angle("角度");
-	QAction Radian("弧度");
-
-	//一级菜单
-	m_menu.addAction(&Open);
-	m_menu.addAction(&Save);
-	m_menu.addAction(&Close);
-	m_menu.addSeparator();
-	m_menu.addAction(&ZoomIn);
-	m_menu.addAction(&ZoomOut);
-	m_menu.addAction(&ZoomFit);
-	m_menu.addAction(&Measure);
-	//二级菜单
-	Measure.setMenu(&m_child_menu);
-	m_child_menu.addAction(&Line);
-	m_child_menu.addAction(&Angle);
-	m_child_menu.addAction(&Radian);
-	m_menu.addMenu(&m_child_menu);
-
-	//绑定一级菜单触发事件
-	connect(&Open, SIGNAL(triggered(bool)), this, SLOT(on_Open_triggle()));
-	connect(&Save, SIGNAL(triggered(bool)), this, SLOT(on_Save_triggle()));
-	connect(&Close, SIGNAL(triggered(bool)), this, SLOT(on_Close_triggle()));
-	//绑定一级菜单触发事件
-	//待续....
-
-
-	m_menu.exec(QCursor::pos());//在当前鼠标位置显示
-}
+//void View::contextMenuEvent(QContextMenuEvent * ev)
+//{
+//	//Create Menu
+//	QMenu m_menu;
+//	QAction Open("打开");
+//	QAction Save("保存");
+//	QAction Close("关闭");
+//	QAction ZoomIn("放大");
+//	QAction ZoomOut("缩小");
+//	QAction ZoomFit("适应");
+//	QAction Measure("测量");
+//
+//	QMenu m_child_menu;
+//	QAction Line("直线");
+//	QAction Angle("角度");
+//	QAction Radian("弧度");
+//
+//	//一级菜单
+//	m_menu.addAction(&Open);
+//	m_menu.addAction(&Save);
+//	m_menu.addAction(&Close);
+//	m_menu.addSeparator();
+//	m_menu.addAction(&ZoomIn);
+//	m_menu.addAction(&ZoomOut);
+//	m_menu.addAction(&ZoomFit);
+//	m_menu.addAction(&Measure);
+//	//二级菜单
+//	Measure.setMenu(&m_child_menu);
+//	m_child_menu.addAction(&Line);
+//	m_child_menu.addAction(&Angle);
+//	m_child_menu.addAction(&Radian);
+//	m_menu.addMenu(&m_child_menu);
+//
+//	//绑定一级菜单触发事件
+//	connect(&Open, SIGNAL(triggered(bool)), this, SLOT(on_Open_triggle()));
+//	connect(&Save, SIGNAL(triggered(bool)), this, SLOT(on_Save_triggle()));
+//	connect(&Close, SIGNAL(triggered(bool)), this, SLOT(on_Close_triggle()));
+//	//绑定一级菜单触发事件
+//	//待续....
+//
+//
+//	m_menu.exec(QCursor::pos());//在当前鼠标位置显示
+//}
 
 void View::mouseMoveEvent(QMouseEvent * event)
 {
-	if (m_bPressed)
-	{
-		emit moveWindow(event->pos() - m_ptPress);
-	}
-	if (!this->hasMouseTracking())
-		return;
-	int x = event->localPos().x();
-	int y = event->localPos().y();
-	calcXY(x, y);
-	emit sendPos(x, y);
-	if (startPoint.x != -1 && m_drawArea && !getFirstArea) {
-		endPoint.x = x;
-		endPoint.y = y;
-		if (startPoint.x < INPUTWIDTH && endPoint.x > INPUTWIDTH) {
-			endPoint.x = INPUTWIDTH;
-		}
-		else if (startPoint.x < INPUTWIDTH * 2 && endPoint.x > INPUTWIDTH * 2) {
-			endPoint.x = INPUTWIDTH * 2;
-		}
-		else if (startPoint.x < INPUTWIDTH * 3 && endPoint.x > INPUTWIDTH * 3) {
-			endPoint.x = INPUTWIDTH * 3;
-		}
-		else if (startPoint.x > INPUTWIDTH && endPoint.x < INPUTWIDTH) {
-			endPoint.x = INPUTWIDTH;
-		}
-		else if (startPoint.x > INPUTWIDTH * 2 && endPoint.x < INPUTWIDTH * 2) {
-			endPoint.x = INPUTWIDTH * 2;
-		}
-	}
-
-	if (startPoint2.x != -1 && m_drawArea && getFirstArea && !getSecondArea) {
-		endPoint2.x = x;
-		endPoint2.y = y;
-		if (startPoint2.x < INPUTWIDTH && endPoint2.x > INPUTWIDTH) {
-			endPoint2.x = INPUTWIDTH;
-		}
-		else if (startPoint2.x < INPUTWIDTH * 2 && endPoint2.x > INPUTWIDTH * 2) {
-			endPoint2.x = INPUTWIDTH * 2;
-		}
-		else if (startPoint.x < INPUTWIDTH * 3 && endPoint2.x > INPUTWIDTH * 3) {
-			endPoint2.x = INPUTWIDTH * 3;
-		}
-		else if (startPoint.x > INPUTWIDTH && endPoint2.x < INPUTWIDTH) {
-			endPoint2.x = INPUTWIDTH;
-		}
-		else if (startPoint.x > INPUTWIDTH * 2 && endPoint2.x < INPUTWIDTH * 2) {
-			endPoint2.x = INPUTWIDTH * 2;
-		}
-	}
-
 	QGraphicsView::mouseMoveEvent(event);
 }
 
 void View::mousePressEvent(QMouseEvent * event)
 {
-	//startPoint.x = MIN(event->localPos().x() * 2, 800);
-	//startPoint.y = MIN(event->localPos().y() * 2, 1280);
-	//printf("start point %d-%d \n", startPoint.x, startPoint.y);
-	if (event->button() == Qt::LeftButton)
-	{
-		m_ptPress = event->pos();
-		m_areaMovable = QRect(0, 0, this->size().width(), 30);
-		m_bPressed = m_areaMovable.contains(m_ptPress);
-		m_drawArea = !m_bPressed;
-		if (!getFirstArea) {
-			startPoint.x = event->localPos().x();
-			startPoint.y = event->localPos().y();
-			if (startPoint.y < 30) {
-				startPoint.x = startPoint.y = -1;
-				return;
-			}
-			calcXY(startPoint.x, startPoint.y);
-			//if (startPoint.x < 400 || startPoint.x > 800) return;
-			endPoint.x = startPoint.x;
-			endPoint.y = startPoint.y;
-		}
-		else if (!getSecondArea) {
-			startPoint2.x = event->localPos().x();
-			startPoint2.y = event->localPos().y();
-			calcXY(startPoint2.x, startPoint2.y);
-			//if (startPoint2.x < 400 || startPoint2.x > 800) return;
-			endPoint2.x = startPoint2.x;
-			endPoint2.y = startPoint2.y;
-		}
-	}
-	else if (event->button() == Qt::RightButton) {
-		startPoint.x = startPoint.y = endPoint.x = endPoint.y = -1;
-		startPoint2.x = startPoint2.y = endPoint2.x = endPoint2.y = -1;
-		emit sendArea(startPoint2.x, startPoint2.y, endPoint2.x, endPoint2.y, 0);
-	}
-
 	QGraphicsView::mousePressEvent(event);
 }
 
 void View::mouseReleaseEvent(QMouseEvent * event)
 {
-	//endPoint.x = MIN(event->localPos().x() * 2, 800);
-	//endPoint.y = MIN(event->localPos().y() * 2, 1280);
-	//emit sendRange(startPoint, endPoint);
-	//printf("end point %d-%d \n", endPoint.x, endPoint.y);
-	m_bPressed = false;
-	m_drawArea = false;
-	if (!getFirstArea) {
-		emit sendArea(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 0);
-		getFirstArea = true;
-	}
-	else if (!getSecondArea) {
-		emit sendArea(startPoint2.x, startPoint2.y, endPoint2.x, endPoint2.y, 1);
-		getSecondArea = true;
-	}
-	else {
-		startPoint.x = startPoint.y = endPoint.x = endPoint.y = -1;
-		startPoint2.x = startPoint2.y = endPoint2.x = endPoint2.y = -1;
-		getFirstArea = getSecondArea = false;
-		emit sendArea(startPoint2.x, startPoint2.y, endPoint2.x, endPoint2.y, 0);
-	}
-
 	QGraphicsView::mouseReleaseEvent(event);
 }
 
 void View::paintEvent(QPaintEvent * event)
 {
-	int w = width();
-	int h = height();
-	m_scene->setSceneRect(0, 0, w, h);
-	m_ImageItem->setQGraphicsViewWH(w, h);
 	return QGraphicsView::paintEvent(event);
 }
 
@@ -276,17 +138,6 @@ bool View::Open()
 			}
 			else
 			{
-				//QImage* img = new QImage;
-
-				//if (!(img->load(filename))) //加载图像
-				//{
-				//	QMessageBox::information(this,
-				//		tr("打开图像失败"),
-				//		tr("打开图像失败!"));
-				//	delete img;
-				//	return;
-				//}
-
 				std::string str = filename.toStdString();  // 将filename转变为string类型；
 				m_Image = cv::imread(str);
 				
@@ -411,32 +262,4 @@ cv::Mat View::QImage2cvMat(QImage image)
 		break;
 	}
 	return mat;
-}
-
-void View::calcXY(int & x, int & y)
-{
-	QSize labelSize = this->size();
-	int labelHeight = labelSize.height();
-	int labelWidth = labelSize.width();
-	if (y_boundary) {
-		if (y < boundaryLength || y >= labelHeight - boundaryLength) {
-			x = y = 0;
-		}
-		else {
-			y = (y - boundaryLength) / ratio;
-			x = x / ratio;
-			x = x;
-		}
-	}
-	else {
-
-		if (x < boundaryLength || x >= labelWidth - boundaryLength) {
-			x = y = 0;
-		}
-		else {
-			x = (x - boundaryLength) / ratio;
-			y = y / ratio;
-			x = x;
-		}
-	}
 }

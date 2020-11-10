@@ -109,9 +109,10 @@
   <ItemGroup>
     <ClCompile Include="CameraDS.cpp" />
     <ClCompile Include="datasaver.cpp" />
+    <ClCompile Include="imageitem.cpp" />
+    <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
     <ClCompile Include="imagescene.cpp" />
-    <ClCompile Include="imagitem.cpp" />
     <ClCompile Include="logwriter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
@@ -148,14 +149,14 @@
     <QtMoc Include="View.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="imagitem.h" />
-  </ItemGroup>
-  <ItemGroup>
     <QtMoc Include="imagescene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h" />
     <ClInclude Include="datasaver.h" />
+    <QtMoc Include="imagepix.h" />
+    <QtMoc Include="imageitem.h" />
+    <ClInclude Include="definitionmenu.h" />
     <ClInclude Include="logwriter.h" />
     <QtMoc Include="imagereader.h" />
   </ItemGroup>

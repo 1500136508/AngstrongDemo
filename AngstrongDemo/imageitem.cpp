@@ -1,6 +1,6 @@
-#include "imagitem.h"
+#include "ImageItem.h"
 
-ImagItem::ImagItem(QGraphicsItem *parent /* = nullptr */)
+ImageItem::ImageItem(QGraphicsItem *parent /* = nullptr */)
 	:QGraphicsItem(parent)
 {
 	m_fScale = 1.0f;
@@ -18,11 +18,11 @@ ImagItem::ImagItem(QGraphicsItem *parent /* = nullptr */)
 	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 }
 
-ImagItem::~ImagItem()
+ImageItem::~ImageItem()
 {
 }
 
-void ImagItem::SetImage(QImage qImage)
+void ImageItem::SetImage(QImage qImage)
 {
 	m_pix = QPixmap::fromImage(qImage);
 
@@ -30,35 +30,35 @@ void ImagItem::SetImage(QImage qImage)
 	m_ImageHeight = m_pix.height();
 }
 
-void ImagItem::SetImage(QPixmap * pix)
+void ImageItem::SetImage(QPixmap * pix)
 {
 	m_pix = *pix;
 }
 
-void ImagItem::Zoom(QPointF pointF, double fScale)
+void ImageItem::Zoom(QPointF pointF, double fScale)
 {
 }
 
-void ImagItem::ZoomIn(QPointF poinF, double fScale)
+void ImageItem::ZoomIn(QPointF poinF, double fScale)
 {
 }
 
-void ImagItem::ZoomOut(QPointF pointF, double fScale)
+void ImageItem::ZoomOut(QPointF pointF, double fScale)
 {
 }
 
-void ImagItem::ZoomFit()
+void ImageItem::ZoomFit()
 {
 }
 
-void ImagItem::ResetItemPos()
+void ImageItem::ResetItemPos()
 {
 	m_fScale = 1.0f;//缩放比例回到一开始的自适应比例
 	setScale(m_fScale);//缩放到一开始的自适应大小
 	setPos(0, 0);
 }
 
-void ImagItem::setQGraphicsViewWH(int nwidth, int nheight)
+void ImageItem::setQGraphicsViewWH(int nwidth, int nheight)
 {
 	int nImgWidth = m_ImageWidth;
 	int nImgHeight = m_ImageHeight;
@@ -76,17 +76,17 @@ void ImagItem::setQGraphicsViewWH(int nwidth, int nheight)
 	m_fScale = m_fScale;
 }
 
-int ImagItem::GetImageWidth() const
+int ImageItem::GetImageWidth() const
 {
 	return m_ImageWidth;
 }
 
-int ImagItem::GetImageHeight() const
+int ImageItem::GetImageHeight() const
 {
 	return m_ImageHeight;
 }
 
-QRectF ImagItem::boundingRect() const
+QRectF ImageItem::boundingRect() const
 {
 	//return QRectF(-m_ImageWidth / 2, -m_ImageHeight / 2,
 	//	m_ImageWidth, m_ImageHeight);
@@ -106,7 +106,7 @@ QRectF ImagItem::boundingRect() const
 	//return rect;
 }
 
-void ImagItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+void ImageItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
 	//painter->drawPixmap(-m_pix.width() / 2, -m_pix.height() / 2, m_pix);
 	painter->drawPixmap(-m_ImageWidth / 2, -m_ImageHeight / 2, m_pix);
@@ -121,7 +121,7 @@ void ImagItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option
 	painter->drawRect(-10, -10, 20, 20);*/
 }
 
-void ImagItem::wheelEvent(QGraphicsSceneWheelEvent * event)
+void ImageItem::wheelEvent(QGraphicsSceneWheelEvent * event)
 {
 	if ((event->delta() > 0) && (m_fScale >= 50))//最大放大到原始图像的50倍
 	{
@@ -154,7 +154,7 @@ void ImagItem::wheelEvent(QGraphicsSceneWheelEvent * event)
 	}
 }
 
-bool ImagItem::sceneEvent(QEvent * event)
+bool ImageItem::sceneEvent(QEvent * event)
 {
 	//return false;
 	if (event->type() == QEvent::GraphicsSceneMousePress)
@@ -178,7 +178,7 @@ bool ImagItem::sceneEvent(QEvent * event)
 	return true;
 }
 
-void ImagItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
+void ImageItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (event->button() == Qt::LeftButton) {
 		event->accept();
@@ -195,7 +195,7 @@ void ImagItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
 	}
 }
 
-void ImagItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+void ImageItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (m_bIsMove)
 	{
@@ -204,7 +204,7 @@ void ImagItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 	}
 }
 
-void ImagItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
+void ImageItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
 	m_bIsMove = false;//标记鼠标左键已经抬起
 }
