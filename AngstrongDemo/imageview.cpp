@@ -50,11 +50,26 @@ void ImageView::ZoomFit()
 	
 	QRect viewRect = ui->m_gView_ImageView->geometry();
 	m_spScene->setSceneRect(0, 0, viewRect.width(), viewRect.height()); //将坐标原点设在显示窗口的左上角
-	QPixmap pix = m_spPix->pixmap();
-	qreal fRatio_y = pix.height() / viewRect.height();
-	int nWidth = viewRect.width()*fRatio_y;
-	m_spPix->setPixmap(pix.scaled(nWidth, viewRect.height()));
-	m_spPix->setPos(0, 0);
+	QPixmap pix = QPixmap::fromImage(qImage);
+	m_spPix->setPixmap(pix.scaled(viewRect.width(), viewRect.height(), Qt::KeepAspectRatio));
+	//设置居中显示位置
+	int pWidth = m_spPix->pixmap().width();
+	int pHeight = m_spPix->pixmap().height();
+	int vWidth = viewRect.width();
+	int vHeight = viewRect.height();
+	double fRatio_w = pWidth / vWidth;
+	double fRatio_h = pHeight / vHeight;
+	if (fRatio_w <= fRatio_h)
+	{
+		int nDeta_x = (viewRect.width() - m_spPix->pixmap().width())/2;
+		m_spPix->setPos(nDeta_x, 0);
+	}
+	else if(fRatio_w < fRatio_h)
+	{
+		int nDeta_y = (viewRect.height() - m_spPix->pixmap().height())/2;
+		m_spPix->setPos(0, nDeta_y);
+	}
+	
 }
 
 bool ImageView::Open()
@@ -76,7 +91,7 @@ bool ImageView::Open()
 				std::string str = filename.toStdString();  // 将filename转变为string类型；
 				m_Image = cv::imread(str);
 
-				QImage qImage = cvMat2QImage(m_Image);
+				qImage = cvMat2QImage(m_Image);
 				m_spPix->setPixmap(QPixmap::fromImage(qImage));
 				
 				//处理显示位置

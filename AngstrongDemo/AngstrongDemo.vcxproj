@@ -60,11 +60,11 @@
     <ClCompile />
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\DirectShow\Include;..\AngstrongDemo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv\build\include;..\opencv\build\include\opencv;..\opencv\build\include\opencv2;..\DirectShow\Include;..\AngstrongDemo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;..\dense_tencent;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world341d.lib;dsense.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\opencv\build\x64\vc15\lib;..\dense_tencent;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world3412d.lib;dsense.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">

@@ -52,6 +52,8 @@ private:
 	std::shared_ptr<ImageScene> m_spScene;
 	std::shared_ptr<ImageItem>  m_spItem;
 	std::shared_ptr<ImagePix>   m_spPix;
+
+	QImage qImage;
 private:
 };
 
