@@ -27,8 +27,6 @@ ir_rgb_State rgb_param{0};
 unsigned char PD[1024];
 float realpd[30];
 
-
-
 imageReader::imageReader(QObject *parent)
 {
     // 初始化各种buffer
@@ -178,21 +176,21 @@ void imageReader::readImageThread()
 
 void imageReader::buildDataThread()
 {
-	bool irGet = false;
-	bool depthGet = false;
-	bool getParam = false;
-	int moveX = 45;
-	int moveY = 105;
-	int preMoveX = 45;
-	int preMoveY = 105;
-	faceRectIn rectIn{ 130,195,170,215 };
-	long long irT = 0;
-	long long rgbT = 0;
-	long long depthT = 0;
-	long long lastRgbT = 0;
-	while (!quitProgram)
+	try
 	{
-		try
+		bool irGet = false;
+		bool depthGet = false;
+		bool getParam = false;
+		int moveX = 45;
+		int moveY = 105;
+		int preMoveX = 45;
+		int preMoveY = 105;
+		faceRectIn rectIn{ 130,195,170,215 };
+		long long irT = 0;
+		long long rgbT = 0;
+		long long depthT = 0;
+		long long lastRgbT = 0;
+		while (!quitProgram)
 		{
 			if (!isRunning) continue;
 			memset(datagroup, 0, 640 * 480 * 2);
@@ -250,24 +248,23 @@ void imageReader::buildDataThread()
 				datagroup++;
 			}*/
 
-			/*	FILE* file = fopen("data_rgb.bin", "wb");
-				if (file == NULL || rgbyuv.empty())
-					return;
-				fwrite("CmMat", sizeof(char), 5, file);
-				int headData[3] = { rgbyuv.cols, rgbyuv.rows, rgbyuv.type() };
-				fwrite(headData, sizeof(int), 3, file);
-				fwrite(rgbyuv.data, sizeof(char), rgbyuv.step * rgbyuv.rows, file);
-				fclose(file);*/
-
-				//out.close();
-				//cv::imwrite("test.tiff", rgbyuv);
+		/*	FILE* file = fopen("data_rgb.bin", "wb");
+			if (file == NULL || rgbyuv.empty())
+				return;
+			fwrite("CmMat", sizeof(char), 5, file);
+			int headData[3] = { rgbyuv.cols, rgbyuv.rows, rgbyuv.type() };
+			fwrite(headData, sizeof(int), 3, file);
+			fwrite(rgbyuv.data, sizeof(char), rgbyuv.step * rgbyuv.rows, file);
+			fclose(file);*/
+			
+			//out.close();
+			//cv::imwrite("test.tiff", rgbyuv);
 			RGBFrame = cv::imdecode(rgbyuv, CV_LOAD_IMAGE_COLOR);
 			cv::transpose(RGBFrame, RGBFrame);
 			cv::flip(RGBFrame, RGBFrame, 0);
 			cv::flip(RGBFrame, RGBFrame, -1);
 			RGBFrame.copyTo(container[2]);
-			//cv::imwrite("rgb.tiff", RGBFrame);
-			emit sendImage(RGBFrame);
+			//cv::imwrite("test.tiff", RGBFrame);
 			ptr = datagroup;
 			int flag = ptr[frameHeight*frameWidth * 2 - 1];
 			unsigned short* tmp = (unsigned short*)ptr;
@@ -310,7 +307,6 @@ void imageReader::buildDataThread()
 				memcpy(depthDataRGB, depthFrame.data, frameWidthR*frameHeightR * sizeof(float));
 				depthFrame = dealDepthMapColor(depthDataRGB, frameHeightR, frameWidthR);
 				depthFrame.copyTo(container[1]);
-				//emit sendImage(depthFrame);
 				//cv::imwrite("depth.tiff", depthFrame);
 				depthGet = true;
 				thisRoundIR = false;
@@ -378,10 +374,7 @@ void imageReader::buildDataThread()
 					//                    emit sendLocationDepth(xhere,yhere,depthDataRGB[yhere*frameHeightR+xhere]);
 					//                qDebug()<<mouseX;
 					if (mouseX >= frameHeightR)
-					{
 						emit sendLocationDepth(xhere, yhere, depthDataRGB[yhere*frameHeightR + xhere]);
-						//qDebug() << "x=" << xhere << " y=" << yhere << " =depth" << depthDataRGB[yhere*frameHeightR + xhere];
-					}
 					else
 						emit sendLocationDepth(-1, -1, 0);
 				}
@@ -428,7 +421,7 @@ void imageReader::buildDataThread()
 					plus.copyTo(container[2]);
 				}
 				cv::hconcat(container, combineFrame);
-				//emit sendImage(combineFrame);
+				emit sendImage(combineFrame);
 			}
 			if (isGoingToSaveData) {
 				if (max_count != 0) {
@@ -472,13 +465,14 @@ void imageReader::buildDataThread()
 			if (t2 - t1 < 34)
 				Sleep(34 - t2 + t1);
 			else Sleep(10);
-			//qDebug() << "ONE ROUND : " << t2 - t1;
+			qDebug() << "ONE ROUND : " << t2 - t1;
+			
 		}
-		catch (cv::Exception &e)
-		{
-			const char *err_msg = e.what();
-			continue;
-		}
+	}
+	catch (cv::Exception &e)
+	{
+		const char *err_msg = e.what();
+		return;
 	}
 }
 

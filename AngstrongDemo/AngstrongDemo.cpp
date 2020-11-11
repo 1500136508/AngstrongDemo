@@ -10,18 +10,19 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 	BuildConnect();
 
-	setCentralWidget(&m_ImageView);
+	m_vec_spImageView.push_back(std::make_shared<ImageView>(new ImageView()));
+	setCentralWidget(m_vec_spImageView.at(0).get());
 	//setCentralWidget(&m_CameraView);
 	CreateDockWindow();
 	AddToolBar();
-
-	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
-	qRegisterMetaType<cv::Mat>("cv::Mat");
-	qRegisterMetaType<std::string>("std::string");
 }
 
 AngstrongDemo::~AngstrongDemo()
 {
+	if (!m_vec_spImageView.empty())
+	{
+		m_vec_spImageView.clear();
+	}
 }
 
 void AngstrongDemo::CreateDockWindow()
@@ -52,8 +53,14 @@ void AngstrongDemo::CreateDockWindow()
 	//m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
 	////m_dock_imageview->setAllowedAreas(Qt::LeftDockWidgetArea/* | Qt::BottomDockWidgetArea*/);
 	//m_dock_imageview->setAllowedAreas(Qt::AllDockWidgetAreas);
-	//addDockWidget(Qt::TopDockWidgetArea, m_dock_imageview);
-	//m_dock_imageview->setWidget(&m_ImageView);
+	//addDockWidget(Qt::LeftDockWidgetArea, m_dock_imageview);
+	//if (!m_vec_spImageView.empty())
+	//{
+	//	if (m_vec_spImageView.at(0))
+	//	{
+	//		m_dock_imageview->setWidget(m_vec_spImageView.at(0).get());
+	//	}
+	//}
 }
 
 void AngstrongDemo::AddToolBar()
@@ -63,15 +70,9 @@ void AngstrongDemo::AddToolBar()
 	QAction* pActionC = new QAction(QIcon(QPixmap(":/AngstrongDemo/image_ico/Option_normal.png")), "打开");
 
 	pToolBar->addAction(pActionC);
-
-	//QObject::connect(pActionC, SIGNAL(triggered(bool)), this, SLOT(onMsg()));
 }
 
 void AngstrongDemo::BuildConnect()
 {
-	//connect(&m_ImageView.ui->m_gView_ImageView->m_reader, SIGNAL(sendImage(cv::Mat)), m_ImageView.ui->m_gView_ImageView, SLOT(setImage(cv::Mat)));
-}
-
-void AngstrongDemo::run_camera()
-{
+	
 }

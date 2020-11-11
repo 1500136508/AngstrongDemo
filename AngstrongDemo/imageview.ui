@@ -128,9 +128,6 @@
    </item>
    <item row="1" column="0">
     <widget class="View" name="m_gView_ImageView">
-     <property name="styleSheet">
-      <string notr="true">background-image: url(:/AngstrongDemo/image_ico/bg1.png/bg1.png);</string>
-     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>

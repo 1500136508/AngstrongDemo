@@ -51,7 +51,7 @@ private:
     cv::Mat lastRGB;
 
     bool writeFinsih = true;
-    bool quitProgramm = false;
+    static bool quitProgramm;
 
     bool readyToSave = false;
 };
