@@ -9,8 +9,9 @@ CameraView::CameraView(QWidget *parent /* = nullptr */)
 	model->setHeaderData(0, Qt::Horizontal, "Camera");
 	//model->setHeaderData(1, Qt::Horizontal, "Details");
 
-	QStandardItem *item1 = new QStandardItem("CameraList");
-	item1->setIcon(QIcon(":/AngstrongDemo/image_ico/camera.jpg"));
+	/*QStandardItem *item1 = new QStandardItem("CameraList");
+	item1->setIcon(QIcon(":/AngstrongDemo/image_ico/camera.jpg"));*/
+
 	//QStandardItem *item2 = new QStandardItem("bluetooth");
 	//item2->setIcon(QIcon(":/btn_bright_02"));
 	//QStandardItem *item3 = new QStandardItem("crond");
@@ -18,7 +19,7 @@ CameraView::CameraView(QWidget *parent /* = nullptr */)
 	//QStandardItem *item4 = new QStandardItem("cups");
 	//item4->setIcon(QIcon(":/btn_bright_04"));
 
-	model->setItem(0, 0, item1);
+	//model->setItem(0, 0, item1);
 	/*model->setItem(1, 0, item2);
 	model->setItem(2, 0, item3);
 	model->setItem(3, 0, item4);*/
@@ -61,6 +62,7 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 		if (index.row() == 0)
 		{
 			qDebug() << index.data().toString();
+			emit SelectCamera(0);
 		}
 	}
 }
@@ -69,10 +71,12 @@ void CameraView::DetectCameraUSB(bool bUSB)
 {
 	if (bUSB)
 	{
-		int a = 7;
+		QStandardItem *item1 = new QStandardItem("CameraList");
+		item1->setIcon(QIcon(":/AngstrongDemo/image_ico/camera.jpg"));
+		model->setItem(0, 0, item1);
 	}
 	else
 	{
-		int b = 7;
+		model->removeRow(0);
 	}
 }

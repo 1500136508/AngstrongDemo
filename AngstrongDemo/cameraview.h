@@ -2,6 +2,8 @@
 #pragma once
 #include <QTreeView>
 #include <QStandardItem>
+#include <map>
+#include <QString>
 
 class CameraView : public QTreeView
 {
@@ -14,7 +16,10 @@ public:
 
 public slots:
 	void DetectCameraUSB(bool bUSB);
+signals:
+	void SelectCamera(int nIndex);
 private:
 	QStandardItemModel *model;
+	std::map<QString, QStandardItem*> m_mpCameraList;
 };
 

@@ -16,7 +16,7 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 	BuildConnect();
 
-	setCentralWidget(&m_ImageView);
+	//setCentralWidget(&m_ImageView);
 	CreateDockWindow();
 	AddToolBar();
 }
@@ -63,7 +63,6 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 			}
 			if (lpdb->dbch_devicetype = DBT_DEVTYP_DEVICEINTERFACE)
 			{
-				emit IsCameraUSB(true);
 				PDEV_BROADCAST_DEVICEINTERFACE pDevInf = (PDEV_BROADCAST_DEVICEINTERFACE)lpdb;
 				QString strname = QString::fromWCharArray(pDevInf->dbcc_name);
 				//对U盘信息进行提取
@@ -82,6 +81,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(0).right(4));    //vid 0
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
+						emit IsCameraUSB(true);
 					}
 				}
 
@@ -173,6 +173,7 @@ void AngstrongDemo::AddToolBar()
 void AngstrongDemo::BuildConnect()
 {
 	connect(this, SIGNAL(IsCameraUSB(bool)), &m_CameraView, SLOT(DetectCameraUSB(bool)));
+	connect(&m_CameraView, SIGNAL(SelectCamera(int)), this, SLOT(ShowImageView(int)));
 }
 
 void AngstrongDemo::registerDevice()
@@ -210,4 +211,11 @@ char AngstrongDemo::FirstDriveFromMask(ULONG unitmask)
 		unitmask = unitmask >> 1;
 	}
 	return (i + 'A');
+}
+
+void AngstrongDemo::ShowImageView(int nIndex)
+{
+	m_testImageView.setParent(this);
+	setCentralWidget(&m_testImageView);
+	m_testImageView.show();
 }

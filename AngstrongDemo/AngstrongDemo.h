@@ -31,7 +31,8 @@ private:
 	//CameraUSB Device
 	void registerDevice();
 	char FirstDriveFromMask(ULONG unitmask);
-
+private slots:
+	void ShowImageView(int nIndex);
 signals:
 	void IsCameraUSB(bool bUSB);
 private:
@@ -41,6 +42,8 @@ private:
 	CameraView m_CameraView;
 	ParameterView m_ParamView;
 	OutputView m_OutputView;
+
+	ImageView m_testImageView;
 
 	QMap<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map
 	QStringList m_usbList;                             //存储U盘中间信息
