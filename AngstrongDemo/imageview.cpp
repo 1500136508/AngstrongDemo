@@ -35,11 +35,18 @@ ImageView::ImageView(QWidget *parent) :
 	ui->m_gView_ImageView->installEventFilter(this);//设置对话框监控事件，监控对话框上的控件
 
 	//建立信号槽
+	m_pCamera = nullptr;
+	m_pCamera = new imageReader();
 	BuildConnet();
 }
 
 ImageView::~ImageView()
 {
+	if (m_pCamera)
+	{
+		delete m_pCamera;
+		m_pCamera = nullptr;
+	}
     delete ui;
 }
 
@@ -65,10 +72,11 @@ void ImageView::ZoomFit()
 	QRect viewRect = ui->m_gView_ImageView->geometry();
 	m_spScene->setSceneRect(0, 0, viewRect.width(), viewRect.height()); //将坐标原点设在显示窗口的左上角
 	QPixmap pix = QPixmap::fromImage(qImage);
-	m_spPix->setPixmap(pix.scaled(viewRect.width(), viewRect.height(), Qt::KeepAspectRatio));
+	QPixmap pix_sacle = pix.scaled(viewRect.width(), viewRect.height(), Qt::KeepAspectRatio);
+	m_spPix->setPixmap(pix_sacle);
 	//设置居中显示位置
-	int pWidth = m_spPix->pixmap().width();
-	int pHeight = m_spPix->pixmap().height();
+	int pWidth = pix_sacle.width();
+	int pHeight = pix_sacle.height();
 	int vWidth = viewRect.width();
 	int vHeight = viewRect.height();
 	if (vWidth > pWidth)
@@ -188,7 +196,7 @@ void ImageView::on_save_clicked()
 
 void ImageView::on_close_clicked()
 {
-	m_camera.run(0);
+	m_pCamera->run(0);
 }
 
 void ImageView::on_zoomIn_clicked()
@@ -317,10 +325,12 @@ void ImageView::SetImage(cv::Mat mat)
 {
 	if (m_spPix)
 	{
-		QImage qImage = cvMat2QImage(mat);
+		qImage = cvMat2QImage(mat);
 		if (!qImage.isNull())
 		{
 			m_spPix->setPixmap(QPixmap::fromImage(qImage));
+
+			ZoomFit();
 		}
 	}
 }
@@ -353,45 +363,45 @@ void ImageView::BuildConnet()
 	qRegisterMetaType<cv::Mat>("cv::Mat");
 	qRegisterMetaType<std::string>("std::string");
 
-	connect(&m_camera, SIGNAL(sendImage(cv::Mat)), this, SLOT(SetImage(cv::Mat)));
-	connect(this, SIGNAL(closeEvent()), &m_camera, SLOT(stopingProgram()));
+	connect(m_pCamera, SIGNAL(sendImage(cv::Mat)), this, SLOT(SetImage(cv::Mat)));
+	connect(this, SIGNAL(closeEvent()), m_pCamera, SLOT(stopingProgram()));
 }
 
 QImage ImageView::cvMat2QImage(const cv::Mat & mat)
 {
-	/*if (mat.type() == CV_8UC1)
-	{
-		QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
-		image.setColorCount(256);
-		for (int i = 0; i < 256; i++)
-		{
-			image.setColor(i, qRgb(i, i, i));
-		}
-		uchar *pSrc = mat.data;
-		for (int row = 0; row < mat.rows; row++)
-		{
-			uchar *pDest = image.scanLine(row);
-			memcpy(pDest, pSrc, mat.cols);
-			pSrc += mat.step;
-		}
-		return image;
-	}
-	else if (mat.type() == CV_8UC3)
-	{
-		const uchar *pSrc = (const uchar*)mat.data;
-		QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
-		return image.rgbSwapped();
-	}
-	else if (mat.type() == CV_8UC4)
-	{
-		const uchar *pSrc = (const uchar*)mat.data;
-		QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
-		return image.copy();
-	}
-	else
-	{
-		return QImage();
-	}*/
+	//if (mat.type() == CV_8UC1)
+	//{
+	//	QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
+	//	image.setColorCount(256);
+	//	for (int i = 0; i < 256; i++)
+	//	{
+	//		image.setColor(i, qRgb(i, i, i));
+	//	}
+	//	uchar *pSrc = mat.data;
+	//	for (int row = 0; row < mat.rows; row++)
+	//	{
+	//		uchar *pDest = image.scanLine(row);
+	//		memcpy(pDest, pSrc, mat.cols);
+	//		pSrc += mat.step;
+	//	}
+	//	return image;
+	//}
+	//else if (mat.type() == CV_8UC3)
+	//{
+	//	const uchar *pSrc = (const uchar*)mat.data;
+	//	QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+	//	return image.rgbSwapped();
+	//}
+	//else if (mat.type() == CV_8UC4)
+	//{
+	//	const uchar *pSrc = (const uchar*)mat.data;
+	//	QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
+	//	return image.copy();
+	//}
+	//else
+	//{
+	//	return QImage();
+	//}
 
 	if (mat.type() == CV_8UC1 || mat.type() == CV_32FC1)
 	{

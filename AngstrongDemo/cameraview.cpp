@@ -64,3 +64,15 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 		}
 	}
 }
+
+void CameraView::DetectCameraUSB(bool bUSB)
+{
+	if (bUSB)
+	{
+		int a = 7;
+	}
+	else
+	{
+		int b = 7;
+	}
+}

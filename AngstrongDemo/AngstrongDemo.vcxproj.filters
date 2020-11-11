@@ -107,6 +107,9 @@
     <ClCompile Include="imagereader.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="usbdevice.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AngstrongDemo.ui">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="datasaver.h">
       <Filter>Header Files\Device\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="usbdevice.h">
+      <Filter>Header Files\Device</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

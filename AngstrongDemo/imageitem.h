@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QGraphicsSceneMouseEvent>
 #include <QMouseEvent>
+#include "imagereader.h"
 
 class ImageItem : public QObject, public QGraphicsItem
 {
@@ -24,5 +25,7 @@ protected:
 	void wheelEvent(QGraphicsSceneWheelEvent *event);
 
 	bool sceneEvent(QEvent *event);
+
+	imageReader *pReader;
 };
 

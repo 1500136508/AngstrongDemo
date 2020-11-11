@@ -57,7 +57,7 @@ public:
     Ui::ImageView *ui;
 
 	//相机采集图像相关类
-	imageReader m_camera;
+	imageReader *m_pCamera;
 private:
 	void BuildConnet();
 	QImage cvMat2QImage(const cv::Mat& mat);
