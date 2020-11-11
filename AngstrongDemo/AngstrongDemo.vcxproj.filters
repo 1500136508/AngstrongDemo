@@ -77,9 +77,6 @@
     <ClCompile Include="imageview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
-    <ClCompile Include="imagitem.cpp">
-      <Filter>Source Files\FormView</Filter>
-    </ClCompile>
     <ClCompile Include="labview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
@@ -95,14 +92,23 @@
     <ClCompile Include="CameraDS.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="logwriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imagepix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imageitem.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="datasaver.cpp">
+      <Filter>Source Files\Device\Camera</Filter>
+    </ClCompile>
     <ClCompile Include="imagereader.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="datasaver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="logwriter.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="usbdevice.cpp">
+      <Filter>Source Files\Device</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -132,9 +138,6 @@
     <QtMoc Include="imageview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
-    <QtMoc Include="imagitem.h">
-      <Filter>Header Files\FormView</Filter>
-    </QtMoc>
     <QtMoc Include="labview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
@@ -147,6 +150,12 @@
     <QtMoc Include="View.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
+    <QtMoc Include="imagepix.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="imageitem.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
     <QtMoc Include="imagereader.h">
       <Filter>Header Files\Device\Camera</Filter>
     </QtMoc>
@@ -155,11 +164,17 @@
     <ClInclude Include="CameraDS.h">
       <Filter>Header Files\Device\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="datasaver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="logwriter.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="definitionmenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="datasaver.h">
+      <Filter>Header Files\Device\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="usbdevice.h">
+      <Filter>Header Files\Device</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

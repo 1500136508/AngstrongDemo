@@ -3,6 +3,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <Windows.h>
 #define BUFFLEN 1000
+
 dataSaver::dataSaver()
 {
     for (int j = 0 ; j < BUFFLEN;j++){

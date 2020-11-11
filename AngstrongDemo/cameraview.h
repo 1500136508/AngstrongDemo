@@ -12,10 +12,8 @@ public:
 	QList<QStandardItem *> returnTheItems();
 	void mouseDoubleClickEvent(QMouseEvent *event);
 
-signals:
-
 public slots:
-
+	void DetectCameraUSB(bool bUSB);
 private:
 	QStandardItemModel *model;
 };

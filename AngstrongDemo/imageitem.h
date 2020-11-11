@@ -6,26 +6,15 @@
 #include <QImage>
 #include <QGraphicsSceneMouseEvent>
 #include <QMouseEvent>
+#include "imagereader.h"
 
-class ImagItem : public QObject, public QGraphicsItem
+class ImageItem : public QObject, public QGraphicsItem
 {
 	Q_OBJECT
 	Q_INTERFACES(QGraphicsItem)
 public:
-	explicit ImagItem(QGraphicsItem *parent = nullptr);
-	virtual ~ImagItem();
-public:
-	void SetImage(QImage qImage);
-	void SetImage(QPixmap *pix);
-	void Zoom(QPointF pointF, double fScale = 1.0f);
-	void ZoomIn(QPointF poinF, double fScale = 1.2f);
-	void ZoomOut(QPointF pointF, double fScale = 0.8f);
-	void ZoomFit();
-	void ResetItemPos();
-	void setQGraphicsViewWH(int nwidth, int nheight);
-
-	int GetImageWidth()const;
-	int GetImageHeight()const;
+	explicit ImageItem(QGraphicsItem *parent = nullptr);
+	virtual ~ImageItem();
 protected:
 	QRectF  boundingRect() const;
 	void    paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -37,14 +26,6 @@ protected:
 
 	bool sceneEvent(QEvent *event);
 
-
-private:
-	float m_fScale;
-	bool m_bIsMove;
-	QPointF m_startPos;
-	QPixmap m_pix;
-
-	int m_ImageWidth;
-	int m_ImageHeight;
+	imageReader *pReader;
 };
 

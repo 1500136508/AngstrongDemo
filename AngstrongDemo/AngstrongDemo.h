@@ -3,11 +3,15 @@
 #include <QtWidgets/QMainWindow>
 #include <QDockWidget>
 #include <thread>
+#include <vector>
+#include <memory>
+#include <QMap>
 #include "ui_AngstrongDemo.h"
 #include "imageview.h"
 #include "cameraview.h"
 #include "parameterview.h"
 #include "outputview.h"
+#include "usbdevice.h"
 
 class AngstrongDemo : public QMainWindow
 {
@@ -16,13 +20,20 @@ class AngstrongDemo : public QMainWindow
 public:
     AngstrongDemo(QWidget *parent = Q_NULLPTR);
 	virtual ~AngstrongDemo();
-private slots:
-
+protected:
+	//Only Qt Framework
+	bool nativeEvent(const QByteArray & eventType, void * message, long*result);
 private:
 	void CreateDockWindow();
 	void AddToolBar();
 	void BuildConnect();
-	void run_camera();
+
+	//CameraUSB Device
+	void registerDevice();
+	char FirstDriveFromMask(ULONG unitmask);
+
+signals:
+	void IsCameraUSB(bool bUSB);
 private:
     Ui::AngstrongDemoClass ui;
 
@@ -31,5 +42,6 @@ private:
 	ParameterView m_ParamView;
 	OutputView m_OutputView;
 
-	std::thread m_thread_run;
+	QMap<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map
+	QStringList m_usbList;                             //存储U盘中间信息
 };
