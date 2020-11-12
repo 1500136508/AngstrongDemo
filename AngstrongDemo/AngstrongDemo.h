@@ -13,6 +13,7 @@
 #include "outputview.h"
 #include "usbdevice.h"
 
+
 class AngstrongDemo : public QMainWindow
 {
     Q_OBJECT
