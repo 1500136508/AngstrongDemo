@@ -77,8 +77,6 @@ private:
 	double m_fScale;
 
 	bool cameraReady = false;
-	//ImageView标识，用来区分多窗口
-	int m_nIndex = 0;
 };
 
 #endif // IMAGEVIEW_H

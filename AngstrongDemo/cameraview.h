@@ -20,11 +20,11 @@ public:
 	void mouseDoubleClickEvent(QMouseEvent *event);
 
 public slots:
-	void DetectCameraUSB(bool bUSB, QString qstrUSBName,std::map<QString,unsigned> mpUSBInfo);
+	void DetectCameraUSB(bool bUSB, QString qstrUSBName,int nIndex);
 signals:
-	void SelectCamera(int nIndex);
+	void SelectCamera(QString qstrUSBName,int nIndex);
 private:
 	QStandardItemModel *model;
-	std::map<QString, std::pair<unsigned,QStandardItem*>> m_mpCameraList;
+	std::map<QString, std::pair<int,QStandardItem*>> m_mpCameraList;
 };
 

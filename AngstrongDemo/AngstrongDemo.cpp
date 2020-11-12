@@ -15,9 +15,7 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	ui.setupUi(this);
 
 	//初始化
-	m_mpCameraDevice.clear();
-	usbDeviceMap.clear();
-	m_mpCameraDevice.clear();
+	m_mpImageView.clear();
 
 	BuildConnect();
 
@@ -32,11 +30,11 @@ AngstrongDemo::~AngstrongDemo()
 	{
 		for (auto mp : m_mpImageView)
 		{
-			if (mp.second)
+			if (mp.second.second)
 			{
-				mp.second->close();
-				delete mp.second;
-				mp.second = nullptr;
+				mp.second.second->close();
+				delete mp.second.second;
+				mp.second.second = nullptr;
 			}
 		}
 		m_mpImageView.clear();
@@ -47,7 +45,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 {
 	MSG* msg = reinterpret_cast<MSG*>(message);
 	int msgType = msg->message;
-	static unsigned int m_sCameraDeviceIndex = 0;//局部静态变量，用来存储USBCamera序号
+	static int m_sCameraDeviceIndex = -1;//局部静态变量，用来存储USBCamera序号
 	if (msgType == WM_DEVICECHANGE)
 	{
 		PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)msg->lParam;
@@ -106,7 +104,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listAll.at(2));            //设备序列号 2
 						++m_sCameraDeviceIndex;
 						m_mpCameraDevice.insert({ m_usbList.at(2),m_sCameraDeviceIndex });
-						emit IsCameraUSB(true,m_usbList.at(2),m_mpCameraDevice);
+						emit IsCameraUSB(true,m_usbList.at(2),m_sCameraDeviceIndex);
 					}
 				}
 
@@ -156,45 +154,34 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(0).right(4));    //vid 0
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
-						emit IsCameraUSB(false, m_usbList.at(2), m_mpCameraDevice);
+						QString qstrUSBName = m_usbList.at(2);
+						emit IsCameraUSB(false, qstrUSBName, m_mpCameraDevice[qstrUSBName]);
 						if (m_sCameraDeviceIndex != 0)
 						{
 							--m_sCameraDeviceIndex;
 						}
-						if (m_mpCameraDevice.find(m_usbList.at(2)) != m_mpCameraDevice.end())//判断map中是否存在该设备
+						if (m_mpCameraDevice.find(qstrUSBName) != m_mpCameraDevice.end())//判断map中是否存在该设备
 						{
-							for (auto iter = m_mpCameraDevice.begin(); iter != m_mpCameraDevice.end();++iter)//遍历map
+							if (!m_mpImageView.empty())
 							{
-								if (iter->second > m_mpCameraDevice.find(m_usbList.at(2))->second)
+								DestroyImageView(m_mpCameraDevice[qstrUSBName]);
+								for (auto iter = m_mpImageView.begin(); iter != m_mpImageView.end(); ++iter)
+								{
+									if (iter->second.first > m_mpCameraDevice.find(qstrUSBName)->second)
+									{
+										--iter->second.first;
+									}
+								}
+							}
+
+							for (auto iter = m_mpCameraDevice.begin(); iter != m_mpCameraDevice.end(); ++iter)//遍历map
+							{
+								if (iter->second > m_mpCameraDevice.find(qstrUSBName)->second)
 								{
 									--iter->second;//将移除设备后的设备nIndex全部递减1
 								}
 							}
-							if (!m_mpImageView.empty())
-							{
-								auto iter1 = m_mpImageView.begin();
-								int nTempIndex = -1;
-								for (; iter1 != m_mpImageView.end(); ++iter1)
-								{
-									if (iter1->second->GetImageViewIndex() == m_mpCameraDevice.find(m_usbList.at(2))->second)
-									{
-										break;
-									}
-								}
-								if (iter1 != m_mpImageView.end())
-								{
-									DestroyImageView(iter1->second->GetImageViewIndex());
-								}
-								for (auto it = m_mpImageView.begin(); it != m_mpImageView.end(); ++it)
-								{
-									if (it->second->GetImageViewIndex() > nTempIndex)
-									{
-										int nTemp = it->second->GetImageViewIndex();
-										it->second->SetImageViewIndex(nTemp - 1);//窗口对于标识递减
-									}
-								}
-							}
-							m_mpCameraDevice.erase(m_mpCameraDevice.find(m_usbList.at(2)));//移除该设备
+							m_mpCameraDevice.erase(m_mpCameraDevice.find(qstrUSBName));//移除该设备
 						}
 					}
 				}
@@ -255,10 +242,8 @@ void AngstrongDemo::AddToolBar()
 
 void AngstrongDemo::BuildConnect()
 {
-	/*qRegisterMetaType<cv::Mat>("cv::Mat");
-	qRegisterMetaType<std::string>("std::string");*/
-	connect(this, SIGNAL(IsCameraUSB(bool, QString, std::map<QString, unsigned>)), &m_CameraView, SLOT(DetectCameraUSB(bool, QString, std::map<QString, unsigned>)));
-	connect(&m_CameraView, SIGNAL(SelectCamera(int)), this, SLOT(ShowImageView(int)));
+	connect(this, SIGNAL(IsCameraUSB(bool, QString, int)), &m_CameraView, SLOT(DetectCameraUSB(bool, QString, int)));
+	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
 }
 
 void AngstrongDemo::registerDevice()
@@ -308,28 +293,18 @@ void AngstrongDemo::DestroyImageView(int nIndex)
 	}
 	for (auto iter = m_mpImageView.begin(); iter != m_mpImageView.end(); ++iter)
 	{
-		if (iter->second->GetImageViewIndex() == nIndex)
+		if (iter->second.first == nIndex)
 		{
-			iter->second->close();
-			delete iter->second;
-			iter->second = nullptr;
+			iter->second.second->close();
+			delete iter->second.second;
+			iter->second.second = nullptr;
 			m_mpImageView.erase(iter);
 			break;
 		}
 	}
-	/*if (m_mpImageView.find(nIndex) != m_mpImageView.end())
-	{
-		if (m_mpImageView.find(nIndex)->second)
-		{
-			m_mpImageView[nIndex]->close();
-			delete m_mpImageView[nIndex];
-			m_mpImageView[nIndex] = nullptr;
-		}
-		m_mpImageView.erase(m_mpImageView.find(nIndex));
-	}*/
 }
 
-void AngstrongDemo::ShowImageView(int nIndex)
+void AngstrongDemo::ShowImageView(QString qstrName,int nIndex)
 {
 	if (nIndex < 0)
 	{
@@ -337,31 +312,29 @@ void AngstrongDemo::ShowImageView(int nIndex)
 	}
 	if (m_mpImageView.empty())
 	{
-		m_mpImageView.insert({ nIndex,new ImageView() });
+		m_mpImageView.insert({ qstrName, {nIndex,new ImageView()} });
 	}
 	else
 	{
 		auto iter = m_mpImageView.begin();
 		for (; iter != m_mpImageView.end(); ++iter)
 		{
-			if (iter->second->GetImageViewIndex() == nIndex)
+			if (iter->second.first == nIndex)
 			{
 				break;
 			}
 		}
 		if (iter == m_mpImageView.end())
 		{
-			m_mpImageView.insert({ nIndex,new ImageView() });
-			m_mpImageView[nIndex]->SetImageViewIndex(nIndex);//设置窗口的标识符，方便窗口管理
-			QString strIndex = QString::number(nIndex);
-			QString strTitle("ImageView");
-			m_mpImageView[nIndex]->setWindowTitle(strTitle + "[" + strIndex + "]");
+			m_mpImageView.insert({ qstrName, {nIndex,new ImageView() } });
 		}
 	}
 
-	m_mpImageView[nIndex]->SetImageViewIndex(nIndex);//设置窗口的标识符，方便窗口管理
-	QString strIndex = QString::number(nIndex);
-	QString strTitle("ImageView");
-	m_mpImageView[nIndex]->setWindowTitle(strTitle + "[" + strIndex + "]");
-	m_mpImageView[nIndex]->show();
+	if (m_mpImageView[qstrName].second)
+	{
+		QString strIndex = QString::number(nIndex);
+		QString strTitle("ImageView");
+		m_mpImageView[qstrName].second->setWindowTitle(strTitle + "[" + strIndex + "]");
+		m_mpImageView[qstrName].second->show();
+	}
 }

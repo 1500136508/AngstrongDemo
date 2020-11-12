@@ -92,16 +92,6 @@ void ImageView::ZoomFit()
 	}
 }
 
-int ImageView::GetImageViewIndex() const
-{
-	return m_nIndex;
-}
-
-void ImageView::SetImageViewIndex(int nIndex)
-{
-	m_nIndex = nIndex;
-}
-
 bool ImageView::Open()
 {
 	bool bReturn = false;

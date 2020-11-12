@@ -34,13 +34,13 @@ private:
 	char FirstDriveFromMask(ULONG unitmask);
 	void DestroyImageView(int nIndex);
 private slots:
-	void ShowImageView(int nIndex);
+	void ShowImageView(QString qstrUSBName, int nIndex);
 signals:
-	void IsCameraUSB(bool bUSB, QString qstrUSBName, std::map<QString, unsigned> mpUSBInfo);
+	void IsCameraUSB(bool bUSB, QString qstrUSBName, int nIndex);
 private:
     Ui::AngstrongDemoClass ui;
 
-	std::map<unsigned, ImageView*> m_mpImageView;
+	std::map<QString,std::pair<unsigned, ImageView*>> m_mpImageView;
 	CameraView m_CameraView;
 	ParameterView m_ParamView;
 	OutputView m_OutputView;

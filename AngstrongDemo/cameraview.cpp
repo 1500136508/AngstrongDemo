@@ -90,7 +90,7 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 		auto iter = m_mpCameraList.find(index.data().toString());
 		if (iter != m_mpCameraList.end())
 		{
-			emit SelectCamera(iter->second.first);
+			emit SelectCamera(iter->first, iter->second.first);
 		}
 		//Only test
 		/*if (index.row() == 0)
@@ -101,21 +101,31 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 	}
 }
 
-void CameraView::DetectCameraUSB(bool bUSB,QString qstrUSBName, std::map<QString, unsigned> mpUSBInfo)
+void CameraView::DetectCameraUSB(bool bUSB,QString qstrUSBName, int nIndex)
 {
-	QStandardItem *p = nullptr;
 	if (bUSB)
 	{
-		if (mpUSBInfo.size() > 0)
+		if (nIndex >= 0)
 		{
-			m_mpCameraList.insert(valType(qstrUSBName,std::pair<unsigned, QStandardItem*>(mpUSBInfo[qstrUSBName],new QStandardItem(qstrUSBName))));
+			m_mpCameraList.insert(valType(qstrUSBName,std::pair<int, QStandardItem*>(nIndex,new QStandardItem(qstrUSBName))));
 			m_mpCameraList[qstrUSBName].second->setIcon(QIcon(":/AngstrongDemo/image_ico/camera.jpg"));
-			model->setItem(mpUSBInfo[qstrUSBName] - 1, 0, m_mpCameraList[qstrUSBName].second);
+			model->setItem(nIndex, 0, m_mpCameraList[qstrUSBName].second);
 		}
 	}
 	else
 	{
-		model->removeRow(mpUSBInfo[qstrUSBName]-1);
-		m_mpCameraList.erase(qstrUSBName);
+		if (m_mpCameraList.find(qstrUSBName) != m_mpCameraList.end())
+		{
+			auto iter = m_mpCameraList.find(qstrUSBName);
+			model->removeRow(iter->second.first);
+			for (auto it = m_mpCameraList.begin(); it != m_mpCameraList.end(); ++it)
+			{
+				if (it->second.first > nIndex)
+				{
+					--it->second.first;
+				}
+			}
+			m_mpCameraList.erase(qstrUSBName);
+		}
 	}
 }
