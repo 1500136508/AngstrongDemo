@@ -22,6 +22,14 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	//setCentralWidget(&m_ImageView);
 	CreateDockWindow();
 	AddToolBar();
+
+	//界面外观处理
+	QWidget* p = takeCentralWidget();
+	if (p)
+	{
+		delete p;//去除界面的中间窗口，实现任意区域停靠
+	}
+	setDockNestingEnabled(true);//打开Dock嵌套功能
 }
 
 AngstrongDemo::~AngstrongDemo()
