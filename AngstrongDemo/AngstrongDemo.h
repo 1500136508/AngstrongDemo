@@ -5,7 +5,7 @@
 #include <thread>
 #include <vector>
 #include <memory>
-#include <QMap>
+#include <map>
 #include "ui_AngstrongDemo.h"
 #include "imageview.h"
 #include "cameraview.h"
@@ -32,20 +32,20 @@ private:
 	//CameraUSB Device
 	void registerDevice();
 	char FirstDriveFromMask(ULONG unitmask);
+	void DestroyImageView(int nIndex);
 private slots:
 	void ShowImageView(int nIndex);
 signals:
-	void IsCameraUSB(bool bUSB);
+	void IsCameraUSB(bool bUSB, QString qstrUSBName, std::map<QString, unsigned> mpUSBInfo);
 private:
     Ui::AngstrongDemoClass ui;
 
-	ImageView m_ImageView;
+	std::map<unsigned, ImageView*> m_mpImageView;
 	CameraView m_CameraView;
 	ParameterView m_ParamView;
 	OutputView m_OutputView;
 
-	ImageView m_testImageView;
-
-	QMap<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map
-	QStringList m_usbList;                             //存储U盘中间信息
+	std::map<QString, unsigned> m_mpCameraDevice;
+	std::map<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map
+	QStringList m_usbList;                                //存储U盘中间信息
 };

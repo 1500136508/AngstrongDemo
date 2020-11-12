@@ -32,12 +32,16 @@ public:
 	void ZoomIn(QPointF poinF, double fScale = 1.2f);
 	void ZoomOut(QPointF pointF, double fScale = 0.8f);
 	void ZoomFit();
+
+	int GetImageViewIndex()const;
+	void SetImageViewIndex(int nIndex);
 protected:
 	bool Open();//Only Framework
 
 	void paintEvent(QPaintEvent *event);
 	void resizeEvent(QResizeEvent *);
 	bool eventFilter(QObject *obj, QEvent *event);
+	void closeEvent(QCloseEvent *event);
 private slots:
 	void on_open_clicked();
 	void on_save_clicked();
@@ -73,6 +77,8 @@ private:
 	double m_fScale;
 
 	bool cameraReady = false;
+	//ImageView标识，用来区分多窗口
+	int m_nIndex = 0;
 };
 
 #endif // IMAGEVIEW_H

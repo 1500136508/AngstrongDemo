@@ -5,6 +5,10 @@
 CameraView::CameraView(QWidget *parent /* = nullptr */)
 	:QTreeView(parent)
 {
+	//初始化
+	model = nullptr;
+	m_mpCameraList.clear();
+
 	model = new QStandardItemModel(1, 1);
 	model->setHeaderData(0, Qt::Horizontal, "Camera");
 	//model->setHeaderData(1, Qt::Horizontal, "Details");
@@ -38,6 +42,7 @@ CameraView::CameraView(QWidget *parent /* = nullptr */)
 	//}
 
 	this->setModel(model);
+	model->removeRow(0);
 }
 
 void CameraView::iteratorOverItems()
@@ -46,6 +51,29 @@ void CameraView::iteratorOverItems()
 	foreach(QStandardItem *item, list)
 	{
 		qDebug() << item->text();
+	}
+}
+
+CameraView::~CameraView()
+{
+	//Qt内存管理机制,不需要delete释放内存？？？？
+	/*if (model)
+	{
+		delete model;
+		model = nullptr;
+	}*/
+
+	if (m_mpCameraList.size() > 0)
+	{
+		/*for (auto iter = m_mpCameraList.begin(); iter != m_mpCameraList.end(); ++iter)
+		{
+			if (iter->second)
+			{
+				delete iter->second;
+				iter->second = nullptr;
+			}
+		}*/
+		m_mpCameraList.clear();
 	}
 }
 
@@ -59,24 +87,35 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 	if (event->button() == Qt::LeftButton)
 	{
 		QModelIndex index = currentIndex();
-		if (index.row() == 0)
+		auto iter = m_mpCameraList.find(index.data().toString());
+		if (iter != m_mpCameraList.end())
+		{
+			emit SelectCamera(iter->second.first);
+		}
+		//Only test
+		/*if (index.row() == 0)
 		{
 			qDebug() << index.data().toString();
 			emit SelectCamera(0);
-		}
+		}*/
 	}
 }
 
-void CameraView::DetectCameraUSB(bool bUSB)
+void CameraView::DetectCameraUSB(bool bUSB,QString qstrUSBName, std::map<QString, unsigned> mpUSBInfo)
 {
+	QStandardItem *p = nullptr;
 	if (bUSB)
 	{
-		QStandardItem *item1 = new QStandardItem("CameraList");
-		item1->setIcon(QIcon(":/AngstrongDemo/image_ico/camera.jpg"));
-		model->setItem(0, 0, item1);
+		if (mpUSBInfo.size() > 0)
+		{
+			m_mpCameraList.insert(valType(qstrUSBName,std::pair<unsigned, QStandardItem*>(mpUSBInfo[qstrUSBName],new QStandardItem(qstrUSBName))));
+			m_mpCameraList[qstrUSBName].second->setIcon(QIcon(":/AngstrongDemo/image_ico/camera.jpg"));
+			model->setItem(mpUSBInfo[qstrUSBName] - 1, 0, m_mpCameraList[qstrUSBName].second);
+		}
 	}
 	else
 	{
-		model->removeRow(0);
+		model->removeRow(mpUSBInfo[qstrUSBName]-1);
+		m_mpCameraList.erase(qstrUSBName);
 	}
 }

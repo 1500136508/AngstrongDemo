@@ -22,7 +22,7 @@ ImageView::ImageView(QWidget *parent) :
 	connect(ui->m_gView_ImageView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));//给信号设置相应的槽函数
 
 	//进行ImageView对话框的外观处理
-	setWindowFlags(Qt::FramelessWindowHint);
+	//setWindowFlags(Qt::FramelessWindowHint);
 
 	//增加QGraphicsView框架相关元素
 	m_spScene = std::make_shared<ImageScene>(new ImageScene());//增加场景
@@ -47,6 +47,7 @@ ImageView::~ImageView()
 		delete m_pCamera;
 		m_pCamera = nullptr;
 	}
+	setAttribute(Qt::WA_DeleteOnClose);
     delete ui;
 }
 
@@ -89,6 +90,16 @@ void ImageView::ZoomFit()
 		qreal fDeta_y = (vHeight - pHeight) / 2;
 		m_spPix->setPos(0, fDeta_y);
 	}
+}
+
+int ImageView::GetImageViewIndex() const
+{
+	return m_nIndex;
+}
+
+void ImageView::SetImageViewIndex(int nIndex)
+{
+	m_nIndex = nIndex;
 }
 
 bool ImageView::Open()
@@ -182,6 +193,11 @@ bool ImageView::eventFilter(QObject * obj, QEvent * event)
 		}
 	}
 	return QDialog::eventFilter(obj, event);
+}
+
+void ImageView::closeEvent(QCloseEvent * event)
+{
+	int a = 7;
 }
 
 void ImageView::on_open_clicked()
