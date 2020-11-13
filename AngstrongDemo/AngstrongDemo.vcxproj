@@ -61,11 +61,11 @@
     <ClCompile />
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\opencv\build\include;..\opencv\build\include\opencv;..\opencv\build\include\opencv2;..\DirectShow\Include;..\AngstrongDemo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\DirectShow\Include;..\AngstrongDemo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\opencv\build\x64\vc15\lib;..\dense_tencent;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world3412d.lib;dsense.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;..\dense_tencent;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world341d.lib;dsense.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
@@ -110,6 +110,7 @@
   <ItemGroup>
     <ClCompile Include="CameraDS.cpp" />
     <ClCompile Include="datasaver.cpp" />
+    <ClCompile Include="graphicsrectitem.cpp" />
     <ClCompile Include="imageitem.cpp" />
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="CameraDS.h" />
     <ClInclude Include="datasaver.h" />
+    <ClInclude Include="graphicsrectitem.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />
