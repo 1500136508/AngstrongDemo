@@ -52,6 +52,12 @@
     <Filter Include="Header Files\Device\Camera">
       <UniqueIdentifier>{a1347205-68df-46d3-a7f2-c81978a4f45e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\FormView\ImageView">
+      <UniqueIdentifier>{87573bdb-e4c3-4137-ad3c-2621b24820cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FormView\ImageView">
+      <UniqueIdentifier>{1371cf53-4077-4360-bb44-93d50588a304}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="AngstrongDemo.qrc">
@@ -71,12 +77,6 @@
     <ClCompile Include="cameraview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
-    <ClCompile Include="imagescene.cpp">
-      <Filter>Source Files\FormView</Filter>
-    </ClCompile>
-    <ClCompile Include="imageview.cpp">
-      <Filter>Source Files\FormView</Filter>
-    </ClCompile>
     <ClCompile Include="labview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
@@ -84,9 +84,6 @@
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
     <ClCompile Include="parameterview.cpp">
-      <Filter>Source Files\FormView</Filter>
-    </ClCompile>
-    <ClCompile Include="View.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
     <ClCompile Include="CameraDS.cpp">
@@ -98,9 +95,6 @@
     <ClCompile Include="imagepix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="imageitem.cpp">
-      <Filter>Source Files\FormView</Filter>
-    </ClCompile>
     <ClCompile Include="datasaver.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
@@ -109,6 +103,21 @@
     </ClCompile>
     <ClCompile Include="usbdevice.cpp">
       <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="imageitem.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
+    </ClCompile>
+    <ClCompile Include="imagescene.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
+    </ClCompile>
+    <ClCompile Include="imageview.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
+    </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
+    </ClCompile>
+    <ClCompile Include="graphicsrectitem.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -132,12 +141,6 @@
     <QtMoc Include="cameraview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
-    <QtMoc Include="imagescene.h">
-      <Filter>Header Files\FormView</Filter>
-    </QtMoc>
-    <QtMoc Include="imageview.h">
-      <Filter>Header Files\FormView</Filter>
-    </QtMoc>
     <QtMoc Include="labview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
@@ -147,17 +150,23 @@
     <QtMoc Include="parameterview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
-    <QtMoc Include="View.h">
-      <Filter>Header Files\FormView</Filter>
-    </QtMoc>
     <QtMoc Include="imagepix.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="imageitem.h">
-      <Filter>Header Files\FormView</Filter>
-    </QtMoc>
     <QtMoc Include="imagereader.h">
       <Filter>Header Files\Device\Camera</Filter>
+    </QtMoc>
+    <QtMoc Include="imageitem.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
+    </QtMoc>
+    <QtMoc Include="imagescene.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
+    </QtMoc>
+    <QtMoc Include="imageview.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
+    </QtMoc>
+    <QtMoc Include="View.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="usbdevice.h">
       <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="graphicsrectitem.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

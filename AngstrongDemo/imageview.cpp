@@ -225,12 +225,22 @@ void ImageView::on_measure_clicked()
 	int a = 7;
 }
 
+void ImageView::on_measureRect_clicked()
+{
+	int rect = 5;
+}
+
+void ImageView::on_measureCircle_clicked()
+{
+	int rect = 5;
+}
+
 void ImageView::contextMenuRequest(QPoint point)
 {
 	QAction *m_action[EImageViewMenu_Total];//声明动作
 	QString m_strMenuName[EImageViewMenu_Total];
 	QMenu *m_menu;//声明菜单
-	QMenu *m_menu_child;
+	QMenu *m_menu_child_measure;//测量子菜单
 	std::vector<std::function<void()>> m_fvec;
 
 	for (auto v : m_action)
@@ -245,6 +255,8 @@ void ImageView::contextMenuRequest(QPoint point)
 	m_strMenuName[EImageViewMenu_ZoomOut] = "缩小";
 	m_strMenuName[EImageViewMenu_ZoomFit] = "适应";
 	m_strMenuName[EImageViewMenu_Measure] = "测量";
+	m_strMenuName[EImageViewMenu_Child_MeasureRect] = "矩形";
+	m_strMenuName[EImageViewMenu_Child_MeasureCircle] = "圆形";
 	/*m_fvec.push_back(std::bind(&ImageView::on_open_clicked, this));
 	m_fvec.push_back(std::bind(&ImageView::on_save_clicked, this));
 	m_fvec.push_back(std::bind(&ImageView::on_close_clicked, this));
@@ -253,69 +265,87 @@ void ImageView::contextMenuRequest(QPoint point)
 	m_fvec.push_back(std::bind(&ImageView::on_zoomFit_clicked, this));
 	m_fvec.push_back(std::bind(&ImageView::on_measure_clicked, this));*/
 	m_menu = new QMenu();
-	m_menu_child = new QMenu();
+	m_menu_child_measure = new QMenu();
 	for (size_t i = EImageViewMenu_Open; i < EImageViewMenu_Total; ++i)
 	{
 		m_action[i] = new QAction(m_strMenuName[i]);
-		m_menu->addAction(m_action[i]);
 		//connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(m_fvec.at(i)()));//无效？？？？？？？
-		if (i == EImageViewMenu_Close)
-		{
-			m_menu->addSeparator();
-		}
 
 		switch (i)
 		{
 		case EImageViewMenu_Open:
 		{
+			m_menu->addAction(m_action[i]);//主菜单
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_open_clicked()));
 		}
 		break;
 		case EImageViewMenu_Save:
 		{
+			m_menu->addAction(m_action[i]);
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_save_clicked()));
 		}
 		break;
 		case EImageViewMenu_Close:
 		{
+			m_menu->addAction(m_action[i]);
+			m_menu->addSeparator();
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_close_clicked()));
 		}
 		break;
 		case EImageViewMenu_ZoomIn:
 		{
+			m_menu->addAction(m_action[i]);
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_zoomIn_clicked()));
 		}
 		break;
 		case EImageViewMenu_ZoomOut:
 		{
+			m_menu->addAction(m_action[i]);
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_zoomOut_clicked()));
 		}
 		break;
 		case EImageViewMenu_ZoomFit:
 		{
+			m_menu->addAction(m_action[i]);
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_zoomFit_clicked()));
 		}
 		break;
 		case EImageViewMenu_Measure:
 		{
+			m_menu->addAction(m_action[i]);
 			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_measure_clicked()));
+		}
+		break;
+		case EImageViewMenu_Child_MeasureRect:
+		{
+			m_menu_child_measure->addAction(m_action[i]);
+			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_measureRect_clicked()));
+		}
+		break;
+		case EImageViewMenu_Child_MeasureCircle:
+		{
+			m_menu_child_measure->addAction(m_action[i]);
+			connect(m_action[i], SIGNAL(triggered(bool)), this, SLOT(on_measureCircle_clicked()));
 		}
 		break;
 		default:
 			break;
 		}
 	}
-	m_menu->exec(QCursor::pos());
+	m_action[EImageViewMenu_Measure]->setMenu(m_menu_child_measure);//父菜单添加子菜单
+	m_menu->addMenu(m_menu_child_measure);//将子菜单添加到主菜单
+	m_menu->exec(QCursor::pos());//显示菜单
 
+	//内存清理与释放
 	if (m_menu)
 	{
 		delete m_menu;
 		m_menu = nullptr;
 	}
-	if (m_menu_child)
+	if (m_menu_child_measure)
 	{
-		delete m_menu_child;
-		m_menu_child = nullptr;
+		delete m_menu_child_measure;
+		m_menu_child_measure = nullptr;
 	}
 	for (auto v : m_action)
 	{

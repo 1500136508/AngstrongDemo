@@ -110,9 +110,10 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(0).right(4));    //vid 0
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
+						QString qstrName = m_usbList.at(2);
 						++m_sCameraDeviceIndex;
-						m_mpCameraDevice.insert({ m_usbList.at(2),m_sCameraDeviceIndex });
-						emit IsCameraUSB(true,m_usbList.at(2),m_sCameraDeviceIndex);
+						m_mpCameraDevice.insert({ qstrName, m_sCameraDeviceIndex });
+						emit IsCameraUSB(true, qstrName,m_mpCameraDevice[qstrName]);
 					}
 				}
 
@@ -321,6 +322,14 @@ void AngstrongDemo::ShowImageView(QString qstrName,int nIndex)
 	if (m_mpImageView.empty())
 	{
 		m_mpImageView.insert({ qstrName, {nIndex,new ImageView()} });
+		QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
+		m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+		m_dock_imageview->setAllowedAreas(Qt::AllDockWidgetAreas);
+		addDockWidget(Qt::LeftDockWidgetArea, m_dock_imageview);
+		if (m_mpImageView[qstrName].second)
+		{
+			m_dock_imageview->setWidget(m_mpImageView[qstrName].second);
+		}
 	}
 	else
 	{

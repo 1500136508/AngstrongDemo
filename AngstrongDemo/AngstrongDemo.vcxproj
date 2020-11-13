@@ -110,6 +110,7 @@
   <ItemGroup>
     <ClCompile Include="CameraDS.cpp" />
     <ClCompile Include="datasaver.cpp" />
+    <ClCompile Include="graphicsrectitem.cpp" />
     <ClCompile Include="imageitem.cpp" />
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="CameraDS.h" />
     <ClInclude Include="datasaver.h" />
+    <ClInclude Include="graphicsrectitem.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />

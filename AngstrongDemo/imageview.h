@@ -50,6 +50,8 @@ private slots:
 	void on_zoomOut_clicked();
 	void on_zoomFit_clicked();
 	void on_measure_clicked();
+	void on_measureRect_clicked();
+	void on_measureCircle_clicked();
 	void contextMenuRequest(QPoint);
 
 	void SetImage(cv::Mat mat);//接收图像专用槽函数
