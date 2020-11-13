@@ -19,16 +19,16 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 	BuildConnect();
 
-	//setCentralWidget(&m_ImageView);
+	setCentralWidget(&m_testImageView);
 	CreateDockWindow();
 	AddToolBar();
 
 	//界面外观处理
-	QWidget* p = takeCentralWidget();
-	if (p)
-	{
-		delete p;//去除界面的中间窗口，实现任意区域停靠
-	}
+	//QWidget* p = takeCentralWidget();
+	//if (p)
+	//{
+	//	delete p;//去除界面的中间窗口，实现任意区域停靠
+	//}
 	setDockNestingEnabled(true);//打开Dock嵌套功能
 }
 

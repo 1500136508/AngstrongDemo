@@ -1,6 +1,7 @@
 #pragma once
 #include <QCursor>
-#include "imageitem.h"
+#include <QGraphicsRectItem>
+#include <QStyleOption>
 
 const Qt::CursorShape handleCursors[] = 
 {
@@ -27,7 +28,7 @@ const QString mapCursors[] =
 	":/QtGuiApplication4/Resources/rotate_middle_left.png"
 };
 
-class GraphicsRectItem : public ImageItem
+class GraphicsRectItem : public QGraphicsRectItem
 {
 	enum MOUSEHANDLE {
 		handleNone = 0,
@@ -53,7 +54,7 @@ class GraphicsRectItem : public ImageItem
 		handleRotateMiddleLeft = 8,
 	};
 
-	const float c_handle_size = 8.0;
+	const float c_handle_size = 8;
 	const float c_handle_space = -4.0;
 
 	const float c_rotate_tolerance = 20.0;
@@ -62,7 +63,7 @@ class GraphicsRectItem : public ImageItem
 	const QSize c_rotate_cursor_size = QSize(20, 20);
 
 public:
-	GraphicsRectItem(ImageItem *parent = Q_NULLPTR);
+	GraphicsRectItem(QGraphicsRectItem *parent = Q_NULLPTR);
 	~GraphicsRectItem();
 
 	// Returns the shape of this item as a QPainterPath in local coordinates.
