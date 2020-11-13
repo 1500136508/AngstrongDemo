@@ -49,4 +49,6 @@ private:
 	std::map<QString, unsigned> m_mpCameraDevice;
 	std::map<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map
 	QStringList m_usbList;                                //存储U盘中间信息
+
+	QString stylesheet;							// QSS样式表
 };

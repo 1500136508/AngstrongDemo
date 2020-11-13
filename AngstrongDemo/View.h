@@ -58,5 +58,7 @@ private:
 	//与图像相关的变量
 	cv::Mat m_Image;
 	QImage qImage;
+
+	QString stylesheet;//qss
 };
 

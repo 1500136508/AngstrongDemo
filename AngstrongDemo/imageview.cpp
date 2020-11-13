@@ -22,6 +22,7 @@ ImageView::ImageView(QWidget *parent) :
 	m_pCamera = nullptr;
 	m_pCamera = new imageReader();
 	BuildConnet();
+	//qss 界面美化
 }
 
 ImageView::~ImageView()

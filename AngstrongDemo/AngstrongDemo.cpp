@@ -30,6 +30,15 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	//	delete p;//去除界面的中间窗口，实现任意区域停靠
 	//}
 	setDockNestingEnabled(true);//打开Dock嵌套功能
+
+	//嵌入qss进行美化
+	QFile file("../qss/black.qss");
+	file.open(QFile::ReadOnly);
+	QTextStream filetext(&file);
+	stylesheet = filetext.readAll();
+	file.close();
+	setStyleSheet(stylesheet);
+	m_testImageView.setStyleSheet(stylesheet);
 }
 
 AngstrongDemo::~AngstrongDemo()

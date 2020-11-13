@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QTextStream>
 #include "View.h"
 
 View::View(QWidget *pParent /* = nullptr */)
@@ -21,6 +22,14 @@ View::View(QWidget *pParent /* = nullptr */)
 
 	m_spScene->addItem(m_spPix.get());//添加像元元素绑定到Scene
 	setScene(m_spScene.get());//将QGraphicsView添加Scene;
+
+	//qss 皮肤美化
+	QFile file("../qss/black.qss");
+	file.open(QFile::ReadOnly);
+	QTextStream filetext(&file);
+	stylesheet = filetext.readAll();
+	file.close();
+	setStyleSheet(stylesheet);
 }
 
 View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
@@ -301,6 +310,9 @@ void View::contextMenuEvent(QContextMenuEvent * event)
 	}
 	m_action[EImageViewMenu_Measure]->setMenu(m_menu_child_measure);//父菜单添加子菜单
 	m_menu->addMenu(m_menu_child_measure);//将子菜单添加到主菜单
+	m_menu->addMenu(m_menu_child_measure);//将子菜单添加到主菜单
+	m_menu->setStyleSheet(stylesheet);
+	m_menu_child_measure->setStyleSheet("background-color: rgba(74, 79, 81, 1); color: rgb(187, 187, 187);selection-background-color:#4b6eaf; ");
 	m_menu->exec(QCursor::pos());//显示菜单
 
 	//内存清理与释放
