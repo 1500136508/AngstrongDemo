@@ -12,7 +12,6 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_spScene = nullptr;
 	m_spItem = nullptr;
 	m_spPix = nullptr;
-	m_fScale = 1.0f;
 
 	//增加QGraphicsView框架相关元素
 	m_spScene = std::make_shared<ImageScene>(new ImageScene());//增加场景
@@ -36,10 +35,15 @@ View::~View()
 
 void View::Zoom(QPointF pointF, double fScale)
 {
+	/*if (m_spPix)
+	{
+		m_spPix->setScale(fScale);
+	}*/
 }
 
 void View::ZoomIn(QPointF poinF, double fScale)
 {
+	
 }
 
 void View::ZoomOut(QPointF pointF, double fScale)
@@ -58,6 +62,7 @@ void View::ZoomFit()
 	QPixmap pix = QPixmap::fromImage(qImage);
 	QPixmap pix_sacle = pix.scaled(viewRect.width(), viewRect.height(), Qt::KeepAspectRatio);
 	m_spPix->setPixmap(pix_sacle);
+	m_spPix->setScale(1.0);
 	//设置居中显示位置
 	int pWidth = pix_sacle.width();
 	int pHeight = pix_sacle.height();
@@ -118,6 +123,28 @@ bool View::Open()
 	return bReturn;
 }
 
+bool View::Save()
+{
+	bool bReturn = false;
+	
+	do 
+	{
+		if (!qImage.isNull())
+		{
+			QString filename = QFileDialog::getSaveFileName(this, tr("Save Image"), "", tr("*.bmp;; *.png;; *.jpg;; *.tif;; *.gif *.tiff")); //选择路径
+			qImage.save(filename);
+		}
+		else
+		{
+			break;
+		}
+
+		bReturn = true;
+	} while (false);
+
+	return bReturn;
+}
+
 void View::mouseMoveEvent(QMouseEvent * event)
 {
 	if (m_spRect)
@@ -167,36 +194,6 @@ void View::mouseReleaseEvent(QMouseEvent * event)
 
 void View::wheelEvent(QWheelEvent * event)
 {
-	if ((event->delta() > 0) && (m_fScale >= 50))//最大放大到原始图像的50倍
-	{
-		return QGraphicsView::wheelEvent(event);
-	}
-	else if ((event->delta() < 0) && (m_fScale <= 0.5))//图像缩小到自适应大小之后就不继续缩小
-	{
-		//ResetItemPos();//重置图片大小和位置，使之自适应控件窗口大小
-	}
-	else
-	{
-		qreal qrealOriginScale = m_fScale;
-		if (event->delta() > 0)//鼠标滚轮向前滚动
-		{
-			m_fScale *= 1.1;//每次放大10%
-		}
-		else
-		{
-			m_fScale *= 0.9;//每次缩小10%
-		}
-		m_spPix->setScale(m_fScale);
-		if (event->delta() > 0)
-		{
-			m_spPix->moveBy(-event->pos().x()*qrealOriginScale*0.1, -event->pos().y()*qrealOriginScale*0.1);//使图片缩放的效果看起来像是以鼠标所在点为中心进行缩放的
-		}
-		else
-		{
-			m_spPix->moveBy(event->pos().x()*qrealOriginScale*0.1, event->pos().y()*qrealOriginScale*0.1);//使图片缩放的效果看起来像是以鼠标所在点为中心进行缩放的
-		}
-	}
-
 	return QGraphicsView::wheelEvent(event);
 }
 
@@ -334,6 +331,7 @@ void View::on_open_clicked()
 
 void View::on_save_clicked()
 {
+	Save();
 }
 
 void View::on_close_clicked()

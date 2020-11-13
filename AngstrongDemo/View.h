@@ -23,6 +23,7 @@ public:
 	float getLength2(const QPointF& point1, const QPointF& point2);
 protected:
 	bool Open();//Only Framework
+	bool Save();//Only Framework
 
 	void mouseMoveEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);
@@ -57,6 +58,5 @@ private:
 	//与图像相关的变量
 	cv::Mat m_Image;
 	QImage qImage;
-	double m_fScale;
 };
 
