@@ -23,9 +23,6 @@ class ImageView : public QDialog
 public:
     explicit ImageView(QWidget *parent = nullptr);
     ~ImageView();
-
-
-
 protected:
 	void paintEvent(QPaintEvent *event);
 	void resizeEvent(QResizeEvent *);
@@ -43,6 +40,8 @@ private:
 	void BuildConnet();
 
 	bool cameraReady = false;
+
+	QString stylesheet;//qss界面美化
 };
 
 #endif // IMAGEVIEW_H

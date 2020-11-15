@@ -35,7 +35,7 @@
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: qlineargradient(spread:repeat, x1:0.017, y1:1, x2:1, y2:0, stop:0.470857 rgba(51, 207, 218, 255), stop:1 rgba(131, 201, 251, 255));</string>
+      <string notr="true">border-image: url(:/AngstrongDemo/image_ico/BG/BG2.png);</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -151,7 +151,7 @@
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color: qlineargradient(spread:repeat, x1:0.017, y1:1, x2:1, y2:0, stop:0.470857 rgba(51, 207, 218, 255), stop:1 rgba(131, 201, 251, 255));</string>
+      <string notr="true">border-image: url(:/AngstrongDemo/image_ico/BG/BG1.png);</string>
      </property>
     </widget>
    </item>

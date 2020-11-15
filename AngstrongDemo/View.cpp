@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QTextStream>
+#include <QDebug>
 #include "View.h"
 
 View::View(QWidget *pParent /* = nullptr */)
@@ -30,6 +31,8 @@ View::View(QWidget *pParent /* = nullptr */)
 	stylesheet = filetext.readAll();
 	file.close();
 	setStyleSheet(stylesheet);
+
+	setMouseTracking(true);
 }
 
 View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
@@ -71,7 +74,7 @@ void View::ZoomFit()
 	QPixmap pix = QPixmap::fromImage(qImage);
 	QPixmap pix_sacle = pix.scaled(viewRect.width(), viewRect.height(), Qt::KeepAspectRatio);
 	m_spPix->setPixmap(pix_sacle);
-	m_spPix->setScale(1.0);
+	m_spPix->SetFit();
 	//设置居中显示位置
 	int pWidth = pix_sacle.width();
 	int pHeight = pix_sacle.height();
@@ -173,6 +176,37 @@ void View::mouseMoveEvent(QMouseEvent * event)
 		else
 		{
 			m_spRect->setRotateEnd(mapToScene(event->pos()));
+		}
+	}
+
+	//判断鼠标是否在ImageItem上
+	if (m_spPix)
+	{
+		if (!m_spPix->pixmap().isNull())//图像不为空
+		{
+			int x = event->pos().x();
+			int y = event->pos().y();
+
+			QPointF qPoint1 = m_spPix->scenePos();
+			QPointF qPoint2 = mapToScene(x, y);
+			int imageW = qImage.width();
+			int imageH = qImage.height();
+			if (qPoint2.x() >= qPoint1.x() && qPoint2.x() <= qPoint1.x() + imageW &&
+				qPoint2.y() >= qPoint1.y() && qPoint2.y() <= qPoint1.y() + imageH)//判断鼠标是否在图像上
+			{
+				if (qImage.valid(qPoint2.x()-qPoint1.x(),qPoint2.y()))//判断坐标是否有效
+				{
+					QColor color = qImage.pixel(qPoint2.x()-qPoint1.x(), qPoint2.y());
+					int mousedPressed_R = color.red();
+					int mousedPressed_G = color.green();
+					int mousedPressed_B = color.blue();
+					qDebug() << "R:" << mousedPressed_R << " G:" << mousedPressed_G << " B:" << mousedPressed_B;
+				}
+			}
+			else
+			{
+				qDebug() << "out of range";
+			}
 		}
 	}
 
@@ -350,7 +384,12 @@ void View::on_close_clicked()
 {
 	if (m_spRect)
 	{
-		m_spRect->scene()->clearSelection();
+		QList<QGraphicsItem*> m_list_item = m_spScene->selectedItems();
+		for (auto i = 0; i < m_list_item.size(); ++i)
+		{
+			m_spScene->removeItem(m_list_item[i]);
+			m_spRect = nullptr;
+		}
 	}
 }
 
