@@ -23,6 +23,14 @@ ImageView::ImageView(QWidget *parent) :
 	m_pCamera = new imageReader();
 	BuildConnet();
 	//qss 界面美化
+	QFile file("../qss/black.qss");
+	file.open(QFile::ReadOnly);
+	QTextStream filetext(&file);
+	stylesheet = filetext.readAll();
+	file.close();
+	setStyleSheet(stylesheet);
+	ui->statusWidget->setStyleSheet(stylesheet);
+	ui->titleWidget->setStyleSheet(stylesheet);
 }
 
 ImageView::~ImageView()

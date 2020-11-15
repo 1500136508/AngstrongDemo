@@ -1,10 +1,13 @@
 #include <QGraphicsSceneWheelEvent>
+#include <QDebug>
 #include "imagepix.h"
 
 ImagePix::ImagePix(QGraphicsPixmapItem *parent /* = nullptr */)
 	:QGraphicsPixmapItem(parent)
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
+	setFlag(QGraphicsItem::ItemIsFocusable);
+	//setFlag(QGraphicsItem::ItemIsSelectable);
 
 	m_fScale = 1.0f;
 }
@@ -17,6 +20,33 @@ ImagePix::ImagePix(const QPixmap &pixmap, QGraphicsPixmapItem *parent /* = nullp
 
 ImagePix::~ImagePix()
 {
+}
+
+void ImagePix::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+{
+	//int x = QCursor::pos().x();
+	//int y = QCursor::pos().y();
+
+	//QPixmap pixmap = QPixmap::fromImage(qImage);
+	//if (!pixmap.isNull()) //如果像素图不为NULL
+	//{
+	//	QImage image = pixmap.toImage();//将像素图转换为QImage
+	//	if (!image.isNull()) //如果image不为空
+	//	{
+	//		if (image.valid(0, 0)) //坐标位置有效
+	//		{
+	//			QColor color = image.pixel(0, 0);
+	//			int mousedPressed_R = color.red();
+	//			int mousedPressed_G = color.green();
+	//			int mousedPressed_B = color.blue();
+	//			//int text = QString("RGB: %1, %2, %3").arg(mousedPressed_R).arg(mousedPressed_G).arg(mousedPressed_B);
+	//			//qDebug() << text;
+	//		}
+	//	}
+	//}
+
+	//int a = 6;
+	return QGraphicsPixmapItem::mouseMoveEvent(event);
 }
 
 void ImagePix::wheelEvent(QGraphicsSceneWheelEvent * event)
@@ -52,4 +82,10 @@ void ImagePix::wheelEvent(QGraphicsSceneWheelEvent * event)
 	}
 
 	return QGraphicsPixmapItem::wheelEvent(event);
+}
+
+void ImagePix::SetFit(double fScale)
+{
+	m_fScale = fScale;
+	setScale(m_fScale);
 }

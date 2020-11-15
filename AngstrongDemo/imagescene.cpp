@@ -3,7 +3,7 @@
 ImageScene::ImageScene(QObject *parent /* = nullptr */)
 	:QGraphicsScene(parent)
 {
-	setBackgroundBrush(QBrush(QColor(192, 192, 192)));
+	setBackgroundBrush(QBrush(QColor(128, 128, 128)));
 }
 ImageScene::ImageScene(const QRectF &sceneRect, QObject *parent /* = nullptr */)
 	: QGraphicsScene(sceneRect, parent)
