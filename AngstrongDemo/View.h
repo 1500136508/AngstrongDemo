@@ -58,6 +58,8 @@ private:
 	//与图像相关的变量
 	cv::Mat m_Image;
 	QImage qImage;
+	int m_ImageWidth;
+	int m_ImageHeight;
 
 	QString stylesheet;//qss
 };
