@@ -118,6 +118,7 @@
     <ClCompile Include="logwriter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
+    <ClCompile Include="savedata.cpp" />
     <ClCompile Include="usbdevice.cpp" />
     <ClCompile Include="View.cpp" />
     <QtRcc Include="AngstrongDemo.qrc" />
@@ -132,6 +133,7 @@
     <QtUic Include="imageview.ui" />
     <QtUic Include="outputview.ui" />
     <QtUic Include="parameterview.ui" />
+    <QtUic Include="savedata.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="imageview.h" />
@@ -158,6 +160,7 @@
     <ClInclude Include="CameraDS.h" />
     <ClInclude Include="datasaver.h" />
     <ClInclude Include="graphicsrectitem.h" />
+    <QtMoc Include="savedata.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />

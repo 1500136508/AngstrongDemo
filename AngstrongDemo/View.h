@@ -45,6 +45,10 @@ private slots:
 	void on_measureCircle_clicked();
 
 	void SetImage(cv::Mat mat);//接收图像专用槽函数
+signals:
+	void SendImageInfo(bool bIsEmpty,int nImageWidth,int nImageHeight);
+	void SendMouseInfo(int x, int y);
+	void SendImageGray(int R,int G,int B);
 private:
 	QImage cvMat2QImage(const cv::Mat& mat);
 	cv::Mat QImage2cvMat(QImage image);

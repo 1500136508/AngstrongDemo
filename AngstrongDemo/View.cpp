@@ -126,6 +126,7 @@ bool View::Open()
 
 				//处理显示位置,默认为图像居中显示
 				ZoomFit();
+				emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);//发送图像信息
 			}
 		}
 		catch (cv::Exception &e)
@@ -206,15 +207,18 @@ void View::mouseMoveEvent(QMouseEvent * event)
 				if (qImage.valid(x,y))//判断坐标是否有效
 				{
 					QColor color = qImage.pixel(x, y);
-					int mousedPressed_R = color.red();
-					int mousedPressed_G = color.green();
-					int mousedPressed_B = color.blue();
-					qDebug() <<"X:"<< x<<"Y:"<<y<< "R:" << mousedPressed_R << " G:" << mousedPressed_G << " B:" << mousedPressed_B;
+					int GrayValue_R = color.red();
+					int GrayValue_G = color.green();
+					int GrayValue_B = color.blue();
+					qDebug() << "X:" << x << "Y:" << y << "R:" << GrayValue_R << " G:" << GrayValue_G << " B:" << GrayValue_B;
+					emit SendMouseInfo(x, y);
+					emit SendImageGray(GrayValue_R, GrayValue_G, GrayValue_B);
 				}
 			}
 			else
 			{
 				qDebug() << "out of range";
+				emit SendMouseInfo(-1, -1);
 			}
 		}
 	}
@@ -443,11 +447,14 @@ void View::SetImage(cv::Mat mat)
 	if (m_spPix)
 	{
 		qImage = cvMat2QImage(mat);
+		m_ImageWidth = qImage.width();
+		m_ImageHeight = qImage.height();
 		if (!qImage.isNull())
 		{
 			m_spPix->setPixmap(QPixmap::fromImage(qImage));
 
 			ZoomFit();
+			emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);
 		}
 	}
 }

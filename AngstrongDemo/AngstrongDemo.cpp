@@ -234,6 +234,13 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_output->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_output);
 	m_dock_output->setWidget(&m_OutputView);
+	//增加SaveData停靠窗口
+	QDockWidget *m_dock_savedata = new QDockWidget(tr("SaveData"));
+	m_dock_savedata->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
+	m_dock_savedata->setAllowedAreas(Qt::AllDockWidgetAreas);
+	addDockWidget(Qt::RightDockWidgetArea, m_dock_savedata);
+	m_dock_savedata->setWidget(&m_SaveData);
 	//增加ImageView停靠窗口
 	//QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
 	//m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -249,7 +256,7 @@ void AngstrongDemo::CreateDockWindow()
 	//}
 
 	//创建窗口布局
-	//tabifyDockWidget(m_dock_paramlist, m_dock_output);
+	tabifyDockWidget(m_dock_paramlist, m_dock_savedata);
 }
 
 void AngstrongDemo::AddToolBar()

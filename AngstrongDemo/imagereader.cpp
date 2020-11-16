@@ -43,11 +43,9 @@ imageReader::imageReader(QObject *parent)
     irFrame.copyTo(container[0]);
     depthFrame.copyTo(container[1]);
     RGBFrame.copyTo(container[2]);
-    for (int i =0;i<10;i++)
-        imageQueue[i] = new unsigned char[640*480*2];
+
     datagroup = new uchar[frameWidth*frameHeight*4 + frameWidthR*frameHeightR*2];
     datagroupR = new uchar[frameWidthR*frameHeightR*2];
-    rebulidRgb = new uchar[frameWidthR*frameHeightR*3];
     irData = new unsigned char[frameWidth*frameHeight];
     irDataGamma = new unsigned char[frameWidth*frameHeight];
     depthData = new float[frameWidthR*frameHeightR];
@@ -58,20 +56,8 @@ imageReader::imageReader(QObject *parent)
     _buf = new unsigned char[frameHeightR * frameWidthR * (3 * sizeof(int) + sizeof(uchar))];
     _buf2 = new unsigned char[frameHeightR * frameWidthR * (4 * sizeof(int) + sizeof(uchar))];
 
-    for (int i = 0;i<10;i++){
-        predepthBuffer[i] = new float[frameWidthR*frameHeightR];
-        depthBuffer[i] = new float[frameWidthR*frameHeightR];
-        cloudptsBuffer[i] = new float[frameWidthR*frameHeightR*3];
-    }
-
     camds = new CCameraDS();
     dsaver = new dataSaver();
-
-    // 建立保存文件夹
-    QDir qdir;
-    qdir.mkdir(QString::fromStdString(savePath));
-
-    lwriter = new logWriter();
 
     rgbT = irT = depthT = 0;
 
@@ -79,7 +65,6 @@ imageReader::imageReader(QObject *parent)
     poolDepth = new QThreadPool(0);
     poolDepth->setMaxThreadCount(1);
     QtConcurrent::run( this,&imageReader::buildDataThread);
-//    QtConcurrent::run( this,&imageReader::readImageThread);
 
 
 }
@@ -94,19 +79,21 @@ void imageReader::run()
 #ifndef EFE_FORMAT
     if (!camds->isOpened() && !camds->OpenCamera("4321","12D1",frameWidth,1200,true)){
 #else
-    if (!camds->isOpened() && !camds->OpenCamera("4321","12D1",frameWidth,480,true)){
+    if (!camds->isOpened() && !camds->OpenCamera("4321","12D1",frameWidth,480,true))
+	{
 #endif
         qDebug()<<"camera init failed";
-        emit sendLostServer(true);
+        //emit sendLostServer(true);
         return;
     }
-    else if (camds->isOpened()){
-        emit sendLostServer(false);
+    else if (camds->isOpened())
+	{
+        //emit sendLostServer(false);
     }
     isRunning = !isRunning;
     Sleep(100);
     if (!isRunning) camds->CloseCamera();
-    emit sendStopSignal(isRunning);
+    //emit sendStopSignal(isRunning);
 }
 
 void imageReader::run(int camIndex)
@@ -122,13 +109,13 @@ void imageReader::run(int camIndex)
 	  	if (!camds->OpenCamera(camIndex, frameWidth, 480, true))
 	  	{
 	  		qDebug() << "camera init failed";
-	  		emit sendLostServer(true);
+	  		//emit sendLostServer(true);
 	  		return;
 	  	}
 	  }
 	  else if (camds->isOpened())
 	  {
-	  	emit sendLostServer(false);
+	  	//emit sendLostServer(false);
 	  }
 	  isRunning = !isRunning;
 	  Sleep(100);
@@ -136,42 +123,7 @@ void imageReader::run(int camIndex)
 	  {
 	  	//camds->CloseCamera();
 	  }
-	  emit sendStopSignal(isRunning);
-}
-
-
-void imageReader::combineData()
-{
-
-}
-
-void imageReader::recvData(){}
-
-void imageReader::readImageThread()
-{
-    bool getParam = false;
-    while (!quitProgram) {
-        if (!isRunning) continue;
-        if (!camds->isOpened()) continue;
-        //unsigned char* datagroupTmp = new unsigned char[640*480*2];
-        qMutex.lock();
-        if (queuefront == -1){
-            queuefront = 0;
-            queuetail = 0;
-        }
-        camds->readRawData(imageQueue[queuefront]);
-        qDebug() << imageQueue[queuefront][frameHeight*frameWidth*2 - 1];
-        if (!getParam){
-            memcpy(PD,imageQueue[queuefront] + 640*480*2 - 1032,1024);
-            readpdData();
-        }
-        queuefront+=1;
-        if (queuefront == 10) queuefront = 0;
-        if (queuefront == queuetail) queuetail += 1;
-        if (queuetail == 10) queuetail = 0;
-        qMutex.unlock();
-        Sleep(33);
-    }
+	  //emit sendStopSignal(isRunning);
 }
 
 void imageReader::buildDataThread()
@@ -192,7 +144,10 @@ void imageReader::buildDataThread()
 		long long lastRgbT = 0;
 		while (!quitProgram)
 		{
-			if (!isRunning) continue;
+			if (!isRunning)
+			{
+				continue;
+			}
 			memset(datagroup, 0, 640 * 480 * 2);
 			camds->readRawData(datagroup);
 			clock_t t1 = clock();
@@ -310,81 +265,16 @@ void imageReader::buildDataThread()
 				//cv::imwrite("depth.tiff", depthFrame);
 				depthGet = true;
 				thisRoundIR = false;
-
-				if (calcArea)
-				{
-					float avg0 = 0.0;
-					float avg1 = 0.0;
-					if (getFirstArea) {
-						qDebug() << "real one" << realX1 << " " << realY1 << " " << realX2 << " " << realY2;
-						float pointNum = 0;
-						float allDepth = 0.0;
-						for (int x = realX1; x <= realX2; x++)
-						{
-							for (int y = realY1; y <= realY2; y++)
-							{
-								float d = 0.0;
-								if (!isWarp)
-									d = depthData[x + y * frameHeightR];
-								else
-									d = depthDataRGB[x + y * frameHeightR];
-								if (d > 0.0)
-								{
-									allDepth += d;
-									pointNum += 1;
-								}
-							}
-						}
-						avg0 = allDepth / pointNum;
-					}
-					if (getSecondArea)
-					{
-						qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
-						float pointNum = 0;
-						float allDepth = 0.0;
-						for (int x = realX1s; x <= realX2s; x++)
-						{
-							for (int y = realY1s; y <= realY2s; y++)
-							{
-								float d = 0.0;
-								if (!isWarp)
-									d = depthData[x + y * frameHeightR];
-								else
-									d = depthDataRGB[x + y * frameHeightR];
-								if (d > 0.0)
-								{
-									allDepth += d;
-									pointNum += 1;
-								}
-							}
-						}
-						avg1 = allDepth / pointNum;
-
-					}
-					qDebug() << avg0 << " " << avg1;
-					emit sendAreaAvg(avg0, avg1);
-					//calcArea = false;
-				}
-				if (!(mouseX == 0 && mouseY == 0) && (0 <= mouseX /*&& mouseX <= frameHeight */ && 0 <= mouseY /*&& mouseY<=frameWidth*/)) {
-					int xhere = mouseX % frameHeightR;
-					int yhere = mouseY % frameWidthR;
-					//                if (mouseX<frameHeight)
-					//                    emit sendLocationDepth(xhere,yhere,depthData[yhere*frameHeightR+xhere]);
-					//                else
-					//                    emit sendLocationDepth(xhere,yhere,depthDataRGB[yhere*frameHeightR+xhere]);
-					//                qDebug()<<mouseX;
-					if (mouseX >= frameHeightR)
-						emit sendLocationDepth(xhere, yhere, depthDataRGB[yhere*frameHeightR + xhere]);
-					else
-						emit sendLocationDepth(-1, -1, 0);
-				}
 			}
-			else if (flag == 1) {
+			else if (flag == 1)
+			{
 				memcpy(&irT, ptr, sizeof(long long));
 				unsigned char* dst = irData;
 				unsigned char* dst2 = irDataGamma;
-				for (int y = 0; y < frameHeight; y++) {
-					for (int x = 0; x < frameWidth; x++) {
+				for (int y = 0; y < frameHeight; y++)
+				{
+					for (int x = 0; x < frameWidth; x++)
+					{
 						dst[x*frameHeight + (frameHeight - 1 - y)] = (unsigned char)(tmp[x] >> 8);
 						dst2[x*frameHeight + (frameHeight - 1 - y)] = hash_grayscale[(unsigned char)(tmp[x] >> 8)];
 					}
@@ -415,52 +305,25 @@ void imageReader::buildDataThread()
 				thisRoundIR = true;
 			}
 			//        qDebug() << irT <<" " << depthT << " " << rgbT;
-			if (irGet && depthGet && getParam) {
-				if (flag_rd) {
+			if (irGet && depthGet && getParam)
+			{
+				if (flag_rd)
+				{
 					cv::Mat plus = RGBFrame / 2 + depthFrame / 2;
 					plus.copyTo(container[2]);
 				}
 				cv::hconcat(container, combineFrame);
 				emit sendImage(combineFrame);
 			}
-			if (isGoingToSaveData) {
-				if (max_count != 0) {
-					if (save_count == max_count) {
-						isGoingToSaveData = false;
-						emit sendSaveInfo("Save data Done!");
-						save_count = 0;
-					}
-					else {
-						emit sendSaveInfo("Save data " + QString::number(save_count) + "/" + QString::number(max_count));
-					}
-				}
 
-				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
+			if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
 #ifndef KEEP_ORI
-					dsaver->storeData(irFrameAlign, RGBFrame, depthDataRGB);
+				emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
 #else
-					dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
+				dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
 #endif
-					//                lwriter->writeAlog("rgb",true,save_count,-1);
-					//                if (thisRoundIR)
-					//                    lwriter->writeAlog("ir",true,save_count,-1);
-					//                else
-					//                    lwriter->writeAlog("depth",true,save_count,-1);
-					save_count += 1;
-				}
-				else {
-					dsaver->storeAloneRGBData(RGBFrame, rgbT);
-					//                lwriter->writeAlog("rgb",true,save_count,rgbT);
-				}
+			}
 
-			}
-			else {
-				//            lwriter->writeAlog("rgb",false,save_count,-1);
-				//            if (thisRoundIR)
-				//                lwriter->writeAlog("ir",false,save_count,-1);
-				//            else
-				//                lwriter->writeAlog("depth",false,save_count,-1);
-			}
 			clock_t t2 = clock();
 			if (t2 - t1 < 34)
 				Sleep(34 - t2 + t1);
@@ -482,7 +345,6 @@ void imageReader::release()
     quitProgram = true;
     delete[] datagroup;
     delete[] datagroupR;
-    delete[] rebulidRgb;
     delete[] irData;
     delete[] depthData;
     delete[] predepthData;
@@ -490,94 +352,8 @@ void imageReader::release()
     delete[] tmpdepth;
     delete[] _buf;
     delete[] _buf2;
-    for (int i = 0;i<10;i++){
-        delete[] predepthBuffer[i];
-        delete[] depthBuffer[i];
-        delete[] cloudptsBuffer[i];
-    }
-    for (int i =0;i<10;i++)
-        delete[] imageQueue[i];
+
     camds->CloseCamera();
-    //udpSocket->deleteLater();
-}
-
-void imageReader::saveDataSlot(int flag)
-{
-    qDebug()<< "save data in PC";
-    if (!isRunning){
-        emit sendSaveInfo("No Running Now...");
-        return ;
-    }
-    emit sendSaveInfo("Start to save data");
-    isGoingToSaveData  = true;
-    save_count = 0;
-    max_count = flag;
-}
-
-void imageReader::saveModeSetSlot(int mode)
-{
-    save_mode = mode;
-    dsaver->setSavePathAndMode(savepth,save_mode);
-}
-
-void imageReader::saveStopSlot()
-{
-    isGoingToSaveData = false;
-}
-
-void imageReader::savePathSlot(QString savePath)
-{
-    savepth = savePath;
-    dsaver->setSavePathAndMode(savepth,save_mode);
-    lwriter->setSavePath(savepth.toStdString());
-}
-
-void imageReader::acceptLocation(int x, int y)
-{
-    mouseX = x;
-    mouseY = y;
-}
-
-void imageReader::acceptArea(int x1, int y1, int x2, int y2, int flag)
-{
-    if (x1 == -1) {
-        calcArea = false;
-        realX1 = realX1s = realX2 = realX2s = realY1 = realY1s = realY2 = realY2s = -1;
-        getFirstArea = false;
-        getSecondArea = false;
-        return;
-    }
-    if (x2 < x1) {
-        int temp = x2;
-        x2 = x1;
-        x1 = temp;
-    }
-    if (flag == 0){
-        realX1 = ((x1 == 0)|| (x1 == frameHeightR)|| (x1 == frameHeightR*2))? 0:x1 % frameHeightR;
-        realY1 = y1 % frameWidthR;
-        realX2 = ((x2 == frameHeightR)|| (x2 == frameHeightR*2)|| (x2 == frameHeightR*3))? frameHeightR:x2 % frameHeightR;
-        realY2 = y2 % frameWidthR;
-        isWarp = x1 < frameHeightR ? false:true;
-        getFirstArea = true;
-    }
-    else if (flag == 1){
-        realX1s = ((x1 == 0)|| (x1 == frameHeightR)|| (x1 == frameHeightR*2))? 0:x1 % frameHeightR;
-        realY1s = y1 % frameWidthR;
-        realX2s = ((x2 == frameHeightR)|| (x2 == frameHeightR*2)|| (x2 == frameHeightR*3))? frameHeightR:x2 % frameHeightR;
-        realY2s = y2 % frameWidthR;
-        getSecondArea = true;
-        if (isWarp && realX1s > frameHeightR){
-            getFirstArea = getSecondArea = false;
-            calcArea = false;
-            return;
-        }
-    }
-    calcArea = true;
-}
-
-void imageReader::stopingProgram()
-{
-    quitProgram = true;
 }
 
 void imageReader::readpdData()
@@ -660,197 +436,3 @@ void imageReader::readpdData()
     logFile.close();
 }
 
-void imageReader::setShowPic(int flag, bool enable)
-{
-    if(flag==0) flag_ir = enable;
-    else if(flag == 1) flag_depth=enable;
-    else if(flag == 2) flag_rgb = enable;
-    else if(flag == 3) flag_rd = enable;
-
-    if (!flag_ir && !flag_depth && !flag_rgb && !flag_rd) flag_ir = flag_depth = flag_rgb = flag_rd = true;
-
-}
-
-/*====================old code=======================*/
-void imageReader::readXMLData(QString xmlFile)
-{
-    cv::FileStorage fp;
-    cv::Mat data;
-    fp.open(xmlFile.toStdString(), cv::FileStorage::READ);
-    if (!fp.isOpened()) return;
-    fp["cameraMatrixIR"] >> data;
-    double* dd = (double*)data.data;
-#ifdef EFE_FORMAT
-    float ratio = 1080.f/480.0f;
-#else
-    float ratio = 2;//1080.0f/480.0f;
-#endif
-    rgb_param.fxir = dd[0] /2;
-    rgb_param.fyir = dd[4] /2;
-    rgb_param.cxir = dd[2] /2;
-    rgb_param.cyir = dd[5] /2;
-
-    fp["cameraMatrixRGB"] >> data;
-    dd = (double*)data.data;
-    rgb_param.fxrgb = dd[0] /ratio;
-    rgb_param.fyrgb = dd[4] /ratio;
-    rgb_param.cxrgb = dd[2] /ratio;
-    rgb_param.cyrgb = dd[5] /ratio;
-
-    fp["IR_RGB_R"] >> data;
-    dd = (double*)data.data;
-    rgb_param.R00 = dd[0];
-    rgb_param.R01 = dd[1];
-    rgb_param.R02 = dd[2];
-
-    rgb_param.R10 = dd[3];
-    rgb_param.R11 = dd[4];
-    rgb_param.R12 = dd[5];
-
-    rgb_param.R20 = dd[6];
-    rgb_param.R21 = dd[7];
-    rgb_param.R22 = dd[8];
-
-    fp["IR_RGB_T"] >> data;
-    dd = (double*)data.data;
-    rgb_param.T1 = dd[0];
-    rgb_param.T2 = dd[1];
-    rgb_param.T3 = dd[2];
-
-
-    fp.release();
-
-
-}
-
-void imageReader::saveDataThread()
-{
-    qDebug()<< "start to save data";
-    QDir qd;
-    std::time_t t = std::time(0);
-    char buf[128] = { 0 };
-    strftime(buf, 64, "%Y-%m-%d-%H-%M-%S", localtime(&t));
-    std::string timeSTR = std::string(buf);
-
-    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR));
-    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR+"//rgb"));
-    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR+"//ir"));
-    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR+"//depth"));
-    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR+"//pointcloud"));
-
-//    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR+"//irori"));
-//    qd.mkdir(QString::fromStdString(savePath+"//"+timeSTR+"//depthori"));
-
-    unsigned char* _buf_t = new unsigned char[frameHeightR * frameWidthR * (3 * sizeof(int) + sizeof(uchar))];
-    unsigned char* _buf_t2 = new unsigned char[frameHeightR * frameWidthR * (4 * sizeof(int) + sizeof(uchar))];
-    cv::Mat saveMat;
-    FILE *plyfile;
-    int h,m,s,us;
-    h = m = s= us =0;
-    for (int i = 0 ;i<10;i++){
-
-        changeTime(irTs[i],h,m,s,us);
-        std::string Pth = savePath+"//"+timeSTR+"//ir//"+std::to_string(h)+"-" +std::to_string(m)+"-"+std::to_string(s)+"-"+std::to_string(us) + "_00000"+std::to_string(i)+".png";
-        cv::cvtColor(IRDATABUFFER[i],IRDATABUFFER[i],cv::COLOR_RGB2GRAY);
-        cv::imwrite(Pth,IRDATABUFFER[i]);
-
-//        Pth = savePath+"//"+timeSTR+"//irori//00000"+std::to_string(i)+".png";
-//        cv::imwrite(Pth,irFrameOriBuffer[i]);
-        // save rgb
-        //pass
-        denoise(depthBuffer[i], 0, frameHeightR, 10, _buf_t, 2000, frameHeightR, frameWidthR);
-        edge = cv::Mat::zeros(cv::Size(frameHeightR,frameWidthR),CV_8UC1);
-        filling(edge.data, depthBuffer[i], 0, frameHeightR, 10, _buf_t2, frameHeightR, frameWidthR);
-        changeTime(depthTs[i],h,m,s,us);
-        Pth = savePath+"//"+timeSTR+"//depth//"+std::to_string(h)+"-" +std::to_string(m)+"-"+std::to_string(s)+"-"+std::to_string(us) + "_00000"+std::to_string(i)+".png";
-        saveMat = cv::Mat(cv::Size(frameHeightR,frameWidthR),CV_16UC1);
-        for (int x = 0; x < frameHeightR; x++) {
-            for (int y = 0; y < frameWidthR; y++) {
-                saveMat.at<short>(y, x) = int(depthBuffer[i][y*frameHeightR + x]);
-            }
-        }
-        cv::imwrite(Pth,saveMat);
-
-        Pth = savePath+"//"+timeSTR+"//pointcloud//"+std::to_string(h)+"-" +std::to_string(m)+"-"+std::to_string(s)+"-"+std::to_string(us) + "_00000"+std::to_string(i)+".txt";
-        fopen_s(&plyfile, Pth.c_str(), "w");
-        for (int x = 0; x < frameHeight; x++) {
-            for (int y = 0; y < frameWidth; y++) {
-                float z = depthBuffer[i][y*frameHeight + x];
-                if (z < 10e-6 && z > -10e-6) continue;
-                float x_rw = ((float)x - rgb_param.cxrgb) * z / rgb_param.fxrgb;
-                float y_rw = ((float)y - rgb_param.cyrgb) * z / rgb_param.fyrgb;
-                fprintf(plyfile, "%.6f %.6f %.6f\n", x_rw, y_rw, z);
-            }
-        }
-        fclose(plyfile);
-
-//        Pth = savePath+"//"+timeSTR+"//depthori//00000"+std::to_string(i)+".png";
-//        saveMat = cv::Mat(cv::Size(frameHeight,frameWidth),CV_16UC1);
-//        for (int x = 0; x < frameHeight; x++) {
-//            for (int y = 0; y < frameWidth; y++) {
-//                saveMat.at<short>(y, x) = int(predepthBuffer[i][y*frameHeight + x]);
-//            }
-//        }
-//        cv::imwrite(Pth,saveMat);
-//        changeTime(rgbTs[i],h,m,s,us);
-        Pth = savePath+"//"+timeSTR+"//rgb//"+std::to_string(h)+"-" +std::to_string(m)+"-"+std::to_string(s)+"-"+std::to_string(us) + "_00000"+std::to_string(i)+".jpg";
-        cv::imwrite(Pth,RGBDATABUFFER[i]);
-
-
-
-    }
-    delete [] _buf_t;
-    delete [] _buf_t2;
-    emit sendSaveDone();
-     qDebug()<< "save done";
-}
-
-void imageReader::checkThread()
-{
-    while (1){
-        if (isRunning){
-            if (stopTime == 0) continue;
-            //if (stopTime - startTime < 0) continue;
-            if (abs(stopTime - startTime) > 200) {
-                isRunning = false;
-                //emit sendStopSignal();
-            }
-        }
-    }
-}
-
-int imageReader::socketInteract(int flag)
-{
-    if (flag == 0){
-        serverOK = true;
-    }
-    else if (flag == 1){
-        time1 = clock();
-    }
-    else if (flag == 2){
-        emit sendSaveDone();
-    }
-    else if (flag == 3){
-        // 送出图像显示
-        stopTime = clock();
-        // qDebug()<<stopTime-time1;
-        // combineData();
-        // qDebug()<<clock()-stopTime;
-
-
-        // memset(irData,0,frameWidth*frameHeight);
-        // memset(depthData,0,frameWidth*frameHeight*4);
-        startTime = clock();
-    }
-    else if (flag == 4){
-        //qDebug()<<"[TIME] READ FRAME "<< clock()-time1;
-        qDebug()<<"error happened";
-        isRunning=false;
-    }
-    else if (flag == 5) {
-        std::vector<std::string> frdata = splitString(std::string(frameRateData),' ');
-        emit sendFrameRate(QString::fromStdString(frdata[1]),QString::fromStdString(frdata[2]),QString::fromStdString(frdata[3]));
-    }
-
-    return 0;
-}

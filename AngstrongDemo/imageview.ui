@@ -163,8 +163,22 @@
       <property name="spacing">
        <number>0</number>
       </property>
+      <item row="0" column="1">
+       <widget class="QLabel" name="m_lab_ImageInfo">
+        <property name="text">
+         <string>[No Image]</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="4">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="m_lab_xy">
+        <property name="text">
+         <string>       </string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
+       <widget class="QLabel" name="m_lab_RGB_title">
         <property name="text">
          <string>RGB</string>
         </property>
@@ -177,14 +191,21 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
-       <widget class="QLabel" name="label_2">
+      <item row="0" column="8">
+       <widget class="QLabel" name="m_lab_RGB">
         <property name="text">
-         <string>X: Y: </string>
+         <string>                </string>
         </property>
        </widget>
       </item>
-      <item row="0" column="5">
+      <item row="0" column="3">
+       <widget class="QLabel" name="m_lab_xy_title">
+        <property name="text">
+         <string>X,Y</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="9">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string/>
@@ -204,12 +225,18 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>[No Image]</string>
+      <item row="0" column="5">
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-       </widget>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
