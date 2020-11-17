@@ -5,6 +5,9 @@
 #include <QTimer>
 #include <highgui.hpp>
 #include <imgproc.hpp>
+#include <QDateTime>
+//#include <QDate>
+//#include <QTime>
 #include "imageview.h"
 #include "savedata.h"
 
@@ -32,8 +35,8 @@ ImageView::ImageView(QWidget *parent) :
 		m_pDataDepth[i] = new float[848 * 480];
 	}
 	m_pCamera = new imageReader();
-	//m_pThreadSaveImage = new std::thread(&ImageView::SaveImageThread,this);//启动保存图片线程
-	//m_pThreadSaveImage->detach();
+	m_pThreadSaveImage = new std::thread(&ImageView::SaveImageThread,this);//启动保存图片线程
+	m_pThreadSaveImage->detach();
 
 	//进行ImageView对话框的外观处理
 	//setWindowFlags(Qt::FramelessWindowHint);
@@ -67,11 +70,11 @@ ImageView::~ImageView()
 		delete[] m_pDataDepth[i];
 		m_pDataDepth[i] = nullptr;
 	}
-	/*if (m_pThreadSaveImage)
+	if (m_pThreadSaveImage)
 	{
 		delete m_pThreadSaveImage;
 		m_pThreadSaveImage = nullptr;
-	}*/
+	}
 
 	setAttribute(Qt::WA_DeleteOnClose);
     delete ui;
@@ -204,14 +207,29 @@ void ImageView::ReceiveSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB, float * 
 
 void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount, QString qstrPath)
 {
-	m_qstrSavePath = qstrPath;
+	if (!m_pCamera->IsRunning())
+	{
+		emit SendSaveImageInfo("No Running Now...");
+		return;
+	}
+	
 	m_pCamera->SetSaveImageStatus(bSave);
 	if (!bSave)
 	{
-		m_nSaveDataIndex = 0;//数据清零
+		m_pCamera->SetSaveImageStatus(false);
+		m_bSaveFinish = true;
+		m_nWriteIndex = 0;
+		m_nSaveImageCount = 0;
+		m_nSaveDataIndex = 0;
+		Sleep(20);
+		emit SendSaveImageInfo("Stop to save!");
+		return;
 	}
+	m_qstrSavePath = qstrPath;
 	m_nMode = eMode;
 	m_nSaveImageCount = nSaveCount;
+	m_bSaveFinish = false;
+	emit SendSaveImageInfo("Start to save data");
 }
 
 void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
@@ -275,96 +293,6 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	}
 }
 
-//void ImageView::ReceiveImageRGB(int nsize, uchar * data, cv::Mat mat)
-//{
-//	//目前对原始数据data不处理
-//	m_cvImageRGB = mat;
-//	static int sIndexRGB = 0;
-//	if (m_bIsSaveRGB)
-//	{
-//		++sIndexRGB;
-//		QString qstrNameExtra("");
-//		if (sIndexRGB < 10)
-//		{
-//			qstrNameExtra = "000";
-//		}
-//		else if (sIndexRGB < 100)
-//		{
-//			qstrNameExtra = "00";
-//		}
-//		else if (sIndexRGB < 1000)
-//		{
-//			qstrNameExtra = "0";
-//		}
-//		m_qstrSavePath = m_qstrSavePath + "//rgb//"+ qstrNameExtra + QString::number(sIndexRGB) + ".jpg";
-//		cv::imwrite(m_qstrSavePath.toStdString(), m_cvImageRGB);
-//	}
-//	else
-//	{
-//		//++sIndexRGB = -1;
-//	}
-//}
-//
-//void ImageView::ReceiveImageDepth(int nsize, float * data, cv::Mat mat)
-//{
-//	//目前对原始数据data不处理
-//	m_cvImageDepth = mat;
-//	static int sIndexDepth = 0;
-//	if (m_bIsSaveDepth)
-//	{
-//		++sIndexDepth;
-//		QString qstrNameExtra("");
-//		if (sIndexDepth < 10)
-//		{
-//			qstrNameExtra = "000";
-//		}
-//		else if(sIndexDepth < 100)
-//		{
-//			qstrNameExtra = "00";
-//		}
-//		else if(sIndexDepth < 1000)
-//		{
-//			qstrNameExtra = "0";
-//		}
-//		m_qstrSavePath = m_qstrSavePath + "//depth//" + qstrNameExtra + QString::number(sIndexDepth) + ".png";
-//		cv::imwrite(m_qstrSavePath.toStdString(), m_cvImageRGB);
-//	}
-//	else
-//	{
-//		
-//	}
-//}
-//
-//void ImageView::ReceiveImageIR(int nsize, unsigned char * data, cv::Mat mat)
-//{
-//	//目前对原始数据data不处理
-//	m_cvImageIR = mat;
-//	static int sIndexIR = 0;
-//	if (m_bIsSaveIR)
-//	{
-//		++sIndexIR;
-//		QString qstrNameExtra("");
-//		if (sIndexIR < 10)
-//		{
-//			qstrNameExtra = "000";
-//		}
-//		else if (sIndexIR < 100)
-//		{
-//			qstrNameExtra = "00";
-//		}
-//		else if (sIndexIR < 1000)
-//		{
-//			qstrNameExtra = "0";
-//		}
-//		m_qstrSavePath = m_qstrSavePath + "//ir//"+qstrNameExtra + QString::number(sIndexIR) + ".png";
-//		cv::imwrite(m_qstrSavePath.toStdString(), m_cvImageRGB);
-//	}
-//	else
-//	{
-//		
-//	}
-//}
-
 void ImageView::BuildConnet()
 {
 	bool ret = connect(m_pCamera, SIGNAL(sendImage(cv::Mat)), ui->m_gView_ImageView, SLOT(SetImage(cv::Mat)));
@@ -386,11 +314,19 @@ void ImageView::SaveImageThread()
 	{
 		if (m_nWriteIndex < m_nSaveDataIndex)
 		{
-			if (m_nWriteIndex >= m_nSaveImageCount)
+			if (!m_bSaveFinish && m_nWriteIndex >= m_nSaveImageCount)
 			{
+				m_pCamera->SetSaveImageStatus(false);
 				m_bSaveFinish = true;
 				m_nWriteIndex = 0;
 				m_nSaveImageCount = 0;
+				m_nSaveDataIndex = 0;
+				emit SendSaveImageInfo("Save to Done");
+				continue;
+			}
+			if (m_bSaveFinish)
+			{
+				Sleep(3);
 				continue;
 			}
 			//开始保存图片............
@@ -407,62 +343,84 @@ void ImageView::SaveImageThread()
 			{
 				qstrNameExtra = "0";
 			}
-
-			//先保存IR图
-			QString qstrSavePath_IR = m_qstrSavePath + "//ir//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
-			cv::cvtColor(m_cvImageIR[m_nWriteIndex], m_cvImageIR[m_nWriteIndex], cv::COLOR_RGB2GRAY);
-			cv::imwrite(qstrSavePath_IR.toStdString(), m_cvImageIR[m_nWriteIndex]);
-
-			//保存深度图
-			QString qstrSavePath_Depth = m_qstrSavePath + "//depth//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
+			//建立时间文件夹
+			QDateTime dt;
+			QTime time;
+			QDate date;
+			dt.setTime(time.currentTime());
+			dt.setDate(date.currentDate());
+			QString currentDate = dt.toString("//yyyy:MM:dd//");
+			QString currentTime = dt.toString("//hh:mm:ss//");
+			
+			try
+			{
+				//先保存IR图
+				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" +currentDate+ qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
+				cv::cvtColor(m_cvImageIR[m_nWriteIndex], m_cvImageIR[m_nWriteIndex], cv::COLOR_RGB2GRAY);
+				cv::imwrite(qstrSavePath_IR.toStdString(), m_cvImageIR[m_nWriteIndex]);
+				//保存深度图
+				QString qstrSavePath_Depth = m_qstrSavePath + "//depth//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
 #ifndef KEEP_ORI
-			cv::Mat saveMat = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_16UC1);
-			for (int x = 0; x < frameHeightR; x++) {
-				for (int y = 0; y < frameWidthR; y++) {
-					saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeightR + x]);
-				}
-			}
-#else
-			cv::Mat saveMat = cv::Mat(cv::Size(frameHeight, frameWidth), CV_16UC1);
-			for (int x = 0; x < frameHeight; x++) {
-				for (int y = 0; y < frameWidth; y++) {
-					saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeight + x]);
-				}
-			}
-#endif
-			cv::imwrite(qstrSavePath_Depth.toStdString(), saveMat);
-			//保存RGB图
-			QString qstrSavePath = m_qstrSavePath + "//rgb//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".jpg";
-			cv::imwrite(qstrSavePath.toStdString(), m_cvImageRGB[m_nWriteIndex]);
-
-			switch (m_nMode)
-			{
-			case SaveData::ESaveMode_3Pix:
-			{
-				//doing something.........
-			}
-				break;
-			case SaveData::ESaveMode_4Pix:
-			{
-				//保存点云图
-				QString qstrSavePath_CloudPoint = m_qstrSavePath + "//pointcloud//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".txt";
-				fopen_s(&plyfile, qstrSavePath_CloudPoint.toStdString().c_str(), "w");
+				cv::Mat saveMat = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_16UC1);
 				for (int x = 0; x < frameHeightR; x++) {
 					for (int y = 0; y < frameWidthR; y++) {
-						float z = m_pDataDepth[m_nWriteIndex][y*frameHeightR + x];
-						if (z < 10e-6 && z > -10e-6) continue;
-						float x_rw = ((float)x - m_pCamera->dsaver->cx) * z / m_pCamera->dsaver->fx;
-						float y_rw = ((float)y - m_pCamera->dsaver->cy) * z / m_pCamera->dsaver->fy;
-						fprintf(plyfile, "%.6f %.6f %.6f\n", x_rw, y_rw, z);
+						saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeightR + x]);
 					}
 				}
-				fclose(plyfile);
-			}
+#else
+				cv::Mat saveMat = cv::Mat(cv::Size(frameHeight, frameWidth), CV_16UC1);
+				for (int x = 0; x < frameHeight; x++) {
+					for (int y = 0; y < frameWidth; y++) {
+						saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeight + x]);
+					}
+				}
+#endif
+				cv::imwrite(qstrSavePath_Depth.toStdString(), saveMat);
+				//保存RGB图
+				QString qstrSavePath = m_qstrSavePath + "//rgb//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".jpg";
+				cv::imwrite(qstrSavePath.toStdString(), m_cvImageRGB[m_nWriteIndex]);
+
+				switch (m_nMode)
+				{
+				case SaveData::ESaveMode_3Pix:
+				{
+					//doing something.........
+				}
 				break;
-			default:
+				case SaveData::ESaveMode_4Pix:
+				{
+					//保存点云图
+					QString qstrSavePath_CloudPoint = m_qstrSavePath + "//pointcloud//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".txt";
+					fopen_s(&plyfile, qstrSavePath_CloudPoint.toStdString().c_str(), "w");
+					for (int x = 0; x < frameHeightR; x++)
+					{
+						for (int y = 0; y < frameWidthR; y++)
+						{
+							float z = m_pDataDepth[m_nWriteIndex][y*frameHeightR + x];
+							if (z < 10e-6 && z > -10e-6) continue;
+							float x_rw = ((float)x - m_pCamera->dsaver->cx) * z / m_pCamera->dsaver->fx;
+							float y_rw = ((float)y - m_pCamera->dsaver->cy) * z / m_pCamera->dsaver->fy;
+							fprintf(plyfile, "%.6f %.6f %.6f\n", x_rw, y_rw, z);
+						}
+					}
+					fclose(plyfile);
+				}
 				break;
+				default:
+					break;
+				}
+				QString qstrSaveImageInfo = "Star to Save: " + QString::number(m_nWriteIndex + 1) + "/" + QString::number(m_nSaveImageCount);
+				emit SendSaveImageInfo(qstrSaveImageInfo);
+				++m_nWriteIndex;
 			}
-			++m_nWriteIndex;
+			catch (cv::Exception &e)
+			{
+				std::string strErr = e.what();
+				Sleep(3);
+				m_bSaveFinish = true;
+				emit SendSaveImageInfo("Error:Fail to save!!!" );
+				continue;
+			}
 		}
 	}
 }

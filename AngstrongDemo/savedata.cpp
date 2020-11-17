@@ -52,7 +52,7 @@ void SaveData::on_chose_file_clicked()
 	}
 	else
 	{
-		ui->m_lab_display_status->setText("Save Path Error");
+		ui->m_lab_display_status->setText("Error:Save Path Error");
 	}
 }
 
@@ -64,11 +64,12 @@ void SaveData::on_start_clicked()
 	QString savePath = ui->m_lineEdit_file->text();
 	if (savePath.toStdString().empty())
 	{
-		ui->m_lineEdit_file->setText("请选择完整的保存路径!");
+		ui->m_lab_display_status->setText("Error:Please choose the correct path!");
 		return;
 	}
 	if (m_nSaveCount == 0)
 	{
+		ui->m_lab_display_status->setText("Error:Please set the number of pictures saved!");
 		return;
 	}
 
@@ -107,7 +108,8 @@ void SaveData::on_start_clicked()
 	default:
 		break;
 	}
-
+	QString qstrSaveImageInfo = "Star to Save: " + QString::number(0) + "/" + QString::number(m_nSaveCount);
+	ui->m_lab_display_status->setText(qstrSaveImageInfo);
 	emit SendSaveDataStatus(m_bIsStart, m_eCurSaveMode, m_nSaveCount, savePath);
 }
 
@@ -120,4 +122,9 @@ void SaveData::on_stop_clicked()
 void SaveData::on_model_currentIndexChanged(int nIndex)
 {
 	m_eCurSaveMode = (ESaveMode)nIndex;
+}
+
+void SaveData::ReceiveSaveImageInfo(QString qstrInfo)
+{
+	ui->m_lab_display_status->setText(qstrInfo);
 }

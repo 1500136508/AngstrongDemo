@@ -356,6 +356,11 @@ void imageReader::release()
     CloseCamera();
 }
 
+bool imageReader::IsRunning() const
+{
+	return isRunning;
+}
+
 void imageReader::run(int camIndex)
 {
 #ifndef EFE_FORMAT

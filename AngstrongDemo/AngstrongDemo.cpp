@@ -284,6 +284,7 @@ void AngstrongDemo::BuildConnect()
 	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int,QString)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int,QString)));
 	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
+	connect(m_pMainImageView, SIGNAL(SendSaveImageInfo(QString)), &m_SaveData, SLOT(ReceiveSaveImageInfo(QString)));
 }
 
 void AngstrongDemo::registerDevice()

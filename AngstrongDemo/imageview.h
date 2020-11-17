@@ -46,6 +46,7 @@ private slots:
 signals:
 	void sendCloseEven();
 	void SendCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
+	void SendSaveImageInfo(QString qstrInfo);
 public:
     Ui::ImageView *ui;
 	bool m_bProgramExit;
@@ -73,8 +74,8 @@ private:
 	bool            m_bSaveFinish;//保存完成标志
 
 	//线程管理
-	//std::thread *m_pThreadSaveImage;
-	//std::mutex m_mutex;
+	std::thread *m_pThreadSaveImage;
+	std::mutex m_mutex;
 };
 
 #endif // IMAGEVIEW_H

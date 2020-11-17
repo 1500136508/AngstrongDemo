@@ -27,6 +27,7 @@ private slots:
 	void on_start_clicked();
 	void on_stop_clicked();
 	void on_model_currentIndexChanged(int nIndex);
+	void ReceiveSaveImageInfo(QString qstrInfo);
 signals:
 	void SendSaveDataStatus(bool bSave, int eMode, int nSaveCount,QString qstrPath);
 private:
