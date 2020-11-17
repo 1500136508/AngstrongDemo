@@ -23,12 +23,16 @@ public:
     // 检测是否可以开始保存
     int checkReady();
     void releaseDateSaver();
+	float fx = 0;
+	float fy = 0;
+	float cx = 0;
+	float cy = 0;
 private:
     std::string savePath = ".";
-    float fx = 0;
+   /* float fx = 0;
     float fy = 0;
     float cx = 0;
-    float cy = 0;
+    float cy = 0;*/
     int saveMode = 3;
     cv::Mat irFrameData[1000];
     cv::Mat rgbFrameData[1000];

@@ -53,15 +53,17 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="m_action_new"/>
    <addaction name="actionOpenCamera"/>
    <addaction name="actionCloseCamera"/>
+   <addaction name="m_action_undo"/>
+   <addaction name="m_action_redo"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpenCamera">
    <property name="icon">
-    <iconset>
-     <normalon>:/AngstrongDemo/image_ico/BG/BG1.png</normalon>
-    </iconset>
+    <iconset resource="AngstrongDemo.qrc">
+     <normaloff>:/AngstrongDemo/image_ico/file/Open.png</normaloff>:/AngstrongDemo/image_ico/file/Open.png</iconset>
    </property>
    <property name="text">
     <string>OpenCamera</string>
@@ -73,14 +75,61 @@
   <action name="actionCloseCamera">
    <property name="icon">
     <iconset resource="AngstrongDemo.qrc">
-     <normaloff>:/AngstrongDemo/image_ico/BG/ConnectBG.png</normaloff>
-     <normalon>:/AngstrongDemo/image_ico/BG/BG1.png</normalon>:/AngstrongDemo/image_ico/BG/ConnectBG.png</iconset>
+     <normaloff>:/AngstrongDemo/image_ico/file/Save.png</normaloff>:/AngstrongDemo/image_ico/file/Save.png</iconset>
    </property>
    <property name="text">
     <string>CloseCamera</string>
    </property>
    <property name="toolTip">
     <string>关闭相机</string>
+   </property>
+  </action>
+  <action name="m_action_new">
+   <property name="icon">
+    <iconset resource="AngstrongDemo.qrc">
+     <normaloff>:/AngstrongDemo/image_ico/file/New.png</normaloff>:/AngstrongDemo/image_ico/file/New.png</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+   <property name="toolTip">
+    <string>新建</string>
+   </property>
+  </action>
+  <action name="m_action_undo">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="AngstrongDemo.qrc">
+     <normaloff>:/AngstrongDemo/image_ico/edit/Edit_Cancel.png</normaloff>:/AngstrongDemo/image_ico/edit/Edit_Cancel.png</iconset>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="toolTip">
+    <string>撤销</string>
+   </property>
+  </action>
+  <action name="m_action_redo">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="AngstrongDemo.qrc">
+     <normaloff>:/AngstrongDemo/image_ico/edit/Edit_Resume.png</normaloff>:/AngstrongDemo/image_ico/edit/Edit_Resume.png</iconset>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="toolTip">
+    <string>重做</string>
    </property>
   </action>
  </widget>

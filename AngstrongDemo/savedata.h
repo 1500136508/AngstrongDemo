@@ -28,7 +28,7 @@ private slots:
 	void on_stop_clicked();
 	void on_model_currentIndexChanged(int nIndex);
 signals:
-	void SendSaveDataStatus(bool bSave, int eMode, int nSaveCount);
+	void SendSaveDataStatus(bool bSave, int eMode, int nSaveCount,QString qstrPath);
 private:
     Ui::SaveData *ui;
 	bool m_bIsStart;//开始保存图像标志

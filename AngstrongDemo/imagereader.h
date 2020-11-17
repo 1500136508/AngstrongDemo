@@ -21,14 +21,17 @@ public:
     ~imageReader();
 
     void release();
-
-    void run();
-    void run(int camIndex);
+	void run(int camIndex);
+	void OpenCamera(int index);
+	void CloseCamera();
+	void Live();
+	void Pause();
+	void Stop();
 	void SetSaveImageStatus(bool bIsSaveImage);
+
+	dataSaver *dsaver;
 private:
     std::vector<cv::Mat> container;
-
-    dataSaver *dsaver;
 
     clock_t time1,time2,startTime, stopTime;
     int datalen = 1280;

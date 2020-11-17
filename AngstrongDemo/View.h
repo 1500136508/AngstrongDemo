@@ -15,6 +15,8 @@ public:
 	View(QGraphicsScene *scene, QWidget *parent = nullptr);
 	virtual ~View();
 
+	int GetImageWidth()const;
+	int GetImageHeight()const;
 	void Zoom(QPointF pointF, double fScale = 1.0f);
 	void ZoomIn(QPointF poinF, double fScale = 1.2f);
 	void ZoomOut(QPointF pointF, double fScale = 0.8f);

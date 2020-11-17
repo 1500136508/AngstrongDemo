@@ -19,6 +19,8 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	m_pMainImageView = nullptr;
 	m_pMainImageView = new ImageView();
 
+	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
+	qRegisterMetaType<ECameraStatus>("ECameraStatus");
 	BuildConnect();
 
 	setCentralWidget(m_pMainImageView);
@@ -268,18 +270,20 @@ void AngstrongDemo::CreateDockWindow()
 
 void AngstrongDemo::AddToolBar()
 {
-	QToolBar* pToolBar = ui.mainToolBar;
+	/*QToolBar* pToolBar = ui.mainToolBar;
 
 	QAction* pActionC = new QAction(QIcon(QPixmap(":/AngstrongDemo/image_ico/Option_normal.png")), "打开");
 
-	pToolBar->addAction(pActionC);
+	pToolBar->addAction(pActionC);*/
 }
 
 void AngstrongDemo::BuildConnect()
 {
 	connect(this, SIGNAL(IsCameraUSB(bool, QString, int)), &m_CameraView, SLOT(DetectCameraUSB(bool, QString, int)));
 	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
-	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int)));
+	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int,QString)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int,QString)));
+	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
+	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 }
 
 void AngstrongDemo::registerDevice()

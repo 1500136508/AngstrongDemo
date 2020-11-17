@@ -127,7 +127,6 @@
     <ClCompile Include="AngstrongDemo.cpp" />
     <ClCompile Include="cameraview.cpp" />
     <ClCompile Include="imageview.cpp" />
-    <ClCompile Include="labview.cpp" />
     <ClCompile Include="main.cpp" />
     <QtUic Include="cameraview.ui" />
     <QtUic Include="imageview.ui" />
@@ -137,9 +136,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="imageview.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="labview.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="cameraview.h" />

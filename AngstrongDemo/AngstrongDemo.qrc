@@ -1,5 +1,53 @@
 <RCC>
   <qresource prefix="/AngstrongDemo">
+    <file>image_ico/edit/Edit_Cancel.png</file>
+    <file>image_ico/edit/Edit_Full.png</file>
+    <file>image_ico/edit/Edit_Max.png</file>
+    <file>image_ico/edit/Edit_Option.png</file>
+    <file>image_ico/edit/Edit_Resume.png</file>
+    <file>image_ico/file/Close.png</file>
+    <file>image_ico/file/New.png</file>
+    <file>image_ico/file/Open.png</file>
+    <file>image_ico/file/Save.png</file>
+    <file>image_ico/file/SaveAs.png</file>
+    <file>image_ico/geom/Geom_Center.png</file>
+    <file>image_ico/geom/Geom_Default.png</file>
+    <file>image_ico/geom/Geom_Enlarge.png</file>
+    <file>image_ico/geom/Geom_EnlargeReduce.png</file>
+    <file>image_ico/geom/Geom_Flip.png</file>
+    <file>image_ico/geom/Geom_FlipX.png</file>
+    <file>image_ico/geom/Geom_FlipY.png</file>
+    <file>image_ico/geom/Geom_Reduce.png</file>
+    <file>image_ico/geom/Geom_Rotate.png</file>
+    <file>image_ico/geom/Geom_RotateCenter.png</file>
+    <file>image_ico/geom/Geom_RotateLeft.png</file>
+    <file>image_ico/geom/Geom_RotateRight.png</file>
+    <file>image_ico/gray/Gray_Bin.png</file>
+    <file>image_ico/gray/Gray_Gamma.png</file>
+    <file>image_ico/gray/Gray_Gray.png</file>
+    <file>image_ico/gray/Gray_Histeq.png</file>
+    <file>image_ico/gray/Gray_Linear.png</file>
+    <file>image_ico/gray/Gray_Log.png</file>
+    <file>image_ico/gray/Gray_Nolinear.png</file>
+    <file>image_ico/gray/Gray_Reverse.png</file>
+    <file>image_ico/help/Help_Info.png</file>
+    <file>image_ico/icon/2.ico</file>
+    <file>image_ico/icon/2.png</file>
+    <file>image_ico/icon/3.png</file>
+    <file>image_ico/icon/icon.ico</file>
+    <file>image_ico/icon/ImageProcessing.png</file>
+    <file>image_ico/toolbox/Circle.png</file>
+    <file>image_ico/toolbox/Cut.png</file>
+    <file>image_ico/toolbox/Elipse.png</file>
+    <file>image_ico/toolbox/Hexagon.png</file>
+    <file>image_ico/toolbox/Line.png</file>
+    <file>image_ico/toolbox/Octagon.png</file>
+    <file>image_ico/toolbox/Painbrush.png</file>
+    <file>image_ico/toolbox/Rectangle.png</file>
+    <file>image_ico/toolbox/Rhombus.png</file>
+    <file>image_ico/toolbox/Square.png</file>
+    <file>image_ico/toolbox/Triangle.png</file>
+    <file>image_ico/view/Check.png</file>
     <file>image_ico/bg1.png/bg1.png</file>
     <file>image_ico/btl/Close_hover.png</file>
     <file>image_ico/btl/Close_normal.png</file>

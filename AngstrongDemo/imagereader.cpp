@@ -74,56 +74,52 @@ imageReader::~imageReader()
     release();
 }
 
-void imageReader::run()
+void imageReader::OpenCamera(int index)
 {
 #ifndef EFE_FORMAT
-    if (!camds->isOpened() && !camds->OpenCamera("4321","12D1",frameWidth,1200,true)){
+	if (!camds->isOpened() && !camds->OpenCamera(index, frameWidth, 1200, true))
+	{
 #else
-    if (!camds->isOpened() && !camds->OpenCamera("4321","12D1",frameWidth,480,true))
+	//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
+	if (!camds->isOpened())
 	{
 #endif
-        qDebug()<<"camera init failed";
-        //emit sendLostServer(true);
-        return;
-    }
-    else if (camds->isOpened())
+		if (!camds->OpenCamera(index, frameWidth, 480, true))
+		{
+			qDebug() << "camera init failed";
+			//emit sendLostServer(true);
+			return;
+		}
+	}
+	else if (camds->isOpened())
 	{
-        //emit sendLostServer(false);
-    }
-    isRunning = !isRunning;
-    Sleep(100);
-    if (!isRunning) camds->CloseCamera();
-    //emit sendStopSignal(isRunning);
+		//emit sendLostServer(false);
+	}
 }
 
-void imageReader::run(int camIndex)
+void imageReader::CloseCamera()
 {
-#ifndef EFE_FORMAT
-	  if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 1200, true))
-	  {
-#else
-	  //if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
-	  if (!camds->isOpened())
-	  {
-#endif
-	  	if (!camds->OpenCamera(camIndex, frameWidth, 480, true))
-	  	{
-	  		qDebug() << "camera init failed";
-	  		//emit sendLostServer(true);
-	  		return;
-	  	}
-	  }
-	  else if (camds->isOpened())
-	  {
-	  	//emit sendLostServer(false);
-	  }
-	  isRunning = !isRunning;
-	  Sleep(100);
-	  if (!isRunning)
-	  {
-	  	//camds->CloseCamera();
-	  }
-	  //emit sendStopSignal(isRunning);
+	camds->CloseCamera();
+}
+
+void imageReader::Live()
+{
+	if (!camds->isOpened())
+	{
+		OpenCamera(0);
+	}
+	isRunning = true;
+}
+
+void imageReader::Pause()
+{
+	isRunning = false;
+}
+
+void imageReader::Stop()
+{
+	isRunning = false;
+	CloseCamera();
 }
 
 void imageReader::buildDataThread()
@@ -357,7 +353,35 @@ void imageReader::release()
     delete[] _buf;
     delete[] _buf2;
 
-    camds->CloseCamera();
+    CloseCamera();
+}
+
+void imageReader::run(int camIndex)
+{
+#ifndef EFE_FORMAT
+	if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 1200, true))
+	{
+#else
+	//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
+	if (!camds->isOpened())
+	{
+#endif
+		if (!camds->OpenCamera(camIndex, frameWidth, 480, true))
+		{
+			qDebug() << "camera init failed";
+			return;
+		}
+		isRunning = true;
+	}
+	else if (camds->isOpened())
+	{
+	}
+	//isRunning = !isRunning;
+	Sleep(100);
+	if (!isRunning)
+	{
+		//camds->CloseCamera();
+	}
 }
 
 void imageReader::SetSaveImageStatus(bool bIsSaveImage)

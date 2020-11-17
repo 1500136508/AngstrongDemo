@@ -47,6 +47,16 @@ View::~View()
 {
 }
 
+int View::GetImageWidth() const
+{
+	return m_ImageWidth;
+}
+
+int View::GetImageHeight() const
+{
+	return m_ImageHeight;
+}
+
 void View::Zoom(QPointF pointF, double fScale)
 {
 	/*if (m_spPix)

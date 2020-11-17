@@ -61,8 +61,8 @@ void SaveData::on_start_clicked()
 	m_bIsStart = true;//启动保存图像标志
 	m_nSaveCount = ui->m_lineEdit_pfs_counts->text().toInt();//保存图像帧数
 	QDir qd;
-	std::string savePath = ui->m_lineEdit_file->text().toStdString();
-	if (savePath.empty())
+	QString savePath = ui->m_lineEdit_file->text();
+	if (savePath.toStdString().empty())
 	{
 		ui->m_lineEdit_file->setText("请选择完整的保存路径!");
 		return;
@@ -88,33 +88,33 @@ void SaveData::on_start_clicked()
 	{
 	case ESaveMode_3Pix:
 	{
-		qd.mkdir(QString::fromStdString(savePath));
-		qd.mkdir(QString::fromStdString(savePath + "//rgb"));
-		qd.mkdir(QString::fromStdString(savePath + "//ir"));
-		qd.mkdir(QString::fromStdString(savePath + "//depth"));
-		qd.mkdir(QString::fromStdString(savePath + "//rgb-alone"));
+		qd.mkdir(savePath);
+		qd.mkdir(savePath + "//rgb");
+		qd.mkdir(savePath + "//ir");
+		qd.mkdir(savePath + "//depth");
+		qd.mkdir(savePath + "//rgb-alone");
 	}
 		break;
 	case ESaveMode_4Pix:
 	{
-		qd.mkdir(QString::fromStdString(savePath));
-		qd.mkdir(QString::fromStdString(savePath + "//rgb"));
-		qd.mkdir(QString::fromStdString(savePath + "//ir"));
-		qd.mkdir(QString::fromStdString(savePath + "//depth"));
-		qd.mkdir(QString::fromStdString(savePath + "//pointcloud"));
+		qd.mkdir(savePath);
+		qd.mkdir(savePath + "//rgb");
+		qd.mkdir(savePath + "//ir");
+		qd.mkdir(savePath + "//depth");
+		qd.mkdir(savePath + "//pointcloud");
 	}
 		break;
 	default:
 		break;
 	}
 
-	emit SendSaveDataStatus(m_bIsStart, m_eCurSaveMode, m_nSaveCount);
+	emit SendSaveDataStatus(m_bIsStart, m_eCurSaveMode, m_nSaveCount, savePath);
 }
 
 void SaveData::on_stop_clicked()
 {
 	m_bIsStart = false;
-	emit SendSaveDataStatus(m_bIsStart, m_eCurSaveMode, m_nSaveCount);
+	emit SendSaveDataStatus(m_bIsStart, m_eCurSaveMode, m_nSaveCount, QString("./data"));
 }
 
 void SaveData::on_model_currentIndexChanged(int nIndex)

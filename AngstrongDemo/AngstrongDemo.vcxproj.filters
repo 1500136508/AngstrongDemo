@@ -77,9 +77,6 @@
     <ClCompile Include="cameraview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
-    <ClCompile Include="labview.cpp">
-      <Filter>Source Files\FormView</Filter>
-    </ClCompile>
     <ClCompile Include="outputview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
@@ -145,9 +142,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="cameraview.h">
-      <Filter>Header Files\FormView</Filter>
-    </QtMoc>
-    <QtMoc Include="labview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
     <QtMoc Include="outputview.h">
