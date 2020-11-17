@@ -16,10 +16,12 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 	//³õÊ¼»¯
 	m_mpImageView.clear();
+	m_pMainImageView = nullptr;
+	m_pMainImageView = new ImageView();
 
 	BuildConnect();
 
-	setCentralWidget(&m_testImageView);
+	setCentralWidget(m_pMainImageView);
 	CreateDockWindow();
 	AddToolBar();
 
@@ -38,7 +40,7 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	stylesheet = filetext.readAll();
 	file.close();
 	setStyleSheet(stylesheet);
-	m_testImageView.setStyleSheet(stylesheet);
+	m_pMainImageView->setStyleSheet(stylesheet);
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -55,6 +57,11 @@ AngstrongDemo::~AngstrongDemo()
 			}
 		}
 		m_mpImageView.clear();
+	}
+	if (m_pMainImageView)
+	{
+		delete m_pMainImageView;
+		m_pMainImageView = nullptr;
 	}
 }
 
@@ -272,6 +279,7 @@ void AngstrongDemo::BuildConnect()
 {
 	connect(this, SIGNAL(IsCameraUSB(bool, QString, int)), &m_CameraView, SLOT(DetectCameraUSB(bool, QString, int)));
 	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
+	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int)));
 }
 
 void AngstrongDemo::registerDevice()

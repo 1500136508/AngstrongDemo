@@ -66,7 +66,7 @@ imageReader::imageReader(QObject *parent)
     poolDepth->setMaxThreadCount(1);
     QtConcurrent::run( this,&imageReader::buildDataThread);
 
-
+	m_bIsSaveImage = false;//初始化保存数据信号
 }
 
 imageReader::~imageReader()
@@ -305,6 +305,7 @@ void imageReader::buildDataThread()
 				thisRoundIR = true;
 			}
 			//        qDebug() << irT <<" " << depthT << " " << rgbT;
+			irGet = depthGet = true;
 			if (irGet && depthGet && getParam)
 			{
 				if (flag_rd)
@@ -316,12 +317,15 @@ void imageReader::buildDataThread()
 				emit sendImage(combineFrame);
 			}
 
-			if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
+			if (m_bIsSaveImage)
+			{
+				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
 #ifndef KEEP_ORI
-				emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
+					emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
 #else
-				dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
+					dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
 #endif
+				}
 			}
 
 			clock_t t2 = clock();
@@ -354,6 +358,11 @@ void imageReader::release()
     delete[] _buf2;
 
     camds->CloseCamera();
+}
+
+void imageReader::SetSaveImageStatus(bool bIsSaveImage)
+{
+	m_bIsSaveImage = bIsSaveImage;
 }
 
 void imageReader::readpdData()
@@ -435,4 +444,3 @@ void imageReader::readpdData()
     logFile<<"f0: "<<rgb_param.fxrgb<<std::endl;
     logFile.close();
 }
-

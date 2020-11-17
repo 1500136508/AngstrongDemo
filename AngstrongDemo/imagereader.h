@@ -24,7 +24,7 @@ public:
 
     void run();
     void run(int camIndex);
-
+	void SetSaveImageStatus(bool bIsSaveImage);
 private:
     std::vector<cv::Mat> container;
 
@@ -88,9 +88,9 @@ private:
 
     void buildDataThread();
 
+	volatile bool m_bIsSaveImage;
 private slots:
     void readpdData();
-
 signals:
     void sendImage(cv::Mat);
 	void sendSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB,float *depth);

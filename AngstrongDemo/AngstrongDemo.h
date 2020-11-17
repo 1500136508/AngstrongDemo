@@ -40,7 +40,7 @@ signals:
 private:
     Ui::AngstrongDemoClass ui;
 
-	ImageView m_MainImageView;
+	ImageView *m_pMainImageView;
 	std::map<QString,std::pair<unsigned, ImageView*>> m_mpImageView;
 	CameraView m_CameraView;
 	ParameterView m_ParamView;

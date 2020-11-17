@@ -30,6 +30,9 @@ ImageView::ImageView(QWidget *parent) :
 	//setWindowFlags(Qt::FramelessWindowHint);
 	setMouseTracking(true);//启动鼠标捕获
 
+	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
+	qRegisterMetaType<cv::Mat>("cv::Mat");
+	//qRegisterMetaType<std::string>("std::string");
 	BuildConnet();//建立信号槽
 	//qss 界面美化
 	QFile file("../qss/black.qss");
@@ -45,7 +48,7 @@ ImageView::ImageView(QWidget *parent) :
 	m_pCamera = new imageReader();
 	if (m_pCamera)
 	{
-		//m_pCamera->run(0);
+		m_pCamera->run(0);
 	}
 }
 
@@ -187,7 +190,7 @@ void ImageView::ReceiveSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB, float * 
 
 void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount)
 {
-	int a = 7;
+	m_pCamera->SetSaveImageStatus(bSave);
 }
 
 //void ImageView::ReceiveImageRGB(int nsize, uchar * data, cv::Mat mat)
@@ -282,12 +285,7 @@ void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount)
 
 void ImageView::BuildConnet()
 {
-	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
-	qRegisterMetaType<cv::Mat>("cv::Mat");
-	qRegisterMetaType<std::string>("std::string");
-
 	connect(m_pCamera, SIGNAL(sendImage(cv::Mat)), ui->m_gView_ImageView, SLOT(SetImage(cv::Mat)));
-	connect(this, SIGNAL(closeEvent()), m_pCamera, SLOT(stopingProgram()));
 	connect(ui->m_gView_ImageView, SIGNAL(SendImageInfo(bool, int, int)), this, SLOT(ReceiveImageInfo(bool, int, int)));//接收图像信息
 	connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), this, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
 	connect(ui->m_gView_ImageView, SIGNAL(SendImageGray(int,int,int)), this, SLOT(ReceiveImageGray(int, int, int)));//接收鼠标对应的图像像素灰度值信息
