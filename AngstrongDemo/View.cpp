@@ -14,6 +14,8 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_spScene = nullptr;
 	m_spItem = nullptr;
 	m_spPix = nullptr;
+	m_ImageWidth = 0;
+	m_ImageHeight = 0;
 
 	//增加QGraphicsView框架相关元素
 	m_spScene = std::make_shared<ImageScene>(new ImageScene());//增加场景
@@ -117,10 +119,14 @@ bool View::Open()
 				m_Image = cv::imread(str);
 
 				qImage = cvMat2QImage(m_Image);
+				m_ImageWidth = qImage.width();
+				m_ImageHeight = qImage.height();
 				m_spPix->setPixmap(QPixmap::fromImage(qImage));
+				qDebug() << "ImageWidth:" << m_ImageWidth << "ImageHeight:"<<m_ImageHeight;
 
 				//处理显示位置,默认为图像居中显示
 				ZoomFit();
+				emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);//发送图像信息
 			}
 		}
 		catch (cv::Exception &e)
@@ -189,23 +195,30 @@ void View::mouseMoveEvent(QMouseEvent * event)
 
 			QPointF qPoint1 = m_spPix->scenePos();
 			QPointF qPoint2 = mapToScene(x, y);
-			int imageW = qImage.width();
-			int imageH = qImage.height();
+			int imageW = m_spPix->pixmap().width();
+			int imageH = m_spPix->pixmap().height();
+			qreal ratio_x = m_ImageWidth / (imageW*1.0);
+			qreal ratio_y = m_ImageHeight / (imageH*1.0);
 			if (qPoint2.x() >= qPoint1.x() && qPoint2.x() <= qPoint1.x() + imageW &&
 				qPoint2.y() >= qPoint1.y() && qPoint2.y() <= qPoint1.y() + imageH)//判断鼠标是否在图像上
 			{
-				if (qImage.valid(qPoint2.x()-qPoint1.x(),qPoint2.y()))//判断坐标是否有效
+				int x = (qPoint2.x() - qPoint1.x())*ratio_x;//将缩放后的图像坐标转换为实际的图像坐标
+				int y = qPoint2.y() * ratio_y;
+				if (qImage.valid(x,y))//判断坐标是否有效
 				{
-					QColor color = qImage.pixel(qPoint2.x()-qPoint1.x(), qPoint2.y());
-					int mousedPressed_R = color.red();
-					int mousedPressed_G = color.green();
-					int mousedPressed_B = color.blue();
-					qDebug() << "R:" << mousedPressed_R << " G:" << mousedPressed_G << " B:" << mousedPressed_B;
+					QColor color = qImage.pixel(x, y);
+					int GrayValue_R = color.red();
+					int GrayValue_G = color.green();
+					int GrayValue_B = color.blue();
+					qDebug() << "X:" << x << "Y:" << y << "R:" << GrayValue_R << " G:" << GrayValue_G << " B:" << GrayValue_B;
+					emit SendMouseInfo(x, y);
+					emit SendImageGray(GrayValue_R, GrayValue_G, GrayValue_B);
 				}
 			}
 			else
 			{
 				qDebug() << "out of range";
+				emit SendMouseInfo(-1, -1);
 			}
 		}
 	}
@@ -434,11 +447,14 @@ void View::SetImage(cv::Mat mat)
 	if (m_spPix)
 	{
 		qImage = cvMat2QImage(mat);
+		m_ImageWidth = qImage.width();
+		m_ImageHeight = qImage.height();
 		if (!qImage.isNull())
 		{
 			m_spPix->setPixmap(QPixmap::fromImage(qImage));
 
 			ZoomFit();
+			emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);
 		}
 	}
 }

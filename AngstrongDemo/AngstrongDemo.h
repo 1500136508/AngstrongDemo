@@ -12,7 +12,7 @@
 #include "parameterview.h"
 #include "outputview.h"
 #include "usbdevice.h"
-
+#include "savedata.h"
 
 class AngstrongDemo : public QMainWindow
 {
@@ -40,11 +40,12 @@ signals:
 private:
     Ui::AngstrongDemoClass ui;
 
-	ImageView m_testImageView;
+	ImageView m_MainImageView;
 	std::map<QString,std::pair<unsigned, ImageView*>> m_mpImageView;
 	CameraView m_CameraView;
 	ParameterView m_ParamView;
 	OutputView m_OutputView;
+	SaveData m_SaveData;
 
 	std::map<QString, unsigned> m_mpCameraDevice;
 	std::map<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map
