@@ -22,7 +22,6 @@ public:
     void release();
 	void run(int camIndex);
 	bool IsRunning()const;
-	bool Initialize();
 	void OpenCamera(int index);
 	void CloseCamera();
 	void Live();

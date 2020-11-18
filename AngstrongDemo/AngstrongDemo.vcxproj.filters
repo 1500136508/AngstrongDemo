@@ -119,6 +119,21 @@
     <ClCompile Include="displayview.cpp">
       <Filter>Source Files\FormView</Filter>
     </ClCompile>
+    <ClCompile Include="xmview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\comm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\otp_interface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\utilcom.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\xmodem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AngstrongDemo.ui">
@@ -140,6 +155,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="displayview.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="xmview.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -177,6 +195,9 @@
     <QtMoc Include="displayview.h">
       <Filter>Header Files\FormView</Filter>
     </QtMoc>
+    <QtMoc Include="xmview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h">
@@ -194,5 +215,31 @@
     <ClInclude Include="graphicsrectitem.h">
       <Filter>Header Files\FormView\ImageView</Filter>
     </ClInclude>
+    <ClInclude Include="..\xmodemV2\comm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\data_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\otp_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\utilcom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\xmodem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="image_ico\放大版摄像头.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

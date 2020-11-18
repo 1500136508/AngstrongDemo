@@ -1,5 +1,5 @@
-﻿#ifndef UTIL_HPP
-#define UTIL_HPP
+﻿#ifndef UTILIMAGE_HPP
+#define UTILIMAGE_HPP
 #include <QString>
 #include <QByteArray>
 #include <opencv.hpp>
@@ -303,22 +303,22 @@ bool yuv420ToRgb(char *yuv,int w,int h,char *rgb)
     return true;
 }
 
-std::vector<std::string> splitString(std::string src, char split) {
-    std::vector<std::string> reData;
-    std::string tmp = "";
-    for (int i = 0; i < src.size(); i++) {
-        if (src[i] != split)
-            tmp += src[i];
-        else {
-            reData.push_back(tmp);
-            tmp = "";
-        }
-        if (i == src.size() - 1 && tmp != "") {
-            reData.push_back(tmp);
-        }
-    }
-    return reData;
-}
+// std::vector<std::string> splitString(std::string src, char split) {
+    // std::vector<std::string> reData;
+    // std::string tmp = "";
+    // for (int i = 0; i < src.size(); i++) {
+        // if (src[i] != split)
+            // tmp += src[i];
+        // else {
+            // reData.push_back(tmp);
+            // tmp = "";
+        // }
+        // if (i == src.size() - 1 && tmp != "") {
+            // reData.push_back(tmp);
+        // }
+    // }
+    // return reData;
+// }
 
 
 void changeTime(long long ts,int &h,int &min, int &sec, int &us){

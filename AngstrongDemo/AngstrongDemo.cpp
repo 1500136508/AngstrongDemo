@@ -43,6 +43,9 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	file.close();
 	setStyleSheet(stylesheet);
 	m_pMainImageView->setStyleSheet(stylesheet);
+
+	//初始化识别相机列表
+	InitCamera();
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -220,6 +223,29 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 	return false;
 }
 
+bool AngstrongDemo::InitCamera()
+{
+	bool bReturn = false;
+	do 
+	{
+		int cameraNum = CCameraDS::CameraCount();
+		char camName[100];
+		for (int i = 0; i < cameraNum; i++)
+		{
+			CCameraDS::CameraName(i, camName, 100);
+			std::string cN(camName);
+			if (cN.find("UVC") != std::string::npos)
+			{
+				IsCameraUSB(true, QString::fromStdString(cN), i);
+			}
+		}
+
+		bReturn = true;
+	} while (false);
+
+	return bReturn;
+}
+
 void AngstrongDemo::CreateDockWindow()
 {
 	//增加camerlist停靠窗口
@@ -257,6 +283,13 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_display->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_display);
 	m_dock_display->setWidget(&m_DispView);
+	//增加XMView停靠窗口
+	QDockWidget *m_dock_xm = new QDockWidget(tr("XM"));
+	m_dock_xm->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
+	m_dock_xm->setAllowedAreas(Qt::AllDockWidgetAreas);
+	addDockWidget(Qt::RightDockWidgetArea, m_dock_xm);
+	m_dock_xm->setWidget(&m_XMView);
 	//增加ImageView停靠窗口
 	//QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
 	//m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -273,6 +306,7 @@ void AngstrongDemo::CreateDockWindow()
 
 	//创建窗口布局
 	tabifyDockWidget(m_dock_paramlist, m_dock_savedata);
+	tabifyDockWidget(m_dock_paramlist, m_dock_xm);
 	tabifyDockWidget(m_dock_output, m_dock_display);
 }
 

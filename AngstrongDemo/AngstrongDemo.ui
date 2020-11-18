@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="AngstrongDemo.qrc">
-    <normaloff>:/AngstrongDemo/image_ico/camera.jpg</normaloff>:/AngstrongDemo/image_ico/camera.jpg</iconset>
+    <normaloff>:/AngstrongDemo/image_ico/放大版摄像头.png</normaloff>:/AngstrongDemo/image_ico/放大版摄像头.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">

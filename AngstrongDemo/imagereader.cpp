@@ -1,5 +1,5 @@
 ﻿#include "imagereader.h"
-#include "util.hpp"
+#include "utilimage.hpp"
 #include <QDebug>
 #include "../dense_tencent/dsense_interface.h"
 #include <QDir>
@@ -68,8 +68,6 @@ imageReader::imageReader(QObject *parent)
 	m_bIsSaveImage = false;//初始化保存数据信号
 	m_MouseX = -1;
 	m_MouseY = -1;
-	//初始化Camera
-	Initialize();
 }
 
 imageReader::~imageReader()
@@ -157,6 +155,7 @@ void imageReader::buildDataThread()
 				readpdData();
 				getParam = true;
 			}
+			
 			bool thisRoundIR = true;
 			uchar* ptr = datagroup + frameHeight * frameWidth * 2;
 			memcpy(&rgbT, datagroup + 640 * 480 * 2 - 8, sizeof(long long));
@@ -268,6 +267,23 @@ void imageReader::buildDataThread()
 					}
 					tmp += frameWidth;
 				}
+				//判断图像数据是否正常，解决闪屏问题
+				/*for (int i = 0; i < frameHeight*frameWidth; ++i)
+				{
+					if (i == frameHeight * frameWidth-1)
+					{
+						Sleep(3);
+						continue;
+					}
+					if (*irData != '0')
+					{
+						break;
+					}
+					else
+					{
+						irData += i;
+					}
+				}*/
 				irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irData);
 				irFrame.copyTo(irFrame16bit);
 				cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
@@ -331,8 +347,8 @@ void imageReader::buildDataThread()
 			}
 
 			clock_t t2 = clock();
-			if (t2 - t1 < 30)
-				Sleep(30 - t2 + t1);
+			if (t2 - t1 < 34)
+				Sleep(34 - t2 + t1);
 			else Sleep(10);
 			qDebug() << "ONE ROUND : " << t2 - t1;
 			
@@ -373,27 +389,6 @@ void imageReader::release()
 bool imageReader::IsRunning() const
 {
 	return isRunning;
-}
-
-bool imageReader::Initialize()
-{
-	bool bReturn = false;
-	do 
-	{
-		int cameraNum = CCameraDS::CameraCount();
-		char camName[100];
-		for (int i = 0; i < cameraNum; i++) {
-			CCameraDS::CameraName(i, camName, 100);
-			std::string cN(camName);
-			//if (cN.find("UVC") != std::string::npos) ui.comboBoxModule->addItem(QString::number(i));
-		}
-		/*if (ui.comboBoxModule->count() == 0) {
-			QMessageBox::critical(NULL, "ERROR", "No Camera Found", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes); camIndex = -1; return;
-		}*/
-
-		bReturn = true;
-	} while (false);
-	return false;
 }
 
 void imageReader::run(int camIndex)
