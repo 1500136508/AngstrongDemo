@@ -250,6 +250,13 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_savedata->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_savedata);
 	m_dock_savedata->setWidget(&m_SaveData);
+	//增加DisplayView停靠窗口
+	QDockWidget *m_dock_display = new QDockWidget(tr("Display"));
+	m_dock_display->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
+	m_dock_display->setAllowedAreas(Qt::AllDockWidgetAreas);
+	addDockWidget(Qt::RightDockWidgetArea, m_dock_display);
+	m_dock_display->setWidget(&m_DispView);
 	//增加ImageView停靠窗口
 	//QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
 	//m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -266,6 +273,7 @@ void AngstrongDemo::CreateDockWindow()
 
 	//创建窗口布局
 	tabifyDockWidget(m_dock_paramlist, m_dock_savedata);
+	tabifyDockWidget(m_dock_output, m_dock_display);
 }
 
 void AngstrongDemo::AddToolBar()
@@ -285,6 +293,8 @@ void AngstrongDemo::BuildConnect()
 	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendSaveImageInfo(QString)), &m_SaveData, SLOT(ReceiveSaveImageInfo(QString)));
+	connect(m_pMainImageView->m_pCamera, SIGNAL(SendLocationDepth(int, int, float)), &m_DispView, SLOT(ReceiveLocationDepth(int, int, float)));
+	connect(m_pMainImageView->ui->m_gView_ImageView, SIGNAL(SendImageGray(int, int, int)), &m_DispView, SLOT(ReceiveImageGray(int, int, int)));
 }
 
 void AngstrongDemo::registerDevice()

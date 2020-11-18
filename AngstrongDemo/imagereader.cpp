@@ -57,7 +57,6 @@ imageReader::imageReader(QObject *parent)
     _buf2 = new unsigned char[frameHeightR * frameWidthR * (4 * sizeof(int) + sizeof(uchar))];
 
     camds = new CCameraDS();
-    dsaver = new dataSaver();
 
     rgbT = irT = depthT = 0;
 
@@ -67,6 +66,10 @@ imageReader::imageReader(QObject *parent)
     QtConcurrent::run( this,&imageReader::buildDataThread);
 
 	m_bIsSaveImage = false;//初始化保存数据信号
+	m_MouseX = -1;
+	m_MouseY = -1;
+	//初始化Camera
+	Initialize();
 }
 
 imageReader::~imageReader()
@@ -142,6 +145,7 @@ void imageReader::buildDataThread()
 		{
 			if (!isRunning)
 			{
+				Sleep(3);//优化cpu占用率
 				continue;
 			}
 			memset(datagroup, 0, 640 * 480 * 2);
@@ -158,6 +162,7 @@ void imageReader::buildDataThread()
 			memcpy(&rgbT, datagroup + 640 * 480 * 2 - 8, sizeof(long long));
 			if (rgbT == lastRgbT)
 			{
+				Sleep(3);
 				continue;
 			}
 			else
@@ -238,19 +243,6 @@ void imageReader::buildDataThread()
 				memcpy(predepthData, depthData, frameHeight*frameWidth * sizeof(float));
 #endif
 				depth2RGB(depthData, depthDataRGB, tmpdepth, frameHeightR, frameWidthR, frameHeight, frameWidth, rgb_param);
-				//            cv::imwrite("ori_ir.bmp",irFrame);
-				//            cv::imwrite("rgbFrame.bmp",RGBFrame);
-				//            ir2RGB(irFrame.data,depthData,frameHeight,frameWidth,rgb_param,rectIn,moveX,moveY);
-
-				//            if ((moveX != 0||moveY!=0) &&( abs(moveX-preMoveX) > 10 || abs(moveY- preMoveY) > 10)){
-				//                preMoveX = moveX;
-				//                preMoveY = moveY;
-				//            }
-				//            else{
-				//                moveX = preMoveX;
-				//                moveY = preMoveY;
-				//            }
-				//            qDebug()<<moveX<<" "<<moveY;
 
 				depthFrame = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_32FC1, depthDataRGB);
 				cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
@@ -312,6 +304,20 @@ void imageReader::buildDataThread()
 				cv::hconcat(container, combineFrame);
 				emit sendImage(combineFrame);
 			}
+			//发送深度信息
+			if (m_MouseX >= 0 && m_MouseY >= 0)
+			{
+				int xhere = m_MouseX % frameHeightR;
+				int yhere = m_MouseY % frameWidthR;
+				if (m_MouseX >= frameHeightR)
+				{
+					emit SendLocationDepth(xhere, yhere, depthDataRGB[yhere*frameHeightR + xhere]);
+				}
+				else
+				{
+					emit SendLocationDepth(-1, -1, 0);
+				}
+			}
 
 			if (m_bIsSaveImage)
 			{
@@ -325,8 +331,8 @@ void imageReader::buildDataThread()
 			}
 
 			clock_t t2 = clock();
-			if (t2 - t1 < 34)
-				Sleep(34 - t2 + t1);
+			if (t2 - t1 < 30)
+				Sleep(30 - t2 + t1);
 			else Sleep(10);
 			qDebug() << "ONE ROUND : " << t2 - t1;
 			
@@ -339,9 +345,17 @@ void imageReader::buildDataThread()
 	}
 }
 
+int imageReader::setParam(float _fx, float _fy, float _cx, float _cy)
+{
+	fx = _fx;
+	fy = _fy;
+	cx = _cx;
+	cy = _cy;
+	return 0;
+}
+
 void imageReader::release()
 {
-    dsaver->releaseDateSaver();
     quitProgram = true;
     delete[] datagroup;
     delete[] datagroupR;
@@ -359,6 +373,27 @@ void imageReader::release()
 bool imageReader::IsRunning() const
 {
 	return isRunning;
+}
+
+bool imageReader::Initialize()
+{
+	bool bReturn = false;
+	do 
+	{
+		int cameraNum = CCameraDS::CameraCount();
+		char camName[100];
+		for (int i = 0; i < cameraNum; i++) {
+			CCameraDS::CameraName(i, camName, 100);
+			std::string cN(camName);
+			//if (cN.find("UVC") != std::string::npos) ui.comboBoxModule->addItem(QString::number(i));
+		}
+		/*if (ui.comboBoxModule->count() == 0) {
+			QMessageBox::critical(NULL, "ERROR", "No Camera Found", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes); camIndex = -1; return;
+		}*/
+
+		bReturn = true;
+	} while (false);
+	return false;
 }
 
 void imageReader::run(int camIndex)
@@ -461,7 +496,7 @@ void imageReader::readpdData()
     T.at<float>(1, 2) = rgb_param.T2;
     T.at<float>(2, 2) = rgb_param.T3;
     tmpM = K_rgb*R*K_ir.inv() + K_rgb*T*K_ir.inv() / 600;
-    dsaver->setParam(rgb_param.fxrgb,rgb_param.fyrgb,rgb_param.cxrgb,rgb_param.cyrgb);
+    setParam(rgb_param.fxrgb,rgb_param.fyrgb,rgb_param.cxrgb,rgb_param.cyrgb);
     std::ofstream logFile;logFile.open("moudule_param.yaml");
     logFile<<"fx: "<<rgb_param.fxrgb<<std::endl;
     logFile<<"fy: "<<rgb_param.fyrgb<<std::endl;
@@ -472,4 +507,10 @@ void imageReader::readpdData()
     logFile<<"maxd: "<<2000<<std::endl;
     logFile<<"f0: "<<rgb_param.fxrgb<<std::endl;
     logFile.close();
+}
+
+void imageReader::ReceiveMouseInfo(int x, int y)
+{
+	m_MouseX = x;
+	m_MouseY = y;
 }

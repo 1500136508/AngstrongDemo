@@ -13,6 +13,7 @@
 #include "outputview.h"
 #include "usbdevice.h"
 #include "savedata.h"
+#include "displayview.h"
 
 class AngstrongDemo : public QMainWindow
 {
@@ -46,6 +47,7 @@ private:
 	ParameterView m_ParamView;
 	OutputView m_OutputView;
 	SaveData m_SaveData;
+	DisplayView m_DispView;
 
 	std::map<QString, unsigned> m_mpCameraDevice;
 	std::map<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map

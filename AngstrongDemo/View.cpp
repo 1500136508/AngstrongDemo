@@ -200,11 +200,11 @@ void View::mouseMoveEvent(QMouseEvent * event)
 	{
 		if (!m_spPix->pixmap().isNull())//图像不为空
 		{
-			int x = event->pos().x();
-			int y = event->pos().y();
+			int view_x = event->pos().x();
+			int view_y = event->pos().y();
 
 			QPointF qPoint1 = m_spPix->scenePos();
-			QPointF qPoint2 = mapToScene(x, y);
+			QPointF qPoint2 = mapToScene(view_x, view_y);
 			int imageW = m_spPix->pixmap().width();
 			int imageH = m_spPix->pixmap().height();
 			qreal ratio_x = m_ImageWidth / (imageW*1.0);
@@ -212,18 +212,32 @@ void View::mouseMoveEvent(QMouseEvent * event)
 			if (qPoint2.x() >= qPoint1.x() && qPoint2.x() <= qPoint1.x() + imageW &&
 				qPoint2.y() >= qPoint1.y() && qPoint2.y() <= qPoint1.y() + imageH)//判断鼠标是否在图像上
 			{
-				int x = (qPoint2.x() - qPoint1.x())*ratio_x;//将缩放后的图像坐标转换为实际的图像坐标
-				int y = qPoint2.y() * ratio_y;
+				QRect view_rect = geometry();
+				int x = 0;
+				int y = 0;
+				if (view_rect.width() > imageW)//将缩放后的图像坐标转换为实际的图像坐标
+				{
+					int size_w = (view_rect.width() - imageW) / 2;
+					x = (qPoint2.x() - size_w)*(m_ImageWidth*1.0f) / (imageW*1.0f);
+					y = qPoint2.y()*(m_ImageHeight*1.0f) / (imageH*1.0f);
+				}
+				else
+				{
+					int size_y = (view_rect.height() - imageH) / 2;
+					x = qPoint2.x()*(m_ImageWidth*1.0f) / (imageW*1.0f);
+					y = (qPoint2.y() - size_y)*(m_ImageHeight*1.0f) / (imageH*1.0f);
+				}
+
 				if (qImage.valid(x,y))//判断坐标是否有效
 				{
 					QColor color = qImage.pixel(x, y);
 					int GrayValue_R = color.red();
 					int GrayValue_G = color.green();
 					int GrayValue_B = color.blue();
-					qDebug() << "X:" << x << "Y:" << y << "R:" << GrayValue_R << " G:" << GrayValue_G << " B:" << GrayValue_B;
-					emit SendMouseInfo(x, y);
 					emit SendImageGray(GrayValue_R, GrayValue_G, GrayValue_B);
+					qDebug() << "X:" << x << "Y:" << y << "R:" << GrayValue_R << " G:" << GrayValue_G << " B:" << GrayValue_B;
 				}
+				emit SendMouseInfo(x, y);
 			}
 			else
 			{

@@ -72,6 +72,7 @@ private:
 	int				m_nMode;//保存图像的模式
 	int             m_nWriteIndex;//正在保存图像的序号
 	bool            m_bSaveFinish;//保存完成标志
+	volatile bool   m_bIsSaveImage;//是否保存图片
 
 	//线程管理
 	std::thread *m_pThreadSaveImage;

@@ -214,6 +214,7 @@ void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount, QSt
 	}
 	
 	m_pCamera->SetSaveImageStatus(bSave);
+	m_bIsSaveImage = bSave;
 	if (!bSave)
 	{
 		m_pCamera->SetSaveImageStatus(false);
@@ -229,7 +230,8 @@ void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount, QSt
 	m_nMode = eMode;
 	m_nSaveImageCount = nSaveCount;
 	m_bSaveFinish = false;
-	emit SendSaveImageInfo("Start to save data");
+	QString qstrSaveImageInfo = "Star to Save: " + QString::number(0) + "/" + QString::number(m_nSaveImageCount);
+	emit SendSaveImageInfo(qstrSaveImageInfo);
 }
 
 void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
@@ -300,6 +302,7 @@ void ImageView::BuildConnet()
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), this, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendImageGray(int,int,int)), this, SLOT(ReceiveImageGray(int, int, int)));//接收鼠标对应的图像像素灰度值信息
 	ret = connect(m_pCamera, SIGNAL(sendSaveImageData(cv::Mat,cv::Mat,float*)), this, SLOT(ReceiveSaveImageData(cv::Mat, cv::Mat, float*)));
+	ret = connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), m_pCamera, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
 }
 
 void ImageView::SaveImageThread()
@@ -312,6 +315,11 @@ void ImageView::SaveImageThread()
 
 	while (!m_bProgramExit)
 	{
+		if (!m_bIsSaveImage)
+		{
+			Sleep(3);
+			continue;
+		}
 		if (m_nWriteIndex < m_nSaveDataIndex)
 		{
 			if (!m_bSaveFinish && m_nWriteIndex >= m_nSaveImageCount)
@@ -398,8 +406,8 @@ void ImageView::SaveImageThread()
 						{
 							float z = m_pDataDepth[m_nWriteIndex][y*frameHeightR + x];
 							if (z < 10e-6 && z > -10e-6) continue;
-							float x_rw = ((float)x - m_pCamera->dsaver->cx) * z / m_pCamera->dsaver->fx;
-							float y_rw = ((float)y - m_pCamera->dsaver->cy) * z / m_pCamera->dsaver->fy;
+							float x_rw = ((float)x - m_pCamera->cx) * z / m_pCamera->fx;
+							float y_rw = ((float)y - m_pCamera->cy) * z / m_pCamera->fy;
 							fprintf(plyfile, "%.6f %.6f %.6f\n", x_rw, y_rw, z);
 						}
 					}
@@ -421,6 +429,11 @@ void ImageView::SaveImageThread()
 				emit SendSaveImageInfo("Error:Fail to save!!!" );
 				continue;
 			}
+		}
+		else
+		{
+			Sleep(3);
+			continue;
 		}
 	}
 }

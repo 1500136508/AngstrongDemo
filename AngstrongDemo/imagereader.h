@@ -7,7 +7,6 @@
 #include <QThreadPool>
 #include <queue>
 #include <QMutex>
-#include "datasaver.h"
 #include <fstream>
 #include "logwriter.h"
 #define EFE_FORMAT
@@ -23,6 +22,7 @@ public:
     void release();
 	void run(int camIndex);
 	bool IsRunning()const;
+	bool Initialize();
 	void OpenCamera(int index);
 	void CloseCamera();
 	void Live();
@@ -30,7 +30,10 @@ public:
 	void Stop();
 	void SetSaveImageStatus(bool bIsSaveImage);
 
-	dataSaver *dsaver;
+	float fx = 0;
+	float fy = 0;
+	float cx = 0;
+	float cy = 0;
 private:
     std::vector<cv::Mat> container;
 
@@ -90,14 +93,21 @@ private:
 
     QThreadPool* poolDepth;
 
-    void buildDataThread();
+	//当前鼠标位置
+	int m_MouseX;
+	int m_MouseY;
 
+    void buildDataThread();
+	// 设置内外参
+	int setParam(float _fx, float _fy, float _cx, float _cy);
 	volatile bool m_bIsSaveImage;
 private slots:
     void readpdData();
+	void ReceiveMouseInfo(int x, int y);
 signals:
     void sendImage(cv::Mat);
 	void sendSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB,float *depth);
+	void SendLocationDepth(int x, int y, float depth);
 };
 
 #endif // IMAGEREADER_H
