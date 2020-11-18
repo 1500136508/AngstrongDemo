@@ -109,7 +109,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CameraDS.cpp" />
-    <ClCompile Include="datasaver.cpp" />
+    <ClCompile Include="displayview.cpp" />
+    <ClCompile Include="graphicsrectitem.cpp" />
     <ClCompile Include="imageitem.cpp" />
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="logwriter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
+    <ClCompile Include="savedata.cpp" />
     <ClCompile Include="usbdevice.cpp" />
     <ClCompile Include="View.cpp" />
     <QtRcc Include="AngstrongDemo.qrc" />
@@ -125,18 +127,16 @@
     <ClCompile Include="AngstrongDemo.cpp" />
     <ClCompile Include="cameraview.cpp" />
     <ClCompile Include="imageview.cpp" />
-    <ClCompile Include="labview.cpp" />
     <ClCompile Include="main.cpp" />
     <QtUic Include="cameraview.ui" />
+    <QtUic Include="displayview.ui" />
     <QtUic Include="imageview.ui" />
     <QtUic Include="outputview.ui" />
     <QtUic Include="parameterview.ui" />
+    <QtUic Include="savedata.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="imageview.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="labview.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="cameraview.h" />
@@ -155,7 +155,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h" />
-    <ClInclude Include="datasaver.h" />
+    <QtMoc Include="displayview.h" />
+    <ClInclude Include="graphicsrectitem.h" />
+    <QtMoc Include="savedata.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />

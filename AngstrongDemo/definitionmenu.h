@@ -9,5 +9,8 @@ enum EImageViewMenu
 	EImageViewMenu_ZoomOut,
 	EImageViewMenu_ZoomFit,
 	EImageViewMenu_Measure,
+
+	EImageViewMenu_Child_MeasureRect,
+	EImageViewMenu_Child_MeasureCircle,
 	EImageViewMenu_Total,
 };
