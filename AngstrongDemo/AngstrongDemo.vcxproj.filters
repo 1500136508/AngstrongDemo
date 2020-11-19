@@ -110,9 +110,6 @@
     <ClCompile Include="View.cpp">
       <Filter>Source Files\FormView\ImageView</Filter>
     </ClCompile>
-    <ClCompile Include="graphicsrectitem.cpp">
-      <Filter>Source Files\FormView\ImageView</Filter>
-    </ClCompile>
     <ClCompile Include="savedata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -132,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\xmodemV2\xmodem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphicsrectitem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -198,6 +198,9 @@
     <QtMoc Include="xmview.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="graphicsrectitem.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h">
@@ -211,9 +214,6 @@
     </ClInclude>
     <ClInclude Include="usbdevice.h">
       <Filter>Header Files\Device</Filter>
-    </ClInclude>
-    <ClInclude Include="graphicsrectitem.h">
-      <Filter>Header Files\FormView\ImageView</Filter>
     </ClInclude>
     <ClInclude Include="..\xmodemV2\comm.h">
       <Filter>Header Files</Filter>

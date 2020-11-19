@@ -75,41 +75,58 @@ imageReader::~imageReader()
     release();
 }
 
-void imageReader::OpenCamera(int index)
+bool imageReader::OpenCamera(int index)
 {
+	bool bReturn = false;
+	do 
+	{
 #ifndef EFE_FORMAT
-	if (!camds->isOpened() && !camds->OpenCamera(index, frameWidth, 1200, true))
-	{
-#else
-	//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
-	if (!camds->isOpened())
-	{
-#endif
-		if (!camds->OpenCamera(index, frameWidth, 480, true))
+		if (!camds->isOpened() && !camds->OpenCamera(index, frameWidth, 1200, true))
 		{
-			qDebug() << "camera init failed";
-			//emit sendLostServer(true);
-			return;
+#else
+		//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
+		if (!camds->isOpened())
+		{
+#endif
+			//CloseCamera();
+			if (!camds->OpenCamera(index, frameWidth, 480, true))
+			{
+				//qDebug() << "camera init failed";
+				break;
+			}
 		}
-	}
-	else if (camds->isOpened())
-	{
-		//emit sendLostServer(false);
-	}
+
+		bReturn = true;
+	} while (false);
+
+	return bReturn;
 }
 
 void imageReader::CloseCamera()
 {
-	camds->CloseCamera();
+	isRunning = false;
+	Sleep(3000);
+	if (camds->isOpened())
+	{
+		camds->CloseCamera();
+	}
+	else
+	{
+
+	}
+}
+
+bool imageReader::IsOpen() const
+{
+	return camds->isOpened();
 }
 
 void imageReader::Live()
 {
-	if (!camds->isOpened())
+	if (camds->isOpened())
 	{
-		OpenCamera(0);
+		isRunning = true;
 	}
-	isRunning = true;
 }
 
 void imageReader::Pause()
@@ -120,7 +137,7 @@ void imageReader::Pause()
 void imageReader::Stop()
 {
 	isRunning = false;
-	CloseCamera();
+	//CloseCamera();
 }
 
 void imageReader::buildDataThread()
@@ -373,16 +390,52 @@ int imageReader::setParam(float _fx, float _fy, float _cx, float _cy)
 void imageReader::release()
 {
     quitProgram = true;
-    delete[] datagroup;
-    delete[] datagroupR;
-    delete[] irData;
-    delete[] depthData;
-    delete[] predepthData;
-    delete[] depthDataRGB;
-    delete[] tmpdepth;
-    delete[] _buf;
-    delete[] _buf2;
-
+	if (datagroup)
+	{
+		delete[] datagroup;
+		datagroup = nullptr;
+	}
+	if (datagroupR)
+	{
+		delete[] datagroupR;
+		datagroupR = nullptr;
+	}
+    if (irData)
+    {
+		delete[] irData;
+		irData = nullptr;
+    }
+    if (depthData)
+    {
+		delete[] depthData;
+		depthData = nullptr;
+    }
+    if (predepthData)
+    {
+		delete[] predepthData;
+		predepthData = nullptr;
+    }
+    if (depthDataRGB)
+    {
+		delete[] depthDataRGB;
+		depthDataRGB = nullptr;
+    }
+    if (tmpdepth)
+    {
+		delete[] tmpdepth;
+		tmpdepth = nullptr;
+    }
+    if (_buf)
+    {
+		delete[] _buf;
+		_buf = nullptr;
+    }
+    if (_buf2)
+    {
+		delete[] _buf2;
+		_buf2 = nullptr;
+    }
+    
     CloseCamera();
 }
 

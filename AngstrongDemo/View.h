@@ -23,6 +23,9 @@ public:
 	void ZoomFit();
 	// the length2 with point1 and point2
 	float getLength2(const QPointF& point1, const QPointF& point2);
+
+	std::shared_ptr<ImageScene> GetScene()const;
+	void ClearAll();
 protected:
 	bool Open();//Only Framework
 	bool Save();//Only Framework

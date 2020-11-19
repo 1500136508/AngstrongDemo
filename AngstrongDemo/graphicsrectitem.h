@@ -1,136 +1,117 @@
-#pragma once
-#include <QCursor>
+﻿#ifndef MYGRAPHICCALIPERITEM_H
+#define MYGRAPHICCALIPERITEM_H
+#include <QObject>
+#include <QWidget>
+#include <QMouseEvent>
+#include <QGraphicsScene>
 #include <QGraphicsRectItem>
-#include <QStyleOption>
-
-const Qt::CursorShape handleCursors[] = 
-{
-	Qt::SizeFDiagCursor,
-	Qt::SizeVerCursor,
-	Qt::SizeBDiagCursor,
-	Qt::SizeHorCursor,
-	Qt::SizeFDiagCursor,
-	Qt::SizeVerCursor,
-	Qt::SizeBDiagCursor,
-	Qt::SizeHorCursor,
+#include <QGraphicsSceneMouseEvent>
+#include <QRect>
+#include <QPainter>
+#include <QPolygon>
+#include <QList>
+#include <QTransform>
+#include <QMap>
+enum CALIPER_STATE_FLAG {
+	CALI_DEFAULT = 0,
+	CALI_RECT_TL,//标记当前为用户按下矩形的左上角
+	CALI_RECT_TR,//标记当前为用户按下矩形的右上角
+	CALI_RECT_BL,//左下角
+	CALI_RECT_BR,//右下角
+	CALI_RECT_SHEAR,//标记当前为用户按下矩形的下边中点的切变矩形
+	CALI_RECT_MOVE,//标记当前为鼠标拖动矩形移动状态
+	CALI_RECT_ROTATE,//标记当前为旋转状态
+	CALIMOV_POLYGON_POINT//移动多边形的某个点
+};
+enum CALIPER_SHAPE_TYPE {
+	CALIPER_RECT,//矩形
+	CALIPER_LINE,
+	CALIPER_CIRCLE,
+	CALIPER_ELLIPSE
 };
 
-const QString mapCursors[] = 
+class GraphicsRectItem :public QObject, public QGraphicsItem
 {
-	"",
-	":/QtGuiApplication4/Resources/rotate_top_left.png",
-	":/QtGuiApplication4/Resources/rotate_top_middle.png",
-	":/QtGuiApplication4/Resources/rotate_top_right.png",
-	":/QtGuiApplication4/Resources/rotate_middle_right.png",
-	":/QtGuiApplication4/Resources/rotate_bottom_right.png",
-	":/QtGuiApplication4/Resources/rotate_bottom_middle.png",
-	":/QtGuiApplication4/Resources/rotate_bottom_left.png",
-	":/QtGuiApplication4/Resources/rotate_middle_left.png"
-};
-
-class GraphicsRectItem : public QGraphicsRectItem
-{
-	enum MOUSEHANDLE {
-		handleNone = 0,
-		handleTopLeft = 1,
-		handleTopMiddle = 2,
-		handleTopRight = 3,
-		handleMiddleRight = 4,
-		handleBottomRight = 5,
-		handleBottomMiddle = 6,
-		handleBottomLeft = 7,
-		handleMiddleLeft = 8,
-	};
-
-	enum MOUSEROTATEHANDLE {
-		handleRotateNone = 0,
-		handleRotateTopLeft = 1,
-		handleRotateTopMiddle = 2,
-		handleRotateTopRight = 3,
-		handleRotateMiddleRight = 4,
-		handleRotateBottomRight = 5,
-		handleRotateBottomMiddle = 6,
-		handleRotateBottomLeft = 7,
-		handleRotateMiddleLeft = 8,
-	};
-
-	const float c_handle_size = 8;
-	const float c_handle_space = -4.0;
-
-	const float c_rotate_tolerance = 20.0;
-	const int c_handle_cursors_size = 8;	// handleCursors[] size
-	const int c_rotate_cursors_size = 9;	// MOUSEROTATEHANDLE size
-	const QSize c_rotate_cursor_size = QSize(20, 20);
-
+	Q_OBJECT
 public:
-	GraphicsRectItem(QGraphicsRectItem *parent = Q_NULLPTR);
+	CALIPER_SHAPE_TYPE m_ShapeType;
+	GraphicsRectItem(QGraphicsItem *parent = nullptr);
 	~GraphicsRectItem();
-
-	// Returns the shape of this item as a QPainterPath in local coordinates.
-	QPainterPath shape() const override;
-
-	// Returns the bounding rect of the shape (including the resize handles).
-	QRectF boundingRect() const override;
-
-	void updateHandlesPos();
-
-	bool isHover();
-
-	// point is scene coordinate
-	QCursor getRotateCursor(const QPointF& point);
-	// set point for start rorate
-	// @note point is scene coordinate
-	void setRotateStart(const QPointF& point);
-	// set point for end rorate
-	// @note point is scene coordinate
-	void setRotateEnd(const QPointF& point);
-
-protected:
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
-
-	void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-
-	//  Executed when the mouse leaves the shape (NOT PRESSED).
-	void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-
-	// Executed when the mouse moves over the shape (NOT PRESSED).
-	void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
-
-	//  Executed when the mouse is being moved over the item while being pressed.
-	void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-
-	// Executed when the mouse is pressed on the item.
+	//GraphicsRectItem(QRectF m_OriginRect = QRectF(0,0,100,100));
+	QRectF          boundingRect() const;
+	QPainterPath    shape() const;
+	QPainterPath    getCollideShape();
+	QPainterPath    getCollideShapeTopLeftAsOriginPoint();
+	void setRectSize(QRectF mrect, bool bResetRotateCenter = true);
+	void setShearRectSize(QRectF mrect);
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 	void mousePressEvent(QGraphicsSceneMouseEvent *event);
-
-	// Executed when the mouse is released from the item.
+	void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-
-	// Executed when the key is pressed on the item.
-	void keyPressEvent(QKeyEvent *event);
-
+	int type() const;
+	void SetRotate(qreal RotateAngle);
+	void SetSideCursorByRotateAngle(qreal RotateAngle);
+	//计算两点距离
+	double CalDis(const double x1, const double y1, const double x2, const double y2);
+	//计算点(ptx,pty)到线段(x1y1,x2y2)的距离
+	double CalDis(const double ptx, const double pty, const double x1, const double y1, const double x2, const double y2);
+	double CalDisPoint2longLine(const double ptx, const double pty, const double x1, const double y1, const double x2, const double y2);
+	//计算斜切后分别经过中心点和鼠标所在点的两平行线的2个焦点
+	bool get2CrossPt(QPointF p0, QPointF p1, QPointF p2, QPointF pc, QPointF pos, QPointF &pCross1, QPointF &pCross2);
+	QPointF pCross1, pCross2, pCross3, pCross5;
+	QPointF         getRotatePoint(QPointF ptCenter, QPointF ptIn, qreal angle);//获取旋转后的点
+	QList<QPointF>  getRotatePoints(QPointF ptCenter, QList<QPointF> ptIns, qreal angle);//获取多个旋转后的点
+	QPolygonF       getRotatePolygonFromRect(QPointF ptCenter, QRectF rectIn, qreal angle);//将矩形旋转之后返回多边形
+	QPolygonF       getRotatePolygonFromPolygon(QPointF ptCenter, QPolygonF polyIn, qreal angle);//将多边形旋转之后返回多边形
+	QRectF          getBoundedRectToSceen();
+	QPolygonF       getCrtPolygonToScreen();
+	QPointF getSmallRotateRectCenter(QPointF ptA, QPointF ptB);//获取旋转时候矩形正上方的旋转标记矩形
+	QRectF  getSmallRotateRect(QPointF ptA, QPointF ptB);
+	qreal   m_RotateAngle;
+	QPointF m_RotateCenter;
+	bool        m_bKeepShadowLength;//保持投影长度不变
 private:
-	//  Returns the resize handle below the given point.
-	MOUSEHANDLE handleAt(const QPointF& point);
-	//  Perform shape interactive resize.
-	void interactiveResize(const QPointF& mousePos);
+	//CALIPER_RECT矩形卡尺使用
+	QRectF      m_RECT;
+	QRectF      m_newShearRECT;
+	QPolygonF   m_RECTShear;//矩形斜切后
+	QPolygonF   m_RECT_Pol;//矩形旋转后
+	QPolygonF   m_RECT_TL_Pol;//左上角顶点旋转后
+	QRectF      m_RECT_TL;//左上角顶点
+	QPolygonF   m_RECT_TR_Pol;//右上角顶点旋转后
+	QRectF      m_RECT_TR;//右上角顶点
+	QPolygonF   m_RECT_BL_Pol;//左下角顶点旋转后
+	QRectF      m_RECT_BL;//左下角顶点
+	QPolygonF   m_RECT_BR_Pol;//右下角顶点旋转后
+	QRectF      m_RECT_BR;//右下角顶点
+	QPolygonF   m_RECT_Inside_Pol;//内部区域旋转后
+	QPolygonF   m_RECT_InsideShear;//内部区域斜切后
+	QRectF      m_RECT_Inside;//内部区域
+	QPolygonF   m_RECT_Scan_Dir_Pol;//扫描方向标记旋转后
+	QRectF      m_RECT_Scan_Dir;//扫描方向标记
+	QPolygonF   m_RECT_Shadow_Dir_Pol;//投影方向标记旋转后
+	QRectF      m_RECT_Shadow_Dir;//投影方向标记
+	qreal       m_fShadowLength;//投影长度
+	QPolygonF   m_RECT_Rotate_Pol;//旋转的标记的矩形旋转后形成的多边形
+	QRectF      m_RECT_Rotate;//旋转的标记的矩形
+	QPolygonF   m_RECT_Shear_Pol;//切变矩形标记旋转后
+	QRectF      m_RECT_Shear;//切变矩形标记
+	qreal       m_fShearX;//切变矩形x方向参数
 
-	// the length2 with point1 and point2
-	float getLength2(const QPointF& point1, const QPointF& point2);
+	//
+	QPointF     m_startPos;
+	CALIPER_STATE_FLAG  m_StateFlag;
+	QMenu       *pMenu;//弹出菜单
+	QPolygonF   m_oldPolygon;
+	QMap<qreal, int> m_MapDis2Line;//记录鼠标右击时的坐标离m_oldPolygon中每一条线段的距离
+	qreal       m_MinDis;//记录鼠标右击时，离m_oldPolygon最近一条线段的距离；
+	int         m_nPolygonMovePointIndex;//移动多边形顶点的索引
+	int         m_nPolyRemoveIndex;
 
-private:
-	std::map<MOUSEROTATEHANDLE, QPointF> m_points;
-	std::map<MOUSEROTATEHANDLE, QCursor> m_cursorRotate;
-	std::map<MOUSEHANDLE, QRectF> m_handles;
-	MOUSEHANDLE m_handle;
-	QCursor m_cursor;
-	QPointF m_mousePressPos;
-	QRectF m_mousePressRect;
-
-	QPointF m_mouseRotateStart;
-	float m_fLastAngle;
-
-	MOUSEHANDLE m_bhandleSelected;
-
-	bool m_isHover;
+	bool        m_bResize;
+protected:
+private slots:
+	void onMenuEvent();//弹出菜单点击后响应函数
 };
 
+#endif // MYGRAPHICCALIPERITEM_H

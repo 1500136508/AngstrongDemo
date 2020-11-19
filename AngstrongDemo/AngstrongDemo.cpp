@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QPalette>
 #include <QString>
+#include <QDesktopWidget>
 #include "AngstrongDemo.h"
 
 AngstrongDemo::AngstrongDemo(QWidget *parent)
@@ -33,10 +34,11 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	//{
 	//	delete p;//去除界面的中间窗口，实现任意区域停靠
 	//}
+	//setWindowFlags(Qt::FramelessWindowHint);//去掉边框
 	setDockNestingEnabled(true);//打开Dock嵌套功能
 
 	//嵌入qss进行美化
-	QFile file("../qss/black.qss");
+	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
 	QTextStream filetext(&file);
 	stylesheet = filetext.readAll();
@@ -46,6 +48,10 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 	//初始化识别相机列表
 	InitCamera();
+
+	//居中显示
+	QDesktopWidget* desktop = QApplication::desktop();
+	move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2);
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -74,9 +80,9 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 {
 	MSG* msg = reinterpret_cast<MSG*>(message);
 	int msgType = msg->message;
-	static int m_sCameraDeviceIndex = -1;//局部静态变量，用来存储USBCamera序号
 	if (msgType == WM_DEVICECHANGE)
 	{
+		InitCamera();
 		PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)msg->lParam;
 		switch (msg->wParam)
 		{
@@ -132,9 +138,9 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
 						QString qstrName = m_usbList.at(2);
-						++m_sCameraDeviceIndex;
-						m_mpCameraDevice.insert({ qstrName, m_sCameraDeviceIndex });
-						emit IsCameraUSB(true, qstrName,m_mpCameraDevice[qstrName]);
+						//++m_sCameraDeviceIndex;
+						/*m_mpCameraDevice.insert({ qstrName, m_sCameraDeviceIndex });
+						emit IsCameraUSB(true, qstrName,m_mpCameraDevice[qstrName]);*/
 					}
 				}
 
@@ -143,6 +149,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		break;
 		case DBT_DEVICEREMOVECOMPLETE:
 		{
+			InitCamera();//检查camera
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME)
 			{
 				PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
@@ -185,34 +192,34 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
 						QString qstrUSBName = m_usbList.at(2);
-						emit IsCameraUSB(false, qstrUSBName, m_mpCameraDevice[qstrUSBName]);
-						if (m_sCameraDeviceIndex != 0)
-						{
-							--m_sCameraDeviceIndex;
-						}
-						if (m_mpCameraDevice.find(qstrUSBName) != m_mpCameraDevice.end())//判断map中是否存在该设备
-						{
-							if (!m_mpImageView.empty())
-							{
-								DestroyImageView(m_mpCameraDevice[qstrUSBName]);
-								for (auto iter = m_mpImageView.begin(); iter != m_mpImageView.end(); ++iter)
-								{
-									if (iter->second.first > m_mpCameraDevice.find(qstrUSBName)->second)
-									{
-										--iter->second.first;
-									}
-								}
-							}
+						//emit IsCameraUSB(false, qstrUSBName, m_mpCameraDevice[qstrUSBName]);
+						//if (m_sCameraDeviceIndex != 0)
+						//{
+						//	--m_sCameraDeviceIndex;
+						//}
+						//if (m_mpCameraDevice.find(qstrUSBName) != m_mpCameraDevice.end())//判断map中是否存在该设备
+						//{
+						//	if (!m_mpImageView.empty())
+						//	{
+						//		DestroyImageView(m_mpCameraDevice[qstrUSBName]);
+						//		for (auto iter = m_mpImageView.begin(); iter != m_mpImageView.end(); ++iter)
+						//		{
+						//			if (iter->second.first > m_mpCameraDevice.find(qstrUSBName)->second)
+						//			{
+						//				--iter->second.first;
+						//			}
+						//		}
+						//	}
 
-							for (auto iter = m_mpCameraDevice.begin(); iter != m_mpCameraDevice.end(); ++iter)//遍历map
-							{
-								if (iter->second > m_mpCameraDevice.find(qstrUSBName)->second)
-								{
-									--iter->second;//将移除设备后的设备nIndex全部递减1
-								}
-							}
-							m_mpCameraDevice.erase(m_mpCameraDevice.find(qstrUSBName));//移除该设备
-						}
+						//	for (auto iter = m_mpCameraDevice.begin(); iter != m_mpCameraDevice.end(); ++iter)//遍历map
+						//	{
+						//		if (iter->second > m_mpCameraDevice.find(qstrUSBName)->second)
+						//		{
+						//			--iter->second;//将移除设备后的设备nIndex全部递减1
+						//		}
+						//	}
+						//	m_mpCameraDevice.erase(m_mpCameraDevice.find(qstrUSBName));//移除该设备
+						//}
 					}
 				}
 			}
@@ -228,7 +235,14 @@ bool AngstrongDemo::InitCamera()
 	bool bReturn = false;
 	do 
 	{
+		static int m_sCameraDeviceIndex = -1;              //局部静态变量，用来存储USBCamera序号
 		int cameraNum = CCameraDS::CameraCount();
+		if (cameraNum <= 0)
+		{
+			IsCameraUSB(false, QString(""), -1);
+			m_mpCameraDevice.clear();
+			break;
+		}
 		char camName[100];
 		for (int i = 0; i < cameraNum; i++)
 		{
@@ -236,7 +250,9 @@ bool AngstrongDemo::InitCamera()
 			std::string cN(camName);
 			if (cN.find("UVC") != std::string::npos)
 			{
-				IsCameraUSB(true, QString::fromStdString(cN), i);
+				IsCameraUSB(true, QString::fromStdString(cN) + QString::number(i), i);
+				//++m_sCameraDeviceIndex;
+				m_mpCameraDevice.insert({ QString::fromStdString(cN)+QString::number(i), i });
 			}
 		}
 

@@ -168,8 +168,8 @@
     <ClInclude Include="CameraDS.h" />
     <QtMoc Include="xmview.h" />
     <QtMoc Include="displayview.h" />
-    <ClInclude Include="graphicsrectitem.h" />
     <QtMoc Include="savedata.h" />
+    <QtMoc Include="graphicsrectitem.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />

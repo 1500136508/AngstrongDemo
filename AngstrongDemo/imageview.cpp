@@ -47,7 +47,7 @@ ImageView::ImageView(QWidget *parent) :
 	//qRegisterMetaType<std::string>("std::string");
 	BuildConnet();//建立信号槽
 	//qss 界面美化
-	QFile file("../qss/black.qss");
+	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
 	QTextStream filetext(&file);
 	stylesheet = filetext.readAll();
@@ -248,9 +248,10 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			//m_pCamera->OpenCamera(0);
-			m_pCamera->run(0);
-			emit SendCameraStatus(ECameraStatus_Open);
+			if (m_pCamera->OpenCamera(0))
+			{
+				emit SendCameraStatus(ECameraStatus_Open);
+			}
 		}
 	}
 		break;
@@ -260,6 +261,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 		{
 			m_pCamera->CloseCamera();
 			emit SendCameraStatus(ECameraStatus_Close);
+			//ui->m_gView_ImageView->ClearAll();
 		}
 	}
 		break;
@@ -267,8 +269,11 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			m_pCamera->Live();
-			emit SendCameraStatus(ECameraStatus_Live);
+			if (m_pCamera->IsOpen())
+			{
+				m_pCamera->Live();
+				emit SendCameraStatus(ECameraStatus_Live);
+			}
 		}
 	}
 		break;
@@ -276,8 +281,11 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			m_pCamera->Pause();
-			emit SendCameraStatus(ECameraStatus_Pause);
+			if (m_pCamera->IsRunning())
+			{
+				m_pCamera->Pause();
+				emit SendCameraStatus(ECameraStatus_Pause);
+			}
 		}
 	}
 		break;
@@ -285,7 +293,10 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			m_pCamera->Stop();
+			if (m_pCamera->IsRunning())
+			{
+				m_pCamera->Stop();
+			}
 			emit SendCameraStatus(ECameraStatus_Stop);
 		}
 	}

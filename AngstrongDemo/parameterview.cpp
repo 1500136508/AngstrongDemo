@@ -10,8 +10,8 @@ ParameterView::ParameterView(QWidget *parent) :
 	//初始化界面
 	ui->m_btn_open->setEnabled(true);
 	ui->m_btn_close->setEnabled(false);
-	ui->m_btn_live->setEnabled(true);
-	ui->m_btn_pause->setEnabled(true);
+	ui->m_btn_live->setEnabled(false);
+	ui->m_btn_pause->setEnabled(false);
 	ui->m_btn_stop->setEnabled(false);
 
 	//初始信号槽
@@ -26,6 +26,7 @@ ParameterView::~ParameterView()
 void ParameterView::on_open_clicked()
 {
 	emit SendCameraStatus(ECameraStatus_Open);
+	emit SendCameraStatus(ECameraStatus_Live);
 }
 
 void ParameterView::on_close_clicked()
@@ -50,7 +51,7 @@ void ParameterView::on_stop_clicked()
 
 void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 {
-	return;//目前关闭此功能
+	//return;//目前关闭此功能
 	switch (eStatus)
 	{
 	case ECameraStatus_Unknow:

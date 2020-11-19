@@ -10,12 +10,11 @@ public:
 	ImageScene(const QRectF &sceneRect, QObject *parent = nullptr);
 	ImageScene(qreal x, qreal y, qreal width, qreal height, QObject *parent = nullptr);
 	virtual ~ImageScene();
+
 protected:
 	void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
 	void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
 	void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent);
-		
-
 };
 

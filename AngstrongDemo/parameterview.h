@@ -25,6 +25,7 @@ class ParameterView : public QDialog
 public:
     explicit ParameterView(QWidget *parent = nullptr);
     ~ParameterView();
+
 private slots:
 	void on_open_clicked();
 	void on_close_clicked();

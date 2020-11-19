@@ -92,12 +92,6 @@ void CameraView::mouseDoubleClickEvent(QMouseEvent * event)
 		{
 			emit SelectCamera(iter->first, iter->second.first);
 		}
-		//Only test
-		/*if (index.row() == 0)
-		{
-			qDebug() << index.data().toString();
-			emit SelectCamera(0);
-		}*/
 	}
 }
 
@@ -114,18 +108,11 @@ void CameraView::DetectCameraUSB(bool bUSB,QString qstrUSBName, int nIndex)
 	}
 	else
 	{
-		if (m_mpCameraList.find(qstrUSBName) != m_mpCameraList.end())
+		int count = model->rowCount();
+		for (int i = 0; i < count;++i)
 		{
-			auto iter = m_mpCameraList.find(qstrUSBName);
-			model->removeRow(iter->second.first);
-			for (auto it = m_mpCameraList.begin(); it != m_mpCameraList.end(); ++it)
-			{
-				if (it->second.first > nIndex)
-				{
-					--it->second.first;
-				}
-			}
-			m_mpCameraList.erase(qstrUSBName);
+			model->removeRow(i);
 		}
+		m_mpCameraList.clear();
 	}
 }

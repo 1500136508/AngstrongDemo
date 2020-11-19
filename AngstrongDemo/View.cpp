@@ -27,7 +27,7 @@ View::View(QWidget *pParent /* = nullptr */)
 	setScene(m_spScene.get());//将QGraphicsView添加Scene;
 
 	//qss 皮肤美化
-	QFile file("../qss/black.qss");
+	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
 	QTextStream filetext(&file);
 	stylesheet = filetext.readAll();
@@ -109,6 +109,29 @@ float View::getLength2(const QPointF & point1, const QPointF & point2)
 	return (point1.x() - point2.x()) * (point1.x() - point2.x()) + (point1.y() - point2.y()) * (point1.y() - point2.y());
 }
 
+std::shared_ptr<ImageScene> View::GetScene() const
+{
+	return m_spScene;
+}
+
+void View::ClearAll()
+{
+	QRect view_rect = geometry();
+	QList<QGraphicsItem *> item_list_p = m_spScene->items(QRectF(0, 0, view_rect.width(), view_rect.height()), Qt::IntersectsItemShape);
+
+	//删除元素
+	for (int i = 0; i < item_list_p.size(); i++)
+	{
+		m_spScene->removeItem(item_list_p[i]);  //从scene移除		
+		//if (item_list_p[i])
+		//{
+		//	delete item_list_p[i];  //释放内存
+		//	item_list_p[i] = nullptr;
+		//}
+	}
+
+}
+
 bool View::Open()
 {
 	bool bReturn = false;
@@ -175,7 +198,7 @@ bool View::Save()
 
 void View::mouseMoveEvent(QMouseEvent * event)
 {
-	if (m_spRect)
+	/*if (m_spRect)
 	{
 		if (m_bTurn != true)
 		{
@@ -193,7 +216,7 @@ void View::mouseMoveEvent(QMouseEvent * event)
 		{
 			m_spRect->setRotateEnd(mapToScene(event->pos()));
 		}
-	}
+	}*/
 
 	//判断鼠标是否在ImageItem上
 	if (m_spPix)
@@ -252,14 +275,14 @@ void View::mouseMoveEvent(QMouseEvent * event)
 
 void View::mousePressEvent(QMouseEvent * event)
 {
-	if (m_spRect)
+	/*if (m_spRect)
 	{
 		if (!m_spRect->getRotateCursor(mapToScene(event->pos())).pixmap().isNull())
 		{
 			m_spRect->setRotateStart(mapToScene(event->pos()));
 			m_bTurn = true;
 		}
-	}
+	}*/
 	QGraphicsView::mousePressEvent(event);
 }
 
@@ -454,7 +477,7 @@ void View::on_measureRect_clicked()
 	{
 		m_spRect = std::make_shared<GraphicsRectItem>(new GraphicsRectItem());
 		m_spRect->setPos(width() / 2 - 50, height() / 2 - 50);
-		m_spRect->setRect(0, 0, 100, 100);
+		//m_spRect->setRect(0, 0, 100, 100);
 		m_spRect->setTransformOriginPoint(25, 25);
 		//m_spRect->setRotation(45);
 		m_spRect->setFocus(Qt::MouseFocusReason);
