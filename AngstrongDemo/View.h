@@ -26,6 +26,7 @@ public:
 
 	std::shared_ptr<ImageScene> GetScene()const;
 	void ClearAll();
+
 protected:
 	bool Open();//Only Framework
 	bool Save();//Only Framework

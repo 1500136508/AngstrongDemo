@@ -105,7 +105,7 @@ bool imageReader::OpenCamera(int index)
 void imageReader::CloseCamera()
 {
 	isRunning = false;
-	Sleep(3000);
+	Sleep(2000);
 	if (camds->isOpened())
 	{
 		camds->CloseCamera();

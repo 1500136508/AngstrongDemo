@@ -269,7 +269,7 @@ void View::mouseMoveEvent(QMouseEvent * event)
 			}
 		}
 	}
-
+	m_spScene->update();
 	QGraphicsView::mouseMoveEvent(event);
 }
 
@@ -292,6 +292,7 @@ void View::mouseReleaseEvent(QMouseEvent * event)
 	{
 		m_bTurn = false;
 	}
+
 	QGraphicsView::mouseReleaseEvent(event);
 }
 
@@ -450,6 +451,8 @@ void View::on_close_clicked()
 			m_spScene->removeItem(m_list_item[i]);
 			m_spRect = nullptr;
 		}
+
+		m_spRect->setROIRect(QRect(0, 0, 0, 0));
 	}
 }
 

@@ -49,12 +49,12 @@ bool ImageItem::sceneEvent(QEvent * event)
 
 void ImageItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
-	
+	int b = 0;
 }
 
 void ImageItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-	
+	int a = 0;
 }
 
 void ImageItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
