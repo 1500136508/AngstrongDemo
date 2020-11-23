@@ -8,6 +8,7 @@
 #include <queue>
 #include <QMutex>
 #include <fstream>
+#include <QRectF>
 #include "logwriter.h"
 #define EFE_FORMAT
 //#define KEEP_ORI
@@ -97,6 +98,22 @@ private:
 	int m_MouseX;
 	int m_MouseY;
 
+	//AvgArea
+	bool calcArea = false;
+	bool getFirstArea = false;
+	bool getSecondArea = false;
+	int isWarp = false;
+
+	int realX1 = -1;
+	int realY1 = -1;
+	int realX2 = -1;
+	int realY2 = -1;
+
+	int realX1s = -1;
+	int realY1s = -1;
+	int realX2s = -1;
+	int realY2s = -1;
+
     void buildDataThread();
 	// 设置内外参
 	int setParam(float _fx, float _fy, float _cx, float _cy);
@@ -104,10 +121,12 @@ private:
 private slots:
     void readpdData();
 	void ReceiveMouseInfo(int x, int y);
+	void ReceiveAvgArea(int nIndxe, QRectF rect);
 signals:
     void sendImage(cv::Mat);
 	void sendSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB,float *depth);
 	void SendLocationDepth(int x, int y, float depth);
+	void SendAvgDepth(float avg0, float avg1);
 };
 
 #endif // IMAGEREADER_H

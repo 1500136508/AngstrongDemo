@@ -185,6 +185,7 @@ void imageReader::buildDataThread()
 			{
 				lastRgbT = rgbT;
 			}
+
 			cv::Mat rgbyuv(cv::Size(frameWidthR, frameHeightR), CV_8U, ptr);
 			//write data
 			/*std::ofstream out("datagroup.bin", std::ofstream::binary);
@@ -325,6 +326,7 @@ void imageReader::buildDataThread()
 				irGet = true;
 				thisRoundIR = true;
 			}
+
 			//        qDebug() << irT <<" " << depthT << " " << rgbT;
 			irGet = depthGet = true;
 			if (irGet && depthGet && getParam)
@@ -351,7 +353,79 @@ void imageReader::buildDataThread()
 					emit SendLocationDepth(-1, -1, 0);
 				}
 			}
+			//发送平均深度信息
+			if (calcArea)
+			{
+				float avg0 = 0.0;
+				float avg1 = 0.0;
+				if (getFirstArea)
+				{
+					qDebug() << "real one" << realX1 << " " << realY1 << " " << realX2 << " " << realY2;
+					float pointNum = 0;
+					float allDepth = 0.0;
+					for (int x = realX1; x <= realX2; x++)
+					{
+						for (int y = realY1; y <= realY2; y++)
+						{
+							float d = 0.0;
+							if (!isWarp)
+								d = depthData[x + y * frameHeightR];
+							else
+								d = depthDataRGB[x + y * frameHeightR];
+							if (d > 0.0)
+							{
+								allDepth += d;
+								pointNum += 1;
+							}
+						}
+					}
+					avg0 = allDepth / pointNum;
+				}
+				if (getSecondArea)
+				{
+					qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
+					float pointNum = 0;
+					float allDepth = 0.0;
+					/*for (int x = realX1s; x <= realX2s; x++)
+					{
+						for (int y = realY1s; y <= realY2s; y++)
+						{
+							float d = 0.0;
+							if (!isWarp)
+								d = depthData[x + y * frameHeightR];
+							else
+								d = depthDataRGB[x + y * frameHeightR];
+							if (d > 0.0)
+							{
+								allDepth += d;
+								pointNum += 1;
+							}
+						}
+					}*/
+					for (int y = realY1s; y <= realY2s; y++)
+					{
+						for (int x = realX1s; x <= realX2s; x++)
+						{
+							float d = 0.0;
+							if (!isWarp)
+								d = depthData[y + x * frameHeightR];
+							else
+								d = depthDataRGB[y + x * frameHeightR];
+							if (d > 0.0)
+							{
+								allDepth += d;
+								pointNum += 1;
+							}
+						}
+					}
+					
+					avg1 = allDepth / pointNum;
 
+				}
+				qDebug() <<"avg0="<< avg0 << " " <<"avg1="<< avg1;
+				emit SendAvgDepth(avg0, avg1);
+				//calcArea = false;
+			}
 			if (m_bIsSaveImage)
 			{
 				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
@@ -561,4 +635,53 @@ void imageReader::ReceiveMouseInfo(int x, int y)
 {
 	m_MouseX = x;
 	m_MouseY = y;
+}
+
+void imageReader::ReceiveAvgArea(int nIndxe, QRectF rect)
+{
+	int flag = nIndxe;
+	int x1 = rect.topLeft().x();
+	int y1 = rect.topLeft().y();
+	int x2 = rect.bottomRight().x();
+	int y2 = rect.bottomRight().y();
+
+	if (flag == -1  || rect.width() <= 0 || rect.height()<=0)
+	{
+		calcArea = false;
+		realX1 = realX1s = realX2 = realX2s = realY1 = realY1s = realY2 = realY2s = -1;
+		getFirstArea = false;
+		getSecondArea = false;
+		return;
+	}
+	if (x2 < x1)
+	{
+		int temp = x2;
+		x2 = x1;
+		x1 = temp;
+	}
+	if (flag == 0)
+	{
+		realX1 = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
+		realY1 = y1 % frameWidthR;
+		realX2 = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
+		realY2 = y2 % frameWidthR;
+		isWarp = x1 < frameHeightR ? false : true;
+		calcArea = true;
+		getFirstArea = true;
+	}
+	else if (flag == 1)
+	{
+		realX1s = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
+		realY1s = y1 % frameWidthR;
+		realX2s = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
+		realY2s = y2 % frameWidthR;
+		calcArea = true;
+		getSecondArea = true;
+		if (isWarp && realX1s > frameHeightR)
+		{
+			getFirstArea = getSecondArea = false;
+			calcArea = false;
+			return;
+		}
+	}
 }

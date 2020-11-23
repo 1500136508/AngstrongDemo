@@ -11,7 +11,7 @@
 
 #pragma execution_character_set("utf-8")//让能够正常显示中文字符串
 
-GraphicsRectItem::GraphicsRectItem(QGraphicsItem *parent)
+GraphicsRectItem::GraphicsRectItem(QGraphicsRectItem *parent)
 {
 	setCursor(Qt::ArrowCursor);   //改变光标形状,手的形状
 
@@ -39,25 +39,29 @@ void GraphicsRectItem::setBackImage(const QImage & img)
 void GraphicsRectItem::setROIRect(QRect rect)
 {
 	m_roiRect = rect;
+	setRect(rect);
 }
 
 QRectF GraphicsRectItem::boundingRect() const
 {
-	return QRectF(m_roiRect.x()-1,m_roiRect.y()-1,m_roiRect.width()+1,m_roiRect.height()+1);
+	return rect().adjusted(-1,-1,1,1);
 }
 
 void GraphicsRectItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
 	/*if (m_backImage.isNull())
 		return;*/
-
-	QPixmap rawImg = QPixmap::fromImage(m_backImage);
+	m_roiRect = rect().toRect();
+	if (rect().width() ==0 && rect().height() == 0)
+	{
+		return;
+	}
 	QPointF qPointF = mapToScene(m_roiRect.topLeft().x(), m_roiRect.topLeft().y());
 	QString strPoint = QString("X:%0, Y:%1").arg(qPointF.x()).arg(qPointF.y());           //位置信息
 	QString strSize = QString("W:%0, H:%1").arg(m_roiRect.width()).arg(m_roiRect.height());   //大小信息
 
 	QPen pen;
-	pen.setColor(Qt::yellow);
+	pen.setColor(Qt::green);
 	pen.setWidth(EDGE_WIDTH);
 
 	QFont font;
@@ -106,19 +110,6 @@ void GraphicsRectItem::paint(QPainter * painter, const QStyleOptionGraphicsItem 
 	//painter.end();
 
 	qDebug() << m_roiRect;
-	//#else
-	//	/*QLabel::paintEvent(event);
-	//
-	//	if (m_backImage.isNull())
-	//	return;
-	//	QPixmap rawImg = QPixmap::fromImage(m_backImage);
-	//	QPainter painter(this);
-	//	painter.begin(&rawImg);
-	//	painter.setBrush(Qt::gray);
-	//	painter.drawRect(30, 30, 100, 100);
-	//	painter.end();
-	//	this->setPixmap(rawImg);*/
-	//#endif
 }
 
 void GraphicsRectItem::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
@@ -156,7 +147,7 @@ void GraphicsRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 
 		//更新界面
 		update();
-		return;
+		//return;
 	}
 
 	//根据鼠标的位置设置当前的鼠标形状
@@ -203,6 +194,7 @@ void GraphicsRectItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
 			m_emCurDir = dir;
 		}
 	}
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
@@ -225,6 +217,7 @@ void GraphicsRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 	m_bMovedPressed = false;
 	m_bPainterPressed = false;
 	m_bScalePressed = false;
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::keyPressEvent(QKeyEvent * event)
@@ -234,6 +227,7 @@ void GraphicsRectItem::keyPressEvent(QKeyEvent * event)
 		m_roiRect = QRect(0, 0, 0, 0);
 		update();
 	}
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
@@ -317,12 +311,12 @@ void GraphicsRectItem::initViewer()
 	m_bPainterPressed = false;
 	m_bMovedPressed = false;
 	m_bScalePressed = false;
-	m_roiRect = QRect(50, 50, 220, 220);
+	m_roiRect = QRect(0, 0, 0, 0);
 	m_emCurDir = EmDirection::DIR_NONE;
 
 	/*this->setMouseTracking(true);
 	this->setFocusPolicy(Qt::StrongFocus);*/
-
+	setRect(m_roiRect);
 	m_pOptMenu = new QMenu();
 	m_pDelAction = new QAction(QStringLiteral("删除"), this);
 	connect(m_pDelAction, SIGNAL(triggered()), this, SLOT([&]() { m_roiRect = QRect(0, 0, 0, 0); }));
@@ -412,7 +406,7 @@ EmDirection GraphicsRectItem::region(QPoint point)
 	{
 		dir = DIR_NONE;
 	}
-
+	setRect(m_roiRect);
 	return dir;
 }
 
@@ -459,6 +453,7 @@ void GraphicsRectItem::scaleRect(const QPoint & mousePoint)
 
 	m_roiRect = newRect;
 	m_moveStartPoint = mousePoint;  //更新鼠标的起始位置
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::paintRect(const QPoint & mousePoint)
@@ -495,6 +490,7 @@ void GraphicsRectItem::paintRect(const QPoint & mousePoint)
 
 	//设置矩形大小 绝对值 避免反方向的产生的负值
 	m_roiRect.setSize(QSize(abs(width), abs(height)));
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::moveRect(const QPoint & mousePoint)
@@ -510,4 +506,5 @@ void GraphicsRectItem::moveRect(const QPoint & mousePoint)
 	ret.setSize(m_roiRect.size());
 	m_roiRect = ret;
 	m_moveStartPoint = mousePoint;
+	setRect(m_roiRect);
 }

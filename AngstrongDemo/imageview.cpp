@@ -314,6 +314,7 @@ void ImageView::BuildConnet()
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendImageGray(int,int,int)), this, SLOT(ReceiveImageGray(int, int, int)));//接收鼠标对应的图像像素灰度值信息
 	ret = connect(m_pCamera, SIGNAL(sendSaveImageData(cv::Mat,cv::Mat,float*)), this, SLOT(ReceiveSaveImageData(cv::Mat, cv::Mat, float*)));
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), m_pCamera, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
+	connect(ui->m_gView_ImageView, SIGNAL(SendAvgArea(int, QRectF)), m_pCamera, SLOT(ReceiveAvgArea(int, QRectF)));
 }
 
 void ImageView::SaveImageThread()

@@ -16,6 +16,7 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_spPix = nullptr;
 	m_ImageWidth = 0;
 	m_ImageHeight = 0;
+	m_vecAvgROI.clear();
 
 	//增加QGraphicsView框架相关元素
 	m_spScene = std::make_shared<ImageScene>(new ImageScene());//增加场景
@@ -45,6 +46,7 @@ View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
 
 View::~View()
 {
+	m_vecAvgROI.clear();
 }
 
 int View::GetImageWidth() const
@@ -269,6 +271,59 @@ void View::mouseMoveEvent(QMouseEvent * event)
 			}
 		}
 	}
+	if (!m_spPix->pixmap().isNull())
+	{
+		if (m_vecAvgROI.size()>0)
+		{
+			for (int nIndex = 0; nIndex < 2; nIndex++)
+			{
+				//以下坐标全部相对于Scene
+				QPointF point_pix = QPointF(0,0);//获取图像左上角坐标（以图像左上角为原点)
+				QPointF point_rect = m_vecAvgROI[nIndex]->rect().center();//获取roi中心坐标（相对于图像)
+				//计算出整个图像区域的rect（此时的图像是自适应窗口的，可能被拉伸或者压缩了，下边需要进行转换）
+				QRect view_rect = geometry();//view 区域
+				float ratio_x = (m_ImageWidth*1.0) / view_rect.width();
+				float ratio_y = (m_ImageHeight *1.0)/ view_rect.height();
+				QRectF rect_pix;
+
+				if (ratio_x > ratio_y)//横、纵向压缩对比
+				{
+					int h = (m_ImageHeight*1.0) / m_ImageWidth * view_rect.width();//根据压缩比，计算出图像高度
+					rect_pix = QRectF(point_pix, QPointF(view_rect.width(), h));
+
+					QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex]->rect().height() / 2),
+						QPointF(point_rect.x() + m_vecAvgROI[nIndex]->rect().width()/2 , point_rect.y() + m_vecAvgROI[nIndex]->rect().height()/2));//计算出ROI相对于scene的rect
+					if (rect_pix.contains(rect_roi))
+					{
+						if (rect_roi.topLeft().x() > rect_pix.width() / 3 && rect_roi.topLeft().x() < rect_pix.width() / 3 * 2)
+						{
+							//将ROI坐标转为对应的图像上坐标
+							rect_roi = QRectF(rect_roi.topLeft().x() / view_rect.width()*m_ImageWidth, rect_roi.topLeft().y() / view_rect.height()*m_ImageHeight,
+								rect_roi.width(), rect_roi.height());
+						}
+						if (rect_roi.x() >= 0 && rect_roi.y()>=0)
+						{
+							emit SendAvgArea(nIndex, rect_roi);
+						}
+						else
+						{
+							int a = -1;
+						}
+					}
+					else
+					{
+						emit SendAvgArea(-1, rect_roi);
+					}
+				}
+				else
+				{
+					//同理
+					int w = (m_ImageWidth*1.0) / m_ImageHeight * view_rect.height();
+					rect_pix = QRectF(point_pix, QPointF(view_rect.height(), (view_rect.width() - w) / 2 + w));
+				}
+			}
+		}
+	}
 	m_spScene->update();
 	QGraphicsView::mouseMoveEvent(event);
 }
@@ -486,6 +541,13 @@ void View::on_measureRect_clicked()
 		m_spRect->setFocus(Qt::MouseFocusReason);
 		m_spScene->addItem(m_spRect.get());
 	}
+	else
+	{
+		if (m_spRect->rect().width() == 0 && m_spRect->rect().height() == 0)
+		{
+			m_spRect->setROIRect(QRect(50, 50, 100, 100));
+		}
+	}
 }
 
 void View::on_measureCircle_clicked()
@@ -505,6 +567,55 @@ void View::SetImage(cv::Mat mat)
 
 			ZoomFit();
 			emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);
+		}
+	}
+}
+
+void View::ReceiveAvgArea(int nIndex, bool bIsCreate)
+{
+	if (bIsCreate)
+	{
+		if (m_vecAvgROI.size() == 0)//在第一次创建时，直接往容器里放入两个ROI对象,至程序结束自动销毁
+		{
+			m_vecAvgROI.push_back(std::make_shared<GraphicsRectItem>(new GraphicsRectItem()));
+			m_vecAvgROI.push_back(std::make_shared<GraphicsRectItem>(new GraphicsRectItem()));
+
+			for (size_t sz = 0; sz < m_vecAvgROI.size(); sz++)
+			{
+				m_vecAvgROI[sz]->setFocus(Qt::MouseFocusReason);
+				m_spScene->addItem(m_vecAvgROI[sz].get());
+			}
+		}
+
+		if (m_vecAvgROI[nIndex - 1])
+		{
+			if (!m_spPix->pixmap().isNull())
+			{
+				if (m_vecAvgROI[nIndex - 1]->rect().width() == 0 && m_vecAvgROI[nIndex - 1]->rect().height() == 0)
+				{
+					m_vecAvgROI[nIndex - 1]->setROIRect(QRect(0, 0, 50, 50));
+					m_vecAvgROI[nIndex - 1]->setPos(m_spPix->scenePos());
+					m_spScene->update();
+				}
+
+				QPointF point_pix = m_spPix->scenePos();
+				QPointF point_rect = m_vecAvgROI[nIndex - 1]->rect().topLeft();
+				QRectF rect_pix(point_pix, QPointF(point_pix.x() + m_ImageWidth, point_pix.y() + m_ImageHeight));
+				QRectF rect_roi(point_rect, QPointF(point_rect.x() + m_vecAvgROI[nIndex - 1]->rect().width(), point_rect.y() + m_vecAvgROI[nIndex - 1]->rect().height()));
+				if (rect_pix.contains(rect_roi))
+				{
+					emit SendAvgArea(nIndex, rect_roi);
+				}
+			}
+		}
+	}
+	else
+	{
+		if (m_vecAvgROI[nIndex - 1])
+		{
+			m_vecAvgROI[nIndex - 1]->setROIRect(QRect(0, 0, 0, 0));
+			m_spScene->update();
+			emit SendAvgArea(nIndex, m_vecAvgROI[nIndex - 1]->rect());
 		}
 	}
 }

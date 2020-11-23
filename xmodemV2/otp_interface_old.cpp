@@ -1,4 +1,3 @@
-
 #include "otp_interface.h"
 #include "utilcom.h"
 #include "comm.h"
@@ -698,4 +697,3 @@ int com_controler::get_comm_handle(HANDLE & handle)
 	}
 	return 0;
 }
-

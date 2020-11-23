@@ -51,10 +51,13 @@ private slots:
 	void on_measureCircle_clicked();
 
 	void SetImage(cv::Mat mat);//接收图像专用槽函数
+
+	void ReceiveAvgArea(int nIndex,bool bIsCreate);//接收avgArea的信息
 signals:
 	void SendImageInfo(bool bIsEmpty,int nImageWidth,int nImageHeight);
 	void SendMouseInfo(int x, int y);
 	void SendImageGray(int R,int G,int B);
+	void SendAvgArea(int nIndex, QRectF rect);
 private:
 	QImage cvMat2QImage(const cv::Mat& mat);
 	cv::Mat QImage2cvMat(QImage image);
@@ -65,6 +68,8 @@ private:
 	std::shared_ptr<ImagePix>			m_spPix;
 	std::shared_ptr<GraphicsRectItem>   m_spRect;
 	volatile bool m_bTurn;
+
+	std::vector<std::shared_ptr<GraphicsRectItem>>   m_vecAvgROI;//用于存储AvgROI的相关信息
 	//与图像相关的变量
 	cv::Mat m_Image;
 	QImage qImage;

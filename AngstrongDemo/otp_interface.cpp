@@ -1,6 +1,6 @@
 
 #include "otp_interface.h"
-#include "utilcom.h"
+#include "util.h"
 #include "comm.h"
 #include "xmodem.h"
 #include <string>
