@@ -742,7 +742,7 @@ bool CCameraDS::readRawData(unsigned char* data)
 
     m_pMediaControl->Run();
     //m_pMediaEvent->WaitForCompletion(INFINITE, &evCode);
-    m_pMediaEvent->WaitForCompletion(3000, &evCode);//yxl
+    m_pMediaEvent->WaitForCompletion(2000, &evCode);//yxl
     m_pSampleGrabber->GetCurrentBuffer(&size, NULL);
 
     if (size != 0) {

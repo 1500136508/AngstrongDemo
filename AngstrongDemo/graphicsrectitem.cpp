@@ -13,7 +13,9 @@
 
 GraphicsRectItem::GraphicsRectItem(QGraphicsRectItem *parent)
 {
-	setCursor(Qt::ArrowCursor);   //改变光标形状,手的形状
+	//初始化
+	m_qstrTitle = "";
+	setCursor(Qt::ClosedHandCursor);   //改变光标形状,手的形状
 
 	initViewer();
 	setAcceptHoverEvents(true);
@@ -40,6 +42,11 @@ void GraphicsRectItem::setROIRect(QRect rect)
 {
 	m_roiRect = rect;
 	setRect(rect);
+}
+
+void GraphicsRectItem::setTitle(QString qstrTitle)
+{
+	m_qstrTitle = qstrTitle;
 }
 
 QRectF GraphicsRectItem::boundingRect() const
@@ -75,7 +82,7 @@ void GraphicsRectItem::paint(QPainter * painter, const QStyleOptionGraphicsItem 
 	painter->drawText(m_roiRect.bottomLeft().x()+m_roiRect.width()/4, m_roiRect.bottomLeft().y() + 35, strSize);
 	painter->drawText(m_roiRect.bottomLeft().x() + m_roiRect.width() / 4, m_roiRect.bottomLeft().y() + 20, strPoint);
 	painter->drawRect(m_roiRect);
-
+	painter->drawText(m_roiRect.center().x()-m_roiRect.width()/4, m_roiRect.center().y(), m_qstrTitle);
 	if (m_roiRect.width() != 0 && m_roiRect.height() != 0)
 	{
 #ifdef DRAW_SUB_LINE

@@ -33,7 +33,7 @@
      <item>
       <widget class="QPushButton" name="m_btn_chose_file">
        <property name="text">
-        <string>选择文件</string>
+        <string>选择路径</string>
        </property>
       </widget>
      </item>

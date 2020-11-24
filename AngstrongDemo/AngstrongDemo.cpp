@@ -341,7 +341,7 @@ void AngstrongDemo::BuildConnect()
 	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
 	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int,QString)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int,QString)));
 	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
-	connect(&m_ParamView, SIGNAL(SendAvgArea(int, bool)), m_pMainImageView->ui->m_gView_ImageView, SLOT(ReceiveAvgArea(int, bool)));
+	connect(&m_ParamView, SIGNAL(SendCreateAvgArea(int, bool)), m_pMainImageView->ui->m_gView_ImageView, SLOT(ReceiveCreateAvgArea(int, bool)));
 	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendSaveImageInfo(QString)), &m_SaveData, SLOT(ReceiveSaveImageInfo(QString)));
 	connect(m_pMainImageView->m_pCamera, SIGNAL(SendLocationDepth(int, int, float)), &m_DispView, SLOT(ReceiveLocationDepth(int, int, float)));

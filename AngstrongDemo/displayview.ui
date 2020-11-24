@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>228</width>
-    <height>299</height>
+    <height>333</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,6 +58,10 @@
        <bold>true</bold>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 255, 127);
+border-image: url(:/AngstrongDemo/image_ico/BG/BG2.png);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -92,6 +96,9 @@
        <bold>true</bold>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">border-image: url(:/AngstrongDemo/image_ico/BG/BG2.png);</string>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -125,6 +132,9 @@
        <weight>75</weight>
        <bold>true</bold>
       </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-image: url(:/AngstrongDemo/image_ico/BG/BG2.png);</string>
      </property>
      <property name="text">
       <string/>
@@ -162,6 +172,9 @@
          <bold>true</bold>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">border-image: url(:/AngstrongDemo/image_ico/BG/BG2.png);</string>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -178,6 +191,9 @@
          <weight>75</weight>
          <bold>true</bold>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border-image: url(:/AngstrongDemo/image_ico/BG/BG2.png);</string>
        </property>
        <property name="text">
         <string/>
