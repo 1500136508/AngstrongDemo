@@ -241,5 +241,16 @@
     <Image Include="image_ico\放大版摄像头.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="image_ico\放大版摄像头.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="camera.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Angstrong.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

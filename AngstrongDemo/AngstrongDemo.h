@@ -25,12 +25,18 @@ public:
 	virtual ~AngstrongDemo();
 protected:
 	//Only Qt Framework
-	bool nativeEvent(const QByteArray & eventType, void * message, long*result);
-	bool InitCamera();
+	void mousePressEvent(QMouseEvent *) override;
+	void mouseMoveEvent(QMouseEvent *) override;
+	void mouseReleaseEvent(QMouseEvent *) override;
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+	bool nativeEvent(const QByteArray & eventType, void * message, long*result) override;
+	bool eventFilter(QObject *object, QEvent *event);//事件过滤器;
 private:
 	void CreateDockWindow();
 	void AddToolBar();
 	void BuildConnect();
+	bool InitCamera();
 
 	//CameraUSB Device
 	void registerDevice();
@@ -57,4 +63,8 @@ private:
 	QStringList m_usbList;                                //存储U盘中间信息
 
 	QString stylesheet;							// QSS样式表
+	//窗口样式相关
+	QRect m_areaMovable;
+	QPoint m_ptPress;
+	bool m_bPressed;
 };
