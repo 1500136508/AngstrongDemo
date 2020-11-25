@@ -6,8 +6,6 @@
  * Drop background color of most widgets
  */
 
-
-
 QWidget, QStackedWidget,
 QScrollArea, QAbstractScrollArea {
     background-color: transparent;
@@ -182,11 +180,18 @@ QAbstractSpinBox::down-button:pressed {
  * FIXME: Outline is positioned around content, but should around padding
  */
 
-QPushButton {
-    min-height: 1.33em; 
-    min-width: 4.30em; 
-    outline: 0;
+QPushButton{
+ border:2px groove gray;
+ border-radius:10px;
+ padding:2px 4px;
+ width:85px;
+ height:15px;
 }
+QPushButton:hover{
+    color:yellow;
+    background:#666666;
+}
+
 Utils--QtColorButton,
 QPushButton {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #515658, stop: 1.0 #44494b);

@@ -27,6 +27,7 @@ protected:
 	//Only Qt Framework
 	bool nativeEvent(const QByteArray & eventType, void * message, long*result);
 	bool InitCamera();
+
 private:
 	void CreateDockWindow();
 	void AddToolBar();
