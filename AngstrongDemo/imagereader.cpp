@@ -91,7 +91,9 @@ bool imageReader::OpenCamera(int index)
 			//CloseCamera();
 			if (!camds->OpenCamera(index, frameWidth, 480, true))
 			{
-				//qDebug() << "camera init failed";
+#ifdef DEBUG
+				qDebug() << "camera init failed";
+#endif
 				break;
 			}
 		}
@@ -260,7 +262,6 @@ void imageReader::buildDataThread()
 				memcpy(predepthData, depthData, frameHeight*frameWidth * sizeof(float));
 #endif
 				depth2RGB(depthData, depthDataRGB, tmpdepth, frameHeightR, frameWidthR, frameHeight, frameWidth, rgb_param);
-
 				depthFrame = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_32FC1, depthDataRGB);
 				cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 				dilate(depthFrame, depthFrame, element);
@@ -302,6 +303,20 @@ void imageReader::buildDataThread()
 						irData += i;
 					}
 				}*/
+				//int sum = 0;
+				/*for (int i = 0; i < frameWidthR*frameHeightR; i++)
+				{
+					int ftemp = *(irData + i);
+					if (ftemp == 0)
+					{
+						++sum;
+					}
+					if (sum == frameWidthR * frameHeightR)
+					{
+						Sleep(3);
+						continue;
+					}
+				}*/
 				irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irData);
 				irFrame.copyTo(irFrame16bit);
 				cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
@@ -327,7 +342,9 @@ void imageReader::buildDataThread()
 				thisRoundIR = true;
 			}
 
+#ifdef DEBUG
 			//        qDebug() << irT <<" " << depthT << " " << rgbT;
+#endif
 			irGet = depthGet = true;
 			if (irGet && depthGet && getParam)
 			{
@@ -360,7 +377,9 @@ void imageReader::buildDataThread()
 				float avg1 = 0.0;
 				if (getFirstArea)
 				{
+#ifdef DEBUG
 					qDebug() << "real one" << realX1 << " " << realY1 << " " << realX2 << " " << realY2;
+#endif
 					float pointNum = 0;
 					float allDepth = 0.0;
 					for (int x = realX1; x <= realX2; x++)
@@ -389,7 +408,9 @@ void imageReader::buildDataThread()
 				}
 				if (getSecondArea)
 				{
+#ifdef DEBUG
 					qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
+#endif
 					float pointNum = 0;
 					float allDepth = 0.0;
 					for (int x = realX1s; x <= realX2s; x++)
@@ -412,7 +433,9 @@ void imageReader::buildDataThread()
 					avg1 = allDepth / pointNum;
 
 				}
-				qDebug() <<"avg0="<< avg0 << " " <<"avg1="<< avg1;
+#ifdef DEBUG
+				qDebug() << "avg0=" << avg0 << " " << "avg1=" << avg1;
+#endif
 				emit SendAvgDepth(avg0, avg1);
 				//calcArea = false;
 			}
@@ -431,7 +454,9 @@ void imageReader::buildDataThread()
 			if (t2 - t1 < 34)
 				Sleep(34 - t2 + t1);
 			else Sleep(10);
+#ifdef DEBUG
 			qDebug() << "ONE ROUND : " << t2 - t1;
+#endif
 			
 		}
 	}
@@ -520,7 +545,9 @@ void imageReader::run(int camIndex)
 #endif
 		if (!camds->OpenCamera(camIndex, frameWidth, 480, true))
 		{
+#ifdef DEBUG
 			qDebug() << "camera init failed";
+#endif
 			return;
 		}
 		isRunning = true;
@@ -548,7 +575,9 @@ void imageReader::readpdData()
     int i = 0;
     while (i < datalen) {
         memcpy(&realpd[i], ptr, sizeof(float)); ptr += sizeof(float);
-        qDebug()<<"param "<< i << " " << realpd[i];
+#ifdef DEBUG
+		qDebug() << "param " << i << " " << realpd[i];
+#endif
         i++;
     }
 #ifdef EFE_FORMAT

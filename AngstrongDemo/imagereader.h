@@ -9,7 +9,7 @@
 #include <QMutex>
 #include <fstream>
 #include <QRectF>
-#include "logwriter.h"
+//#include "logwriter.h"
 #define EFE_FORMAT
 //#define KEEP_ORI
 

@@ -30,7 +30,9 @@ void DisplayView::ReceiveLocationDepth(int x, int y, float depth)
 {
 	QString info;
 	info.sprintf("%.3f", depth);
+#if DEBUG
 	qDebug() << depth;
+#endif
 	ui->m_lab_mouse_xy->setText("X:" + QString::number(x) + " Y:" + QString::number(y));
 	ui->m_lab_depth->setText(info);
 }

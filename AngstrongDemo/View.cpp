@@ -157,7 +157,9 @@ bool View::Open()
 				m_ImageWidth = qImage.width();
 				m_ImageHeight = qImage.height();
 				m_spPix->setPixmap(QPixmap::fromImage(qImage));
-				qDebug() << "ImageWidth:" << m_ImageWidth << "ImageHeight:"<<m_ImageHeight;
+#ifdef DEBUG
+				qDebug() << "ImageWidth:" << m_ImageWidth << "ImageHeight:" << m_ImageHeight;
+#endif
 
 				//处理显示位置,默认为图像居中显示
 				ZoomFit();
@@ -260,13 +262,17 @@ void View::mouseMoveEvent(QMouseEvent * event)
 					int GrayValue_G = color.green();
 					int GrayValue_B = color.blue();
 					emit SendImageGray(GrayValue_R, GrayValue_G, GrayValue_B);
+#ifdef DEBUG
 					qDebug() << "X:" << x << "Y:" << y << "R:" << GrayValue_R << " G:" << GrayValue_G << " B:" << GrayValue_B;
+#endif
 				}
 				emit SendMouseInfo(x, y);
 			}
 			else
 			{
+#ifdef DEBUG
 				qDebug() << "out of range";
+#endif
 				emit SendMouseInfo(-1, -1);
 			}
 		}
@@ -528,6 +534,7 @@ void View::on_close_clicked()
 
 void View::on_zoomIn_clicked()
 {
+	setCursor(Qt::SizeAllCursor);
 }
 
 void View::on_zoomOut_clicked()
@@ -555,6 +562,7 @@ void View::on_measureRect_clicked()
 		//m_spRect->setRotation(45);
 		m_spRect->setFocus(Qt::MouseFocusReason);
 		m_spScene->addItem(m_spRect.get());
+		m_spRect->setROIRect(QRect(50, 50, 100, 100));
 	}
 	else
 	{

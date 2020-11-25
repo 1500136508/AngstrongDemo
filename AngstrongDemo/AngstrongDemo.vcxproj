@@ -119,12 +119,13 @@
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
     <ClCompile Include="imagescene.cpp" />
-    <ClCompile Include="logwriter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
     <ClCompile Include="savedata.cpp" />
+    <ClCompile Include="titlebar.cpp" />
     <ClCompile Include="usbdevice.cpp" />
     <ClCompile Include="View.cpp" />
+    <ClCompile Include="widgetui.cpp" />
     <ClCompile Include="xmview.cpp" />
     <QtRcc Include="AngstrongDemo.qrc" />
     <QtUic Include="AngstrongDemo.ui" />
@@ -139,6 +140,8 @@
     <QtUic Include="outputview.ui" />
     <QtUic Include="parameterview.ui" />
     <QtUic Include="savedata.ui" />
+    <QtUic Include="titlebar.ui" />
+    <QtUic Include="widgetui.ui" />
     <QtUic Include="xmview.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -166,17 +169,18 @@
     <ClInclude Include="..\xmodemV2\utilcom.h" />
     <ClInclude Include="..\xmodemV2\xmodem.h" />
     <ClInclude Include="CameraDS.h" />
+    <QtMoc Include="widgetui.h" />
     <QtMoc Include="xmview.h" />
     <QtMoc Include="displayview.h" />
     <QtMoc Include="savedata.h" />
     <QtMoc Include="graphicsrectitem.h" />
     <ClInclude Include="resource.h" />
+    <QtMoc Include="titlebar.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />
     <ClInclude Include="definitionmenu.h" />
     <QtMoc Include="imagereader.h" />
-    <ClInclude Include="logwriter.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="camera.ico" />

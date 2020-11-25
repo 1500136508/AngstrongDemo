@@ -482,7 +482,8 @@ int com_controler::upload_data_to_flash(unsigned char* data, int data_lenght) {
 	return c_ret_nk;
 }
 
-int com_controler::upload_data_to_flash_test(unsigned char* data, int data_lenght) {
+int com_controler::upload_data_to_flash_test(unsigned char* data, int data_lenght)
+{
 
 	int ret = c_ret_nk;
 	int retry = 0;

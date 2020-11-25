@@ -1,5 +1,10 @@
 <RCC>
   <qresource prefix="/AngstrongDemo">
+    <file>image_ico/btl/max_normal.png</file>
+    <file>image_ico/btl/max_hover.png</file>
+    <file>image_ico/btl/max_hover.png</file>
+    <file>image_ico/btl/max_normal.png</file>
+    <file>camera.ico</file>
     <file>image_ico/BG/BG3.png</file>
     <file>image_ico/BG/BG3.png</file>
     <file>image_ico/放大版摄像头.png</file>

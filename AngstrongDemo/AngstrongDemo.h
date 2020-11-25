@@ -63,8 +63,4 @@ private:
 	QStringList m_usbList;                                //存储U盘中间信息
 
 	QString stylesheet;							// QSS样式表
-	//窗口样式相关
-	QRect m_areaMovable;
-	QPoint m_ptPress;
-	bool m_bPressed;
 };

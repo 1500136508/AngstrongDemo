@@ -43,7 +43,9 @@ void SaveData::on_chose_file_clicked()
 {
 	QTextCodec *code = QTextCodec::codecForName("GB2312");
 	std::string workPath = code->fromUnicode(QFileDialog::getExistingDirectory(this, tr("Open Directory"), " ", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks)).data();
+#if DEBUG
 	qDebug() << QString::fromLocal8Bit(workPath.c_str());
+#endif
 	ui->m_lineEdit_file->setText(QString::fromLocal8Bit(workPath.c_str()));
 
 	QFileInfo qfi(ui->m_lineEdit_file->text());
