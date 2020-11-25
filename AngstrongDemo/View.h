@@ -52,7 +52,7 @@ private slots:
 
 	void SetImage(cv::Mat mat);//接收图像专用槽函数
 
-	void ReceiveAvgArea(int nIndex,bool bIsCreate);//接收avgArea的信息
+	void ReceiveCreateAvgArea(int nIndex,bool bIsCreate);//接收avgArea的信息
 signals:
 	void SendImageInfo(bool bIsEmpty,int nImageWidth,int nImageHeight);
 	void SendMouseInfo(int x, int y);

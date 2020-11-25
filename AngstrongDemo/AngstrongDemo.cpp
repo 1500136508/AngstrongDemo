@@ -19,6 +19,8 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	m_mpImageView.clear();
 	m_pMainImageView = nullptr;
 	m_pMainImageView = new ImageView();
+	m_areaMovable = QRect(0, 0, 0, 0);
+	m_bPressed = false;
 
 	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
 	qRegisterMetaType<ECameraStatus>("ECameraStatus");
@@ -27,15 +29,6 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	setCentralWidget(m_pMainImageView);
 	CreateDockWindow();
 	AddToolBar();
-
-	//界面外观处理
-	//QWidget* p = takeCentralWidget();
-	//if (p)
-	//{
-	//	delete p;//去除界面的中间窗口，实现任意区域停靠
-	//}
-	//setWindowFlags(Qt::FramelessWindowHint);//去掉边框
-	setDockNestingEnabled(true);//打开Dock嵌套功能
 
 	//嵌入qss进行美化
 	QFile file("black.qss");
@@ -49,9 +42,22 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	//初始化识别相机列表
 	InitCamera();
 
-	//居中显示
+	ui.menuBar->installEventFilter(this);
+
+	//界面外观处理
+	//QWidget* p = takeCentralWidget();
+	//if (p)
+	//{
+	//	delete p;//去除界面的中间窗口，实现任意区域停靠
+	//}
+	setWindowFlags(Qt::FramelessWindowHint);//去掉边框
+	//setWindowFlags(windowFlags()&~Qt::FramelessWindowHint); //增加标题栏
+	//setAttribute(Qt::WA_TranslucentBackground, true);//设置透明2-窗体标题栏不透明,背景透明
+	//setWindowOpacity(0.9);//设置透明度
+	setMouseTracking(true);
+	setDockNestingEnabled(true);//打开Dock嵌套功能
 	QDesktopWidget* desktop = QApplication::desktop();
-	move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2);
+	move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2);//居中显示
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -73,6 +79,39 @@ AngstrongDemo::~AngstrongDemo()
 	{
 		delete m_pMainImageView;
 		m_pMainImageView = nullptr;
+	}
+}
+
+void AngstrongDemo::mousePressEvent(QMouseEvent *event)
+{
+	//鼠标左键
+	if (event->button() == Qt::LeftButton)
+	{
+		m_ptPress = event->pos();
+		m_areaMovable = QRect(0, 0, this->size().width(), 50);
+		m_bPressed = m_areaMovable.contains(m_ptPress);
+	}
+}
+
+void AngstrongDemo::mouseMoveEvent(QMouseEvent *event)
+{
+	if (m_bPressed)
+	{
+		move(pos() + event->pos() - m_ptPress);
+	}
+}
+
+void AngstrongDemo::mouseReleaseEvent(QMouseEvent *event)
+{
+	m_bPressed = false;
+}
+
+void AngstrongDemo::mouseDoubleClickEvent(QMouseEvent * event)
+{
+	m_areaMovable = QRect(0, 0, this->size().width(), 50);
+	if (event->button() == Qt::LeftButton && m_areaMovable.contains(event->pos()))
+	{
+		this->isMaximized() ? this->showNormal() : this->showMaximized();
 	}
 }
 
@@ -227,6 +266,66 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		}
 		}
 	}
+
+	int g_nBorder = 5;
+	MSG* pMsg = (MSG*)message;
+	switch (pMsg->message)
+	{
+	case WM_NCHITTEST:
+	{
+		QPoint pos = mapFromGlobal(QPoint(LOWORD(pMsg->lParam), HIWORD(pMsg->lParam)));
+		bool bHorLeft = pos.x() < g_nBorder;
+		bool bHorRight = pos.x() > this->width() - g_nBorder;
+		bool bVertTop = pos.y() < g_nBorder;
+		bool bVertBottom = pos.y() > this->height() - g_nBorder;
+		if (bHorLeft && bVertTop)
+		{
+			*result = HTTOPLEFT;
+		}
+		else if (bHorLeft && bVertBottom)
+		{
+			*result = HTBOTTOMLEFT;
+		}
+		else if (bHorRight && bVertTop)
+		{
+			*result = HTTOPRIGHT;
+		}
+		else if (bHorRight && bVertBottom)
+		{
+			*result = HTBOTTOMRIGHT;
+		}
+		else if (bHorLeft)
+		{
+			*result = HTLEFT;
+		}
+		else if (bHorRight)
+		{
+			*result = HTRIGHT;
+		}
+		else if (bVertTop)
+		{
+			*result = HTTOP;
+		}
+		else if (bVertBottom)
+		{
+			*result = HTBOTTOM;
+		}
+		else
+		{
+			return false;
+		}
+		return true;
+	}
+	break;
+	default:
+		break;
+	}
+
+	return QWidget::nativeEvent(eventType, message, result);
+}
+
+bool AngstrongDemo::eventFilter(QObject * object, QEvent * event)
+{
 	return false;
 }
 
@@ -271,6 +370,7 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_cameralist->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::LeftDockWidgetArea, m_dock_cameralist);
 	m_dock_cameralist->setWidget(&m_CameraView);
+	m_dock_cameralist->setMaximumWidth(150);
 	//增加parameter停靠窗口
 	QDockWidget *m_dock_paramlist = new QDockWidget(tr("ParameterList"));
 	m_dock_paramlist->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -278,6 +378,7 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_paramlist->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_paramlist);
 	m_dock_paramlist->setWidget(&m_ParamView);
+	m_dock_paramlist->setMaximumWidth(300);
 	//增加Output停靠窗口
 	QDockWidget *m_dock_output = new QDockWidget(tr("Output"));
 	m_dock_output->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -341,7 +442,7 @@ void AngstrongDemo::BuildConnect()
 	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
 	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int,QString)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int,QString)));
 	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
-	connect(&m_ParamView, SIGNAL(SendAvgArea(int, bool)), m_pMainImageView->ui->m_gView_ImageView, SLOT(ReceiveAvgArea(int, bool)));
+	connect(&m_ParamView, SIGNAL(SendCreateAvgArea(int, bool)), m_pMainImageView->ui->m_gView_ImageView, SLOT(ReceiveCreateAvgArea(int, bool)));
 	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendSaveImageInfo(QString)), &m_SaveData, SLOT(ReceiveSaveImageInfo(QString)));
 	connect(m_pMainImageView->m_pCamera, SIGNAL(SendLocationDepth(int, int, float)), &m_DispView, SLOT(ReceiveLocationDepth(int, int, float)));

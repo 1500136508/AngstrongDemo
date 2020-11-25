@@ -5,9 +5,6 @@
 #include <QTimer>
 #include <highgui.hpp>
 #include <imgproc.hpp>
-#include <QDateTime>
-//#include <QDate>
-//#include <QTime>
 #include "imageview.h"
 #include "savedata.h"
 
@@ -363,19 +360,11 @@ void ImageView::SaveImageThread()
 			{
 				qstrNameExtra = "0";
 			}
-			//建立时间文件夹
-			QDateTime dt;
-			QTime time;
-			QDate date;
-			dt.setTime(time.currentTime());
-			dt.setDate(date.currentDate());
-			QString currentDate = dt.toString("//yyyy:MM:dd//");
-			QString currentTime = dt.toString("//hh:mm:ss//");
 			
 			try
 			{
 				//先保存IR图
-				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" +currentDate+ qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
+				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
 				cv::cvtColor(m_cvImageIR[m_nWriteIndex], m_cvImageIR[m_nWriteIndex], cv::COLOR_RGB2GRAY);
 				cv::imwrite(qstrSavePath_IR.toStdString(), m_cvImageIR[m_nWriteIndex]);
 				//保存深度图

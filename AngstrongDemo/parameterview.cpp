@@ -51,22 +51,22 @@ void ParameterView::on_stop_clicked()
 
 void ParameterView::on_createroi01_clicked()
 {
-	emit SendAvgArea(1,true);
+	emit SendCreateAvgArea(1,true);
 }
 
 void ParameterView::on_createroi02_clicked()
 {
-	emit SendAvgArea(2,true);
+	emit SendCreateAvgArea(2,true);
 }
 
 void ParameterView::on_cancelroi01_clicked()
 {
-	emit SendAvgArea(1, false);
+	emit SendCreateAvgArea(1, false);
 }
 
 void ParameterView::on_cancelroi02_clicked()
 {
-	emit SendAvgArea(2, false);
+	emit SendCreateAvgArea(2, false);
 }
 
 void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)

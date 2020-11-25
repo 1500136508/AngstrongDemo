@@ -369,9 +369,15 @@ void imageReader::buildDataThread()
 						{
 							float d = 0.0;
 							if (!isWarp)
+							{
+								//d = depthData[x + y * frameHeightR];
 								d = depthData[x + y * frameHeightR];
+							}
 							else
+							{
+								//d = depthDataRGB[x + y * frameHeightR];
 								d = depthDataRGB[x + y * frameHeightR];
+							}
 							if (d > 0.0)
 							{
 								allDepth += d;
@@ -386,7 +392,7 @@ void imageReader::buildDataThread()
 					qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
 					float pointNum = 0;
 					float allDepth = 0.0;
-					/*for (int x = realX1s; x <= realX2s; x++)
+					for (int x = realX1s; x <= realX2s; x++)
 					{
 						for (int y = realY1s; y <= realY2s; y++)
 						{
@@ -395,22 +401,6 @@ void imageReader::buildDataThread()
 								d = depthData[x + y * frameHeightR];
 							else
 								d = depthDataRGB[x + y * frameHeightR];
-							if (d > 0.0)
-							{
-								allDepth += d;
-								pointNum += 1;
-							}
-						}
-					}*/
-					for (int y = realY1s; y <= realY2s; y++)
-					{
-						for (int x = realX1s; x <= realX2s; x++)
-						{
-							float d = 0.0;
-							if (!isWarp)
-								d = depthData[y + x * frameHeightR];
-							else
-								d = depthDataRGB[y + x * frameHeightR];
 							if (d > 0.0)
 							{
 								allDepth += d;
@@ -659,13 +649,14 @@ void imageReader::ReceiveAvgArea(int nIndxe, QRectF rect)
 		x2 = x1;
 		x1 = temp;
 	}
+	isWarp = true;
 	if (flag == 0)
 	{
 		realX1 = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
 		realY1 = y1 % frameWidthR;
 		realX2 = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
 		realY2 = y2 % frameWidthR;
-		isWarp = x1 < frameHeightR ? false : true;
+		//isWarp = x1 < frameHeightR ? false : true;
 		calcArea = true;
 		getFirstArea = true;
 	}

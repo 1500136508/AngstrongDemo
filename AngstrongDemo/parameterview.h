@@ -39,7 +39,7 @@ private slots:
 	void ReceiveCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
 signals:
 	void SendCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
-	void SendAvgArea(int nIndex, bool bIsCreate);
+	void SendCreateAvgArea(int nIndex, bool bIsCreate);
 private:
     Ui::ParameterView *ui;
 

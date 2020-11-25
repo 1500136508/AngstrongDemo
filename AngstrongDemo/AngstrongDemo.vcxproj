@@ -179,8 +179,13 @@
     <ClInclude Include="logwriter.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="camera.ico" />
     <Image Include="icon1.ico" />
+    <Image Include="image_ico\放大版摄像头.ico" />
     <Image Include="image_ico\放大版摄像头.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Angstrong.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
