@@ -8,7 +8,7 @@
 
 QWidget, QStackedWidget,
 QScrollArea, QAbstractScrollArea {
-    background-color: transparent;
+    background-color: #3c3f41;/*transparent*/
 }
 
 QApplication,
@@ -19,8 +19,8 @@ QMenuBar, QMenu, QMenu::item,
 QComboBox QAbstractItemView,
 QTreeView, QListWidget, QListView, QTableWidget, QTableView,
 QTextEdit, QTextBrowser {
-    background-color: #3c3f41; /*#004100;*/
-    color: #bbbbbb;
+    background-color: #3c3f41; /*#004100;#3c3f41*/
+    color: #bbbbbb;/*#bbbbbb*/
 }
 
 /*
@@ -664,7 +664,7 @@ QToolTip, QTipLabel {
  */
 
 QWizard > QWidget {
-    background-color: #3c3f41;
+    background-color: #3c3f41;/*#3c3f41*/
 }
 
 /* QT-BUG: Because QFrame { border-color: #323232; } has no effect */

@@ -26,7 +26,7 @@ public:
     explicit ParameterView(QWidget *parent = nullptr);
     ~ParameterView();
 
-private slots:
+public slots:
 	void on_open_clicked();
 	void on_close_clicked();
 	void on_live_clicked();

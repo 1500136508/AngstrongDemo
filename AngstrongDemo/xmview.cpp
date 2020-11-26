@@ -2,6 +2,7 @@
 #include <QTextCodec>
 #include <QFileDialog>
 #include <stdio.h>
+#include <thread>
 #include "xmview.h"
 #include "otp_interface.h"
 #include "ui_xmview.h"
@@ -84,16 +85,21 @@ void XMView::on_upload_cliecked()
 		return;
 	}
 
-	
-	ui->m_lab_display_msg->setText("upload_data_to_flash_type: "+QString::number(cc.upload_data_to_flash_test(data, HOLDER_OTP_SIZE)));
-
+	ui->m_lab_display_msg->setText("uploading...");
+	if (cc.upload_data_to_flash_test(data, HOLDER_OTP_SIZE) == 0)
+	{
+		ui->m_lab_display_msg->setText("upload completed!");
+	}
+	else
+	{
+		ui->m_lab_display_msg->setText("failed to upload!");
+	}
 	cc.close_comm();
 	if (data)
 	{
 		delete[] data;
 		data = nullptr;
 	}
-	ui->m_lab_display_msg->setText("upload completed!");
 }
 
 void XMView::BuildConnect()

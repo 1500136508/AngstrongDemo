@@ -9,7 +9,7 @@
 #include <QMutex>
 #include <fstream>
 #include <QRectF>
-#include "logwriter.h"
+//#include "logwriter.h"
 #define EFE_FORMAT
 //#define KEEP_ORI
 
@@ -83,7 +83,7 @@ private:
 
     bool isRunning = false;
     bool quitProgram = false;
-
+	bool getParam = false;
 
     bool flag_ir = false;
     bool flag_rgb =false;

@@ -50,7 +50,9 @@ void CameraView::iteratorOverItems()
 	QList<QStandardItem *> list = this->returnTheItems();
 	foreach(QStandardItem *item, list)
 	{
+#if DEBUG
 		qDebug() << item->text();
+#endif
 	}
 }
 

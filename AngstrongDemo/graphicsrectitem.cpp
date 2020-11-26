@@ -115,8 +115,9 @@ void GraphicsRectItem::paint(QPainter * painter, const QStyleOptionGraphicsItem 
 
 
 	//painter.end();
-
+#if DEBUG
 	qDebug() << m_roiRect;
+#endif
 }
 
 void GraphicsRectItem::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
