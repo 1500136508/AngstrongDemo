@@ -83,7 +83,7 @@ private:
 
     bool isRunning = false;
     bool quitProgram = false;
-
+	bool getParam = false;
 
     bool flag_ir = false;
     bool flag_rgb =false;

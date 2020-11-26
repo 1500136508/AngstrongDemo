@@ -745,7 +745,8 @@ bool CCameraDS::readRawData(unsigned char* data)
     m_pMediaEvent->WaitForCompletion(2000, &evCode);//yxl
     m_pSampleGrabber->GetCurrentBuffer(&size, NULL);
 
-    if (size != 0) {
+    if (size != 0) 
+	{
         m_nBufferSize = size;
         m_pSampleGrabber->GetCurrentBuffer(&size, (long*)data);
 //        memcpy(data, m_nBuffer, size);

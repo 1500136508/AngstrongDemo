@@ -107,6 +107,7 @@ bool imageReader::OpenCamera(int index)
 void imageReader::CloseCamera()
 {
 	isRunning = false;
+	getParam = false;
 	Sleep(2000);
 	if (camds->isOpened())
 	{
@@ -148,7 +149,6 @@ void imageReader::buildDataThread()
 	{
 		bool irGet = false;
 		bool depthGet = false;
-		bool getParam = false;
 		int moveX = 45;
 		int moveY = 105;
 		int preMoveX = 45;
