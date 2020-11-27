@@ -29,7 +29,7 @@ void ImagePix::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 
 void ImagePix::wheelEvent(QGraphicsSceneWheelEvent * event)
 {
-	if ((event->delta() > 0) && (m_fScale >= 50))//最大放大到原始图像的50倍
+	if ((event->delta() > 0) && (m_fScale >= 80))//最大放大到原始图像的80倍
 	{
 		return QGraphicsPixmapItem::wheelEvent(event);
 	}
@@ -65,4 +65,9 @@ void ImagePix::SetFit(double fScale)
 {
 	m_fScale = fScale;
 	setScale(m_fScale);
+}
+
+float ImagePix::GetScale() const
+{
+	return m_fScale;
 }

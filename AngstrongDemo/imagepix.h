@@ -10,6 +10,7 @@ public:
 	virtual ~ImagePix();
 
 	void SetFit(double fScale = 1.0f);
+	float GetScale()const;
 protected:
 	void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 	void wheelEvent(QGraphicsSceneWheelEvent *event);
