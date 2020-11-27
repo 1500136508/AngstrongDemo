@@ -6,7 +6,10 @@
 #include <QTimer>
 #include <QPalette>
 #include <QString>
+#include <QDesktopWidget>
 #include "AngstrongDemo.h"
+#include "widgetui.h"
+#include "titlebar.h"
 
 AngstrongDemo::AngstrongDemo(QWidget *parent)
 	: QMainWindow(parent)
@@ -27,22 +30,56 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	CreateDockWindow();
 	AddToolBar();
 
-	//界面外观处理
-	//QWidget* p = takeCentralWidget();
-	//if (p)
-	//{
-	//	delete p;//去除界面的中间窗口，实现任意区域停靠
-	//}
-	setDockNestingEnabled(true);//打开Dock嵌套功能
-
 	//嵌入qss进行美化
-	QFile file("../qss/black.qss");
+	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
 	QTextStream filetext(&file);
 	stylesheet = filetext.readAll();
 	file.close();
 	setStyleSheet(stylesheet);
 	m_pMainImageView->setStyleSheet(stylesheet);
+	m_pMainImageView->setParent(this);
+
+	//初始化识别相机列表
+	InitCamera();
+
+	ui.menuBar->installEventFilter(this);
+
+	//界面外观处理
+	//QWidget* p = takeCentralWidget();
+	//if (p)
+	//{
+	//	delete p;//去除界面的中间窗口，实现任意区域停靠
+	//}
+	//setWindowFlags(Qt::FramelessWindowHint);//去掉边框
+	//setWindowFlags(windowFlags()&~Qt::FramelessWindowHint); //增加标题栏
+	//setAttribute(Qt::WA_TranslucentBackground, true);//设置透明2-窗体标题栏不透明,背景透明
+	//setWindowOpacity(0.9);//设置透明度
+	setMouseTracking(true);
+	setDockNestingEnabled(true);//打开Dock嵌套功能
+
+	//加入自定义标题栏
+	WidgetUI *selMainWidget = new WidgetUI; //创建一个QWidget容器
+	selMainWidget->setWindowFlags(Qt::FramelessWindowHint);//将这个QWidget的边框去掉
+
+	this->setParent(selMainWidget);//重新设置这个UI界面的父对象为QWidget
+	TitleBar *pTitleBar = new TitleBar(selMainWidget); //定义一个标题栏类
+
+	this->installEventFilter(pTitleBar);//安装事件过滤器
+	QGridLayout *pLayout = new QGridLayout();//创建一个整体布局器
+	pLayout->addWidget(pTitleBar);  //添加标题栏
+	pLayout->addWidget(this);       //添加UI界面
+	pLayout->setSpacing(0);         //布局之间的距离
+	pLayout->setContentsMargins(0, 0, 0, 0); //布局器的四周边距
+	selMainWidget->setLayout(pLayout);  //将这个布局器设置在QWidget上
+	//selMainWidget->setSizePolicy(this->sizePolicy());
+	//selMainWidget->setMaximumSize(this->maximumSize());
+	//selMainWidget->setMaximumSize(this->maximumSize());
+	this->setWindowTitle(QString("AngStrongDemo"));
+
+	selMainWidget->show();//显示QWidge 最后添加
+	QDesktopWidget* desktop = QApplication::desktop();
+	selMainWidget->move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2);//居中显示
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -67,11 +104,30 @@ AngstrongDemo::~AngstrongDemo()
 	}
 }
 
+void AngstrongDemo::mousePressEvent(QMouseEvent *event)
+{
+	
+}
+
+void AngstrongDemo::mouseMoveEvent(QMouseEvent *event)
+{
+
+}
+
+void AngstrongDemo::mouseReleaseEvent(QMouseEvent *event)
+{
+	
+}
+
+void AngstrongDemo::mouseDoubleClickEvent(QMouseEvent * event)
+{
+	
+}
+
 bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, long * result)
 {
 	MSG* msg = reinterpret_cast<MSG*>(message);
 	int msgType = msg->message;
-	static int m_sCameraDeviceIndex = -1;//局部静态变量，用来存储USBCamera序号
 	if (msgType == WM_DEVICECHANGE)
 	{
 		PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)msg->lParam;
@@ -79,13 +135,17 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		{
 		case DBT_DEVICEARRIVAL:
 		{
+			Sleep(50);
+			InitCamera();
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME)
 			{
 				PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
 				if (lpdbv->dbcv_flags == 0)
 				{
 					QString USBDisk = QString(this->FirstDriveFromMask(lpdbv->dbcv_unitmask));
+#ifdef DEBUG
 					qDebug() << "USB_Arrived and The USBDisk is: " << USBDisk;
+#endif
 					USBDevice usbDevice;
 					//此时的U盘信息存储在m_usbList
 					if (m_usbList.count() >= 6)
@@ -101,7 +161,9 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 
 					}
 					usbDeviceMap.insert({ USBDisk, usbDevice });
+#ifdef DEBUG
 					qDebug() << "USB_ADD MapSIZE : " << usbDeviceMap.size();
+#endif
 
 				}
 			}
@@ -129,9 +191,9 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
 						QString qstrName = m_usbList.at(2);
-						++m_sCameraDeviceIndex;
-						m_mpCameraDevice.insert({ qstrName, m_sCameraDeviceIndex });
-						emit IsCameraUSB(true, qstrName,m_mpCameraDevice[qstrName]);
+						//++m_sCameraDeviceIndex;
+						/*m_mpCameraDevice.insert({ qstrName, m_sCameraDeviceIndex });
+						emit IsCameraUSB(true, qstrName,m_mpCameraDevice[qstrName]);*/
 					}
 				}
 
@@ -140,18 +202,24 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		break;
 		case DBT_DEVICEREMOVECOMPLETE:
 		{
+			InitCamera();//检查camera
+			m_ParamView.on_close_clicked();
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME)
 			{
 				PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
 				if (lpdbv->dbcv_flags == 0)
 				{
 					QString USBDisk = QString(this->FirstDriveFromMask(lpdbv->dbcv_unitmask));
+#ifdef DEBUG
 					qDebug() << "USB_Removed is : " << USBDisk;
+#endif
 					if (usbDeviceMap.find(USBDisk) != usbDeviceMap.end())
 					{
 						usbDeviceMap.erase(USBDisk);
 					}
+#ifdef DEBUG
 					qDebug() << "USB_Remov MapSIZE : " << usbDeviceMap.size();
+#endif
 				}
 			}
 			if (lpdb->dbch_devicetype = DBT_DEVTYP_DEVICEINTERFACE)
@@ -182,34 +250,34 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 						m_usbList.append(listID.at(1).right(4));    //pid 1
 						m_usbList.append(listAll.at(2));            //设备序列号 2
 						QString qstrUSBName = m_usbList.at(2);
-						emit IsCameraUSB(false, qstrUSBName, m_mpCameraDevice[qstrUSBName]);
-						if (m_sCameraDeviceIndex != 0)
-						{
-							--m_sCameraDeviceIndex;
-						}
-						if (m_mpCameraDevice.find(qstrUSBName) != m_mpCameraDevice.end())//判断map中是否存在该设备
-						{
-							if (!m_mpImageView.empty())
-							{
-								DestroyImageView(m_mpCameraDevice[qstrUSBName]);
-								for (auto iter = m_mpImageView.begin(); iter != m_mpImageView.end(); ++iter)
-								{
-									if (iter->second.first > m_mpCameraDevice.find(qstrUSBName)->second)
-									{
-										--iter->second.first;
-									}
-								}
-							}
+						//emit IsCameraUSB(false, qstrUSBName, m_mpCameraDevice[qstrUSBName]);
+						//if (m_sCameraDeviceIndex != 0)
+						//{
+						//	--m_sCameraDeviceIndex;
+						//}
+						//if (m_mpCameraDevice.find(qstrUSBName) != m_mpCameraDevice.end())//判断map中是否存在该设备
+						//{
+						//	if (!m_mpImageView.empty())
+						//	{
+						//		DestroyImageView(m_mpCameraDevice[qstrUSBName]);
+						//		for (auto iter = m_mpImageView.begin(); iter != m_mpImageView.end(); ++iter)
+						//		{
+						//			if (iter->second.first > m_mpCameraDevice.find(qstrUSBName)->second)
+						//			{
+						//				--iter->second.first;
+						//			}
+						//		}
+						//	}
 
-							for (auto iter = m_mpCameraDevice.begin(); iter != m_mpCameraDevice.end(); ++iter)//遍历map
-							{
-								if (iter->second > m_mpCameraDevice.find(qstrUSBName)->second)
-								{
-									--iter->second;//将移除设备后的设备nIndex全部递减1
-								}
-							}
-							m_mpCameraDevice.erase(m_mpCameraDevice.find(qstrUSBName));//移除该设备
-						}
+						//	for (auto iter = m_mpCameraDevice.begin(); iter != m_mpCameraDevice.end(); ++iter)//遍历map
+						//	{
+						//		if (iter->second > m_mpCameraDevice.find(qstrUSBName)->second)
+						//		{
+						//			--iter->second;//将移除设备后的设备nIndex全部递减1
+						//		}
+						//	}
+						//	m_mpCameraDevice.erase(m_mpCameraDevice.find(qstrUSBName));//移除该设备
+						//}
 					}
 				}
 			}
@@ -217,7 +285,44 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		}
 		}
 	}
+	return QWidget::nativeEvent(eventType, message, result);
+}
+
+bool AngstrongDemo::eventFilter(QObject * object, QEvent * event)
+{
 	return false;
+}
+
+bool AngstrongDemo::InitCamera()
+{
+	bool bReturn = false;
+	do 
+	{
+		//static int m_sCameraDeviceIndex = -1;              //局部静态变量，用来存储USBCamera序号
+		int cameraNum = CCameraDS::CameraCount();
+		if (cameraNum <= 0)
+		{
+			IsCameraUSB(false, QString(""), -1);
+			m_mpCameraDevice.clear();
+			break;
+		}
+		char camName[100];
+		for (int i = 0; i < cameraNum; i++)
+		{
+			CCameraDS::CameraName(i, camName, 100);
+			std::string cN(camName);
+			if (cN.find("UVC") != std::string::npos)
+			{
+				IsCameraUSB(true, QString::fromStdString(cN) + QString::number(i), i);
+				//++m_sCameraDeviceIndex;
+				m_mpCameraDevice.insert({ QString::fromStdString(cN)+QString::number(i), i });
+			}
+		}
+
+		bReturn = true;
+	} while (false);
+
+	return bReturn;
 }
 
 void AngstrongDemo::CreateDockWindow()
@@ -229,6 +334,7 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_cameralist->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::LeftDockWidgetArea, m_dock_cameralist);
 	m_dock_cameralist->setWidget(&m_CameraView);
+	m_dock_cameralist->setMaximumWidth(200);
 	//增加parameter停靠窗口
 	QDockWidget *m_dock_paramlist = new QDockWidget(tr("ParameterList"));
 	m_dock_paramlist->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -236,6 +342,7 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_paramlist->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_paramlist);
 	m_dock_paramlist->setWidget(&m_ParamView);
+	m_dock_paramlist->setMaximumWidth(300);
 	//增加Output停靠窗口
 	QDockWidget *m_dock_output = new QDockWidget(tr("Output"));
 	m_dock_output->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -257,6 +364,13 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_display->setAllowedAreas(Qt::AllDockWidgetAreas);
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_display);
 	m_dock_display->setWidget(&m_DispView);
+	//增加XMView停靠窗口
+	QDockWidget *m_dock_xm = new QDockWidget(tr("XM"));
+	m_dock_xm->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
+	m_dock_xm->setAllowedAreas(Qt::AllDockWidgetAreas);
+	addDockWidget(Qt::RightDockWidgetArea, m_dock_xm);
+	m_dock_xm->setWidget(&m_XMView);
 	//增加ImageView停靠窗口
 	//QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
 	//m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -273,7 +387,9 @@ void AngstrongDemo::CreateDockWindow()
 
 	//创建窗口布局
 	tabifyDockWidget(m_dock_paramlist, m_dock_savedata);
+	tabifyDockWidget(m_dock_paramlist, m_dock_xm);
 	tabifyDockWidget(m_dock_output, m_dock_display);
+	m_dock_paramlist->raise();//激活显示当前页面
 }
 
 void AngstrongDemo::AddToolBar()
@@ -291,10 +407,12 @@ void AngstrongDemo::BuildConnect()
 	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
 	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int,QString)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int,QString)));
 	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
+	connect(&m_ParamView, SIGNAL(SendCreateAvgArea(int, bool)), m_pMainImageView->ui->m_gView_ImageView, SLOT(ReceiveCreateAvgArea(int, bool)));
 	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendSaveImageInfo(QString)), &m_SaveData, SLOT(ReceiveSaveImageInfo(QString)));
 	connect(m_pMainImageView->m_pCamera, SIGNAL(SendLocationDepth(int, int, float)), &m_DispView, SLOT(ReceiveLocationDepth(int, int, float)));
 	connect(m_pMainImageView->ui->m_gView_ImageView, SIGNAL(SendImageGray(int, int, int)), &m_DispView, SLOT(ReceiveImageGray(int, int, int)));
+	connect(m_pMainImageView->m_pCamera, SIGNAL(SendAvgDepth(float,float)), &m_DispView, SLOT(ReceiveAvgDepth(float, float)));
 }
 
 void AngstrongDemo::registerDevice()
@@ -319,7 +437,9 @@ void AngstrongDemo::registerDevice()
 		if (!hDevNotify)
 		{
 			//qDebug() << QStringLiteral("注册失败！") <<endl;
+#ifdef DEBUG
 			qDebug() << QStringLiteral("error") << endl;
+#endif // DEBUG
 		}
 	}
 }
@@ -361,39 +481,47 @@ void AngstrongDemo::ShowImageView(QString qstrName,int nIndex)
 	{
 		return;
 	}
-	if (m_mpImageView.empty())
+	if (!m_pMainImageView->m_pCamera->IsOpen())
 	{
-		m_mpImageView.insert({ qstrName, {nIndex,new ImageView()} });
-		QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
-		m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
-		m_dock_imageview->setAllowedAreas(Qt::AllDockWidgetAreas);
-		addDockWidget(Qt::LeftDockWidgetArea, m_dock_imageview);
-		if (m_mpImageView[qstrName].second)
-		{
-			m_dock_imageview->setWidget(m_mpImageView[qstrName].second);
-		}
+		m_ParamView.on_open_clicked();
 	}
 	else
 	{
-		auto iter = m_mpImageView.begin();
-		for (; iter != m_mpImageView.end(); ++iter)
-		{
-			if (iter->second.first == nIndex)
-			{
-				break;
-			}
-		}
-		if (iter == m_mpImageView.end())
-		{
-			m_mpImageView.insert({ qstrName, {nIndex,new ImageView() } });
-		}
+		m_ParamView.on_close_clicked();
 	}
+	//if (m_mpImageView.empty())
+	//{
+	//	m_mpImageView.insert({ qstrName, {nIndex,new ImageView()} });
+	//	QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
+	//	m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	//	m_dock_imageview->setAllowedAreas(Qt::AllDockWidgetAreas);
+	//	addDockWidget(Qt::LeftDockWidgetArea, m_dock_imageview);
+	//	if (m_mpImageView[qstrName].second)
+	//	{
+	//		m_dock_imageview->setWidget(m_mpImageView[qstrName].second);
+	//	}
+	//}
+	//else
+	//{
+	//	auto iter = m_mpImageView.begin();
+	//	for (; iter != m_mpImageView.end(); ++iter)
+	//	{
+	//		if (iter->second.first == nIndex)
+	//		{
+	//			break;
+	//		}
+	//	}
+	//	if (iter == m_mpImageView.end())
+	//	{
+	//		m_mpImageView.insert({ qstrName, {nIndex,new ImageView() } });
+	//	}
+	//}
 
-	if (m_mpImageView[qstrName].second)
-	{
-		QString strIndex = QString::number(nIndex);
-		QString strTitle("ImageView");
-		m_mpImageView[qstrName].second->setWindowTitle(strTitle + "[" + strIndex + "]");
-		m_mpImageView[qstrName].second->show();
-	}
+	//if (m_mpImageView[qstrName].second)
+	//{
+	//	QString strIndex = QString::number(nIndex);
+	//	QString strTitle("ImageView");
+	//	m_mpImageView[qstrName].second->setWindowTitle(strTitle + "[" + strIndex + "]");
+	//	m_mpImageView[qstrName].second->show();
+	//}
 }

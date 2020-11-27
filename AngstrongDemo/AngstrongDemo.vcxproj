@@ -50,22 +50,22 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\dense_tencent;..\DirectShow\Include;..\AngstrongDemo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\dense_tencent;..\DirectShow\Include;..\AngstrongDemo;..\xmodemV2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;E:\Work\AngstrongDemo\dense_tencent;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world341.lib;dsense.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;E:\Work\AngstrongDemo\dense_tencent;..\xmodemV2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world341.lib;dsense.lib;xmodemV2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\DirectShow\Include;..\AngstrongDemo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\DirectShow\Include;..\AngstrongDemo;..\xmodemV2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;..\dense_tencent;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world341d.lib;dsense.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;..\dense_tencent;..\xmodemV2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world341d.lib;dsense.lib;xmodemV2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
@@ -108,6 +108,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\xmodemV2\comm.c" />
+    <ClCompile Include="..\xmodemV2\otp_interface.cpp" />
+    <ClCompile Include="..\xmodemV2\utilcom.c" />
+    <ClCompile Include="..\xmodemV2\xmodem.c" />
     <ClCompile Include="CameraDS.cpp" />
     <ClCompile Include="displayview.cpp" />
     <ClCompile Include="graphicsrectitem.cpp" />
@@ -115,12 +119,14 @@
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
     <ClCompile Include="imagescene.cpp" />
-    <ClCompile Include="logwriter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
     <ClCompile Include="savedata.cpp" />
+    <ClCompile Include="titlebar.cpp" />
     <ClCompile Include="usbdevice.cpp" />
     <ClCompile Include="View.cpp" />
+    <ClCompile Include="widgetui.cpp" />
+    <ClCompile Include="xmview.cpp" />
     <QtRcc Include="AngstrongDemo.qrc" />
     <QtUic Include="AngstrongDemo.ui" />
     <QtMoc Include="AngstrongDemo.h" />
@@ -134,6 +140,9 @@
     <QtUic Include="outputview.ui" />
     <QtUic Include="parameterview.ui" />
     <QtUic Include="savedata.ui" />
+    <QtUic Include="titlebar.ui" />
+    <QtUic Include="widgetui.ui" />
+    <QtUic Include="xmview.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="imageview.h" />
@@ -154,16 +163,33 @@
     <QtMoc Include="imagescene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\xmodemV2\comm.h" />
+    <ClInclude Include="..\xmodemV2\data_type.h" />
+    <ClInclude Include="..\xmodemV2\otp_interface.h" />
+    <ClInclude Include="..\xmodemV2\utilcom.h" />
+    <ClInclude Include="..\xmodemV2\xmodem.h" />
     <ClInclude Include="CameraDS.h" />
+    <QtMoc Include="widgetui.h" />
+    <QtMoc Include="xmview.h" />
     <QtMoc Include="displayview.h" />
-    <ClInclude Include="graphicsrectitem.h" />
     <QtMoc Include="savedata.h" />
+    <QtMoc Include="graphicsrectitem.h" />
+    <ClInclude Include="resource.h" />
+    <QtMoc Include="titlebar.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />
     <ClInclude Include="definitionmenu.h" />
     <QtMoc Include="imagereader.h" />
-    <ClInclude Include="logwriter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="camera.ico" />
+    <Image Include="icon1.ico" />
+    <Image Include="image_ico\放大版摄像头.ico" />
+    <Image Include="image_ico\放大版摄像头.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Angstrong.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

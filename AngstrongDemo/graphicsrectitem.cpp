@@ -1,456 +1,518 @@
-#include <QStyleOptionGraphicsItem>
+﻿#include "graphicsrectitem.h"
+#include <QDebug>
+#include <QMenu>
+#include <QFileDialog>
+#include <QPen>
 #include <QPainter>
-#include <QGraphicsSceneHoverEvent>
-#include <QtMath>
+#include <QGraphicsSceneContextMenuEvent>
 #include <QKeyEvent>
-#include "graphicsrectitem.h"
+#include <QStandardPaths>
+#include <QGraphicsSceneHoverEvent>
 
-GraphicsRectItem::GraphicsRectItem(QGraphicsRectItem * parent)
-	: QGraphicsRectItem(parent)
-	, m_points()
-	, m_cursorRotate()
-	, m_handles()
-	, m_handle(MOUSEHANDLE::handleNone)
-	, m_cursor(Qt::ArrowCursor)
-	, m_mousePressPos()
-	, m_mousePressRect()
-	, m_mouseRotateStart()
-	, m_fLastAngle(0.0)
-	, m_bhandleSelected(MOUSEHANDLE::handleNone)
-	, m_isHover(false)
+#pragma execution_character_set("utf-8")//让能够正常显示中文字符串
+
+GraphicsRectItem::GraphicsRectItem(QGraphicsRectItem *parent)
 {
+	//初始化
+	m_qstrTitle = "";
+	setCursor(Qt::ClosedHandCursor);   //改变光标形状,手的形状
+
+	initViewer();
 	setAcceptHoverEvents(true);
-	setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsFocusable
-		| QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
-
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleTopLeft, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleTopMiddle, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleTopRight, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleMiddleLeft, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleMiddleRight, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleBottomLeft, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleBottomMiddle, QRectF()));
-	m_handles.insert(std::make_pair(MOUSEHANDLE::handleBottomRight, QRectF()));
-
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateTopLeft, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateTopMiddle, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateTopRight, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateMiddleRight, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateBottomRight, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateBottomMiddle, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateBottomLeft, QPointF()));
-	m_points.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateMiddleLeft, QPointF()));
-
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateTopLeft, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateTopLeft]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateTopMiddle, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateTopMiddle]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateTopRight, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateTopRight]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateMiddleRight, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateMiddleRight]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateBottomRight, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateBottomRight]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateBottomMiddle, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateBottomMiddle]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateBottomLeft, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateBottomLeft]).scaled(c_rotate_cursor_size))));
-	m_cursorRotate.insert(std::make_pair(MOUSEROTATEHANDLE::handleRotateMiddleLeft, QCursor(QPixmap(mapCursors[MOUSEROTATEHANDLE::handleRotateMiddleLeft]).scaled(c_rotate_cursor_size))));
-
-	updateHandlesPos();
+	setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsFocusable);
 }
 
 GraphicsRectItem::~GraphicsRectItem()
 {
 }
 
-QPainterPath GraphicsRectItem::shape() const
+QRect GraphicsRectItem::getRoiRect() const
 {
-	QPainterPath path = QPainterPath();
-	path.addRect(this->rect());
-	if (this->isSelected())
-	{
-		for (auto shape : m_handles)
-			path.addEllipse(shape.second);
-	}
+	return m_roiRect;
+}
 
-	return path;
+void GraphicsRectItem::setBackImage(const QImage & img)
+{
+	m_backImage = img;
+	//setMinimumSize(img.width(), img.height());
+	update();
+}
+
+void GraphicsRectItem::setROIRect(QRect rect)
+{
+	m_roiRect = rect;
+	setRect(rect);
+}
+
+void GraphicsRectItem::setTitle(QString qstrTitle)
+{
+	m_qstrTitle = qstrTitle;
 }
 
 QRectF GraphicsRectItem::boundingRect() const
 {
-	auto o = c_handle_size + c_handle_space;
-	return this->rect().adjusted(-o, -o, o, o);
+	return rect().adjusted(-1,-1,1,1);
 }
 
-void GraphicsRectItem::updateHandlesPos()
+void GraphicsRectItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
-	auto s = c_handle_size;
-	auto b = boundingRect();
-
-	m_handles[MOUSEHANDLE::handleTopLeft] = QRectF(b.left(), b.top(), s, s);
-	m_handles[MOUSEHANDLE::handleTopMiddle] = QRectF(b.center().x() - s / 2, b.top(), s, s);
-	m_handles[MOUSEHANDLE::handleTopRight] = QRectF(b.right() - s, b.top(), s, s);
-	m_handles[MOUSEHANDLE::handleMiddleLeft] = QRectF(b.left(), b.center().y() - s / 2, s, s);
-	m_handles[MOUSEHANDLE::handleMiddleRight] = QRectF(b.right() - s, b.center().y() - s / 2, s, s);
-	m_handles[MOUSEHANDLE::handleBottomLeft] = QRectF(b.left(), b.bottom() - s, s, s);
-	m_handles[MOUSEHANDLE::handleBottomMiddle] = QRectF(b.center().x() - s / 2, b.bottom() - s, s, s);
-	m_handles[MOUSEHANDLE::handleBottomRight] = QRectF(b.right() - s, b.bottom() - s, s, s);
-}
-
-bool GraphicsRectItem::isHover()
-{
-	return m_isHover;
-}
-
-QCursor GraphicsRectItem::getRotateCursor(const QPointF & point)
-{
-	if (m_isHover == true || !isSelected())
-		return QCursor();
-
-	if (boundingRect().contains(mapFromScene(point)))
-		return QCursor();
-
-	auto srcRect = rect();
-	auto frameRect = srcRect.adjusted(-c_rotate_tolerance, -c_rotate_tolerance, c_rotate_tolerance, c_rotate_tolerance);
-
-	QPointF innerPoint = mapFromScene(point);
-
-	if (!frameRect.contains(innerPoint))
-		return QCursor();
-
-	m_points[MOUSEROTATEHANDLE::handleRotateTopLeft] = srcRect.topLeft();
-	m_points[MOUSEROTATEHANDLE::handleRotateTopMiddle] = QPointF(srcRect.center().x(), srcRect.top());
-	m_points[MOUSEROTATEHANDLE::handleRotateTopRight] = srcRect.topRight();
-	m_points[MOUSEROTATEHANDLE::handleRotateMiddleRight] = QPointF(srcRect.right(), srcRect.center().y());
-	m_points[MOUSEROTATEHANDLE::handleRotateBottomRight] = srcRect.bottomRight();
-	m_points[MOUSEROTATEHANDLE::handleRotateBottomMiddle] = QPointF(srcRect.center().x(), srcRect.bottom());
-	m_points[MOUSEROTATEHANDLE::handleRotateBottomLeft] = srcRect.bottomLeft();
-	m_points[MOUSEROTATEHANDLE::handleRotateMiddleLeft] = QPointF(srcRect.left(), srcRect.center().y());
-
-	auto ret = MOUSEROTATEHANDLE::handleRotateNone;
-	float l = 3.4028235E38;
-	for (auto& iter : m_points)
+	/*if (m_backImage.isNull())
+		return;*/
+	m_roiRect = rect().toRect();
+	if (rect().width() ==0 && rect().height() == 0)
 	{
-		auto length = getLength2(iter.second, innerPoint);
-		if (length < l)
-		{
-			l = length;
-			ret = iter.first;
-		}
+		return;
+	}
+	QPointF qPointF = mapToScene(m_roiRect.topLeft().x(), m_roiRect.topLeft().y());
+	QString strPoint = QString("X:%0, Y:%1").arg(qPointF.x()).arg(qPointF.y());           //位置信息
+	QString strSize = QString("W:%0, H:%1").arg(m_roiRect.width()).arg(m_roiRect.height());   //大小信息
+
+	QPen pen;
+	pen.setColor(Qt::green);
+	pen.setWidth(EDGE_WIDTH);
+
+	QFont font;
+	font.setPixelSize(16);
+
+	//QPainter painter;
+	//painter.begin(this);
+	//painter->setBrush(QBrush(QColor(0, 0, 200, 120)));
+	painter->setPen(pen);
+	painter->setFont(font);
+	painter->drawText(m_roiRect.bottomLeft().x()+m_roiRect.width()/4, m_roiRect.bottomLeft().y() + 35, strSize);
+	painter->drawText(m_roiRect.bottomLeft().x() + m_roiRect.width() / 4, m_roiRect.bottomLeft().y() + 20, strPoint);
+	painter->drawRect(m_roiRect);
+	painter->drawText(m_roiRect.center().x()-m_roiRect.width()/4, m_roiRect.center().y(), m_qstrTitle);
+	if (m_roiRect.width() != 0 && m_roiRect.height() != 0)
+	{
+#ifdef DRAW_SUB_LINE
+		//绘制中间十字架
+		/*QPen dashPen(Qt::white);
+		dashPen.setWidth(MIDDLELINE_WIDTH);
+		dashPen.setStyle(Qt::DashDotLine);
+		painter->setPen(dashPen);
+		painter->drawLine(m_roiRect.topLeft().x() + m_roiRect.width() / 2, m_roiRect.topLeft().y() + EDGE_WIDTH, m_roiRect.bottomRight().x() - m_roiRect.width() / 2, m_roiRect.bottomRight().y());
+		painter->drawLine(m_roiRect.topLeft().x() + EDGE_WIDTH, m_roiRect.topLeft().y() + m_roiRect.height() / 2, m_roiRect.bottomRight().x(), m_roiRect.bottomRight().y() - m_roiRect.height() / 2);*/
+#endif
+
+#ifdef DRAW_TEN_POINT
+		//绘制边缘十个点
+		painter->setBrush(Qt::green);
+		pen.setWidth(0);
+		painter->setPen(pen);
+
+		painter->drawRect(m_roiRect.topLeft().x()- POINT_WIDTH/2, m_roiRect.topLeft().y()- POINT_HEIGHT/2, POINT_WIDTH, POINT_HEIGHT); //左上角
+		painter->drawRect(m_roiRect.topLeft().x() - POINT_WIDTH / 2, m_roiRect.topLeft().y() + m_roiRect.height() / 2 - POINT_WIDTH / 2, POINT_WIDTH, POINT_HEIGHT); //左边中心点
+		painter->drawRect(m_roiRect.bottomLeft().x() - POINT_WIDTH / 2, m_roiRect.bottomLeft().y() - POINT_WIDTH+ POINT_HEIGHT / 2, POINT_WIDTH, POINT_HEIGHT); //左下角
+		painter->drawRect(m_roiRect.topLeft().x() + m_roiRect.width() / 2 - POINT_WIDTH / 2, m_roiRect.topLeft().y()- POINT_HEIGHT / 2, POINT_WIDTH, POINT_HEIGHT);  //顶部中心
+		painter->drawRect(m_roiRect.topLeft().x() + m_roiRect.width() / 2 - POINT_WIDTH / 2, m_roiRect.topLeft().y() + m_roiRect.height() / 2 - POINT_WIDTH / 2, POINT_WIDTH, POINT_HEIGHT);  //中心点
+		painter->drawRect(m_roiRect.bottomLeft().x() + m_roiRect.width() / 2 - POINT_WIDTH / 2, m_roiRect.bottomLeft().y() - POINT_WIDTH+ POINT_HEIGHT / 2, POINT_WIDTH, POINT_HEIGHT); //底部中心点
+		painter->drawRect(m_roiRect.topRight().x() - POINT_WIDTH+ POINT_WIDTH / 2, m_roiRect.topRight().y()- POINT_HEIGHT / 2, POINT_WIDTH, POINT_HEIGHT); //右上角
+		painter->drawRect(m_roiRect.topRight().x() - POINT_WIDTH / 2/*+ POINT_WIDTH / 2*/, m_roiRect.topRight().y() + m_roiRect.height() / 2 - POINT_WIDTH / 2, POINT_WIDTH, POINT_HEIGHT); //右边中心点
+		painter->drawRect(m_roiRect.bottomRight().x() - POINT_WIDTH+ POINT_WIDTH / 2, m_roiRect.bottomRight().y() - POINT_WIDTH+ POINT_HEIGHT / 2, POINT_WIDTH, POINT_HEIGHT); //右下角点
+#endif
 	}
 
-	if (ret == MOUSEROTATEHANDLE::handleRotateNone)
-		return QCursor();
-	float angle = this->rotation() + 22.5;
-	while (angle >= 360.0)
-		angle -= 360;
-	ret = MOUSEROTATEHANDLE(((int)ret + (int)(angle / 45)) % c_rotate_cursors_size);
-	if (ret == MOUSEROTATEHANDLE::handleRotateNone)
-		ret = MOUSEROTATEHANDLE::handleRotateTopLeft;
 
-	return m_cursorRotate[ret];
+	//painter.end();
+#if DEBUG
+	qDebug() << m_roiRect;
+#endif
 }
 
-void GraphicsRectItem::setRotateStart(const QPointF & point)
+void GraphicsRectItem::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
 {
-	m_mouseRotateStart = point;
-	m_fLastAngle = rotation();
-}
+	QPoint mousePos = event->pos().toPoint();
 
-void GraphicsRectItem::setRotateEnd(const QPointF & point)
-{
-	QPointF ori = mapToScene(transformOriginPoint());
-	QPointF v1 = m_mouseRotateStart - ori;
-	QPointF v2 = point - ori;
-
-	float angle = std::atan2f(v2.y(), v2.x()) - std::atan2f(v1.y(), v1.x());
-
-	angle = m_fLastAngle + angle * 180 / 3.1415926;
-
-	// angle = [0,360)
-	while (angle < 0.0)
-		angle += 360;
-	while (angle >= 360.0)
-		angle -= 360;
-
-	setRotation(angle);
-}
-
-void GraphicsRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-	QStyleOptionGraphicsItem op;
-	if (widget == nullptr)
+	if (m_roiRect.contains(mousePos))
 	{
-		op = *option;
-	}
-	else
-	{
-		op.initFrom(widget);
+		m_pOptMenu->exec(QCursor::pos());
 	}
 
-	if (option->state & QStyle::State_Selected)
-		op.state = QStyle::State_None;
-
-	if (isSelected() == true)
-	{
-		painter->setRenderHint(QPainter::Antialiasing);
-		painter->setBrush(QBrush(QColor(0, 0, 255, 255)));
-		painter->setPen(QPen(QColor(0x293a56ff), 1.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-		for (auto it : m_handles)
-		{
-			if (m_bhandleSelected == MOUSEHANDLE::handleNone || it.first == m_bhandleSelected)
-				painter->drawRect(it.second);
-		}
-	}
-
-	return QGraphicsRectItem::paint(painter, &op, widget);
-}
-
-void GraphicsRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
-{
-	QGraphicsRectItem::hoverEnterEvent(event);
-	m_isHover = true;
-}
-
-void GraphicsRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
-{
-	setCursor(Qt::ArrowCursor);
-	QGraphicsRectItem::hoverLeaveEvent(event);
-	m_isHover = false;
-}
-
-void GraphicsRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent * event)
-{
-	if (isSelected())
-	{
-		m_handle = handleAt(event->pos());
-
-		if (MOUSEHANDLE::handleNone == m_handle)
-			m_cursor = Qt::SizeAllCursor;
-		else
-		{
-			float angle = this->rotation() + 22.5;
-			while (angle >= 360.0)
-				angle -= 360;
-			// choose the right cursor
-			m_cursor = handleCursors[((int)m_handle + (int)(angle / 45) - 1) % c_handle_cursors_size];
-		}
-		setCursor(m_cursor);
-	}
-	QGraphicsRectItem::hoverMoveEvent(event);
+	event->accept();
 }
 
 void GraphicsRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-	if (MOUSEHANDLE::handleNone != m_bhandleSelected)
-		interactiveResize(event->pos());
-	else
-		QGraphicsRectItem::mouseMoveEvent(event);
+	if (event->buttons() & Qt::LeftButton)
+	{
+		if (m_bPainterPressed)
+		{
+			//正在绘制状态
+			paintRect(event->pos().toPoint());
+
+		}
+		else if (m_bMovedPressed)
+		{
+			//正在移动状态
+			moveRect(event->pos().toPoint());
+		}
+		else if (m_bScalePressed)
+		{
+			//正在缩放大小状态
+			scaleRect(event->pos().toPoint());
+		}
+
+		//更新界面
+		update();
+		//return;
+	}
+
+	//根据鼠标的位置设置当前的鼠标形状
+	EmDirection dir = region(event->pos().toPoint());
+
+	if (dir == DIR_NONE)
+	{
+		setCursor(Qt::ArrowCursor);
+	}
+	else if (dir == DIR_MIDDLE)
+	{
+		setCursor(Qt::OpenHandCursor);
+	}
 }
 
 void GraphicsRectItem::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
-	m_bhandleSelected = handleAt(event->pos());
-	if (MOUSEHANDLE::handleNone != m_bhandleSelected)
+	if (event->buttons() & Qt::LeftButton)
 	{
-		m_mousePressPos = event->pos();
-		m_mousePressRect = boundingRect();
+		EmDirection dir = region(event->pos().toPoint());     //获取鼠标当前的位置
+
+		if (dir == DIR_MIDDLE)
+		{
+			//鼠标在矩形中心位置
+			this->setCursor(Qt::ClosedHandCursor);
+			m_moveStartPoint.setX(event->pos().x());
+			m_moveStartPoint.setY(event->pos().y());
+			m_bMovedPressed = true;
+		}
+		else if (dir == DIR_NONE)
+		{
+			//鼠标在矩形外部
+			this->setCursor(Qt::ArrowCursor);
+			m_bPainterPressed = true;
+			m_paintStartPoint.setX(event->pos().x());
+			m_paintStartPoint.setY(event->pos().y());
+		}
+		else
+		{
+			//矩形在矩形边缘
+			m_moveStartPoint.setX(event->pos().x());
+			m_moveStartPoint.setY(event->pos().y());
+			m_bScalePressed = true;
+			m_emCurDir = dir;
+		}
 	}
-	QGraphicsRectItem::mousePressEvent(event);
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
-	auto rr = this->rect();
-	auto angle = qDegreesToRadians(this->rotation());
+	//判断鼠标是否在矩形中
+	if (m_roiRect.contains(event->pos().toPoint()))
+	{
+		//松开鼠标前是否正在拖放
+		if (m_bMovedPressed)
+		{
+			this->setCursor(Qt::OpenHandCursor);
+		}
+		else
+		{
+			this->setCursor(Qt::ArrowCursor);
+		}
+	}
 
-	auto p1 = rr.center();
-	auto origin = this->transformOriginPoint();
-	QPointF p2 = QPointF(0, 0);
-
-	p2.setX(origin.x() + qCos(angle)*(p1.x() - origin.x()) - qSin(angle)*(p1.y() - origin.y()));
-	p2.setY(origin.y() + qSin(angle)*(p1.x() - origin.x()) + qCos(angle)*(p1.y() - origin.y()));
-
-	auto diff = p1 - p2;
-	this->setRect(rr.adjusted(-diff.x(), -diff.y(), -diff.x(), -diff.y()));
-	setTransformOriginPoint(this->rect().center());
-
-	updateHandlesPos();
-
-	m_bhandleSelected = MOUSEHANDLE::handleNone;
-	m_mousePressPos = QPointF();
-	m_mousePressRect = QRectF();
-	this->update();
-	QGraphicsRectItem::mouseReleaseEvent(event);
+	m_paintStartPoint = QPoint();
+	m_bMovedPressed = false;
+	m_bPainterPressed = false;
+	m_bScalePressed = false;
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::keyPressEvent(QKeyEvent * event)
 {
-	switch (event->key())
+	if (event->key() == Qt::Key_Delete)
 	{
-	case Qt::Key_Up:
-		this->moveBy(0, -1);
-		event->setAccepted(true);
-		break;
-	case Qt::Key_Down:
-		this->moveBy(0, 1);
-		event->setAccepted(true);
-		break;
-	case Qt::Key_Left:
-		this->moveBy(-1, 0);
-		event->setAccepted(true);
-		break;
-	case Qt::Key_Right:
-		this->moveBy(1, 0);
-		event->setAccepted(true);
-		break;
-	default:
-		event->setAccepted(false);
-		break;
+		m_roiRect = QRect(0, 0, 0, 0);
+		update();
 	}
+	setRect(m_roiRect);
 }
 
-GraphicsRectItem::MOUSEHANDLE GraphicsRectItem::handleAt(const QPointF & point)
+void GraphicsRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
 {
-	for (auto it : m_handles)
+	//根据鼠标的位置设置当前的鼠标形状
+	EmDirection dir = region(event->pos().toPoint());
+
+	if (dir == DIR_NONE)
 	{
-		if (it.second.contains(point))
-			return it.first;
+		setCursor(Qt::ArrowCursor);
 	}
-	return MOUSEHANDLE::handleNone;
+	else if (dir == DIR_MIDDLE)
+	{
+		setCursor(Qt::OpenHandCursor);
+	}
+	update();
 }
 
-void GraphicsRectItem::interactiveResize(const QPointF & mousePos)
+void GraphicsRectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
 {
-	auto offset = c_handle_size + c_handle_space;
-	auto bRect = boundingRect();
-	auto rr = this->rect();
-	auto diff = QPointF(0, 0);
+	//根据鼠标的位置设置当前的鼠标形状
+	EmDirection dir = region(event->pos().toPoint());
 
-	prepareGeometryChange();
-
-	if (m_bhandleSelected == MOUSEHANDLE::handleTopLeft)
+	if (dir == DIR_NONE)
 	{
-		auto fromX = m_mousePressRect.left();
-		auto fromY = m_mousePressRect.top();
-		auto toX = fromX + mousePos.x() - m_mousePressRect.x();
-		auto toY = fromY + mousePos.y() - m_mousePressRect.y();
-
-		if (!(toX - fromX >= rr.width() || toY - fromY >= rr.height()))
-		{
-			diff.setX(toX - fromX);
-			diff.setY(toY - fromY);
-			bRect.setLeft(toX);
-			bRect.setTop(toY);
-			rr.setLeft(bRect.left() + offset);
-			rr.setTop(bRect.top() + offset);
-			this->setRect(rr);
-		}
+		setCursor(Qt::ArrowCursor);
 	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleTopMiddle)
+	else if (dir == DIR_MIDDLE)
 	{
-		auto fromY = m_mousePressRect.top();
-		auto toY = fromY + mousePos.y() - m_mousePressPos.y();
-
-		if (!(toY - fromY >= rr.height()))
-		{
-			diff.setY(toY - fromY);
-			bRect.setTop(toY);
-			rr.setTop(bRect.top() + offset);
-			this->setRect(rr);
-		}
+		setCursor(Qt::OpenHandCursor);
 	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleTopRight)
-	{
-		auto fromX = m_mousePressRect.right();
-		auto fromY = m_mousePressRect.top();
-		auto toX = fromX + mousePos.x() - m_mousePressPos.x();
-		auto toY = fromY + mousePos.y() - m_mousePressPos.y();
-
-		if (!(fromX - toX >= rr.width() || toY - fromY >= rr.height()))
-		{
-			diff.setX(toX - fromX);
-			diff.setY(toY - fromY);
-			bRect.setRight(toX);
-			bRect.setTop(toY);
-			rr.setRight(bRect.right() - offset);
-			rr.setTop(bRect.top() + offset);
-			this->setRect(rr);
-		}
-	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleMiddleLeft)
-	{
-		auto fromX = m_mousePressRect.left();
-		auto toX = fromX + mousePos.x() - m_mousePressPos.x();
-
-		if (!(toX - fromX >= rr.width()))
-		{
-			diff.setX(toX - fromX);
-			bRect.setLeft(toX);
-			rr.setLeft(bRect.left() + offset);
-			this->setRect(rr);
-		}
-	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleMiddleRight)
-	{
-		auto fromX = m_mousePressRect.right();
-		auto toX = fromX + mousePos.x() - m_mousePressPos.x();
-
-		if (!(fromX - toX >= rr.width()))
-		{
-			diff.setX(toX - fromX);
-			bRect.setRight(toX);
-			rr.setRight(bRect.right() - offset);
-			this->setRect(rr);
-		}
-	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleBottomLeft)
-	{
-		auto fromX = m_mousePressRect.left();
-		auto fromY = m_mousePressRect.bottom();
-		auto toX = fromX + mousePos.x() - m_mousePressPos.x();
-		auto toY = fromY + mousePos.y() - m_mousePressPos.y();
-
-		if (!(toX - fromX >= rr.width() || fromY - toY >= rr.height()))
-		{
-			diff.setX(toX - fromX);
-			diff.setY(toY - fromY);
-			bRect.setLeft(toX);
-			bRect.setBottom(toY);
-			rr.setLeft(bRect.left() + offset);
-			rr.setBottom(bRect.bottom() - offset);
-			this->setRect(rr);
-		}
-	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleBottomMiddle)
-	{
-		auto fromY = m_mousePressRect.bottom();
-		auto toY = fromY + mousePos.y() - m_mousePressPos.y();
-
-		if (!(fromY - toY >= rr.height()))
-		{
-			diff.setY(toY - fromY);
-			bRect.setBottom(toY);
-			rr.setBottom(bRect.bottom() - offset);
-			this->setRect(rr);
-		}
-	}
-	else if (m_bhandleSelected == MOUSEHANDLE::handleBottomRight)
-	{
-		auto fromX = m_mousePressRect.right();
-		auto fromY = m_mousePressRect.bottom();
-		auto toX = fromX + mousePos.x() - m_mousePressPos.x();
-		auto toY = fromY + mousePos.y() - m_mousePressPos.y();
-
-		if (!(fromX - toX >= rr.width() || fromY - toY >= rr.height()))
-		{
-			diff.setX(toX - fromX);
-			diff.setY(toY - fromY);
-			bRect.setRight(toX);
-			bRect.setBottom(toY);
-			rr.setRight(bRect.right() - offset);
-			rr.setBottom(bRect.bottom() - offset);
-			this->setRect(rr);
-		}
-	}
-	updateHandlesPos();
+	update();
 }
 
-float GraphicsRectItem::getLength2(const QPointF & point1, const QPointF & point2)
+void GraphicsRectItem::hoverMoveEvent(QGraphicsSceneHoverEvent * event)
 {
-	return (point1.x() - point2.x()) * (point1.x() - point2.x()) + (point1.y() - point2.y()) * (point1.y() - point2.y());
+	//根据鼠标的位置设置当前的鼠标形状
+	EmDirection dir = region(event->pos().toPoint());
+
+	if (dir == DIR_NONE)
+	{
+		setCursor(Qt::ArrowCursor);
+	}
+	else if (dir == DIR_MIDDLE)
+	{
+		setCursor(Qt::OpenHandCursor);
+	}
+	update();
+}
+
+bool GraphicsRectItem::sceneEvent(QEvent * event)
+{
+	//return false;
+	if (event->type() == QEvent::GraphicsSceneMousePress)
+	{
+		mousePressEvent((QGraphicsSceneMouseEvent *)(event));
+	}
+	else if (event->type() == QEvent::GraphicsSceneMouseRelease)
+	{
+		mouseReleaseEvent((QGraphicsSceneMouseEvent *)(event));
+	}
+	else if (event->type() == QEvent::GraphicsSceneMouseMove)
+	{
+		mouseMoveEvent((QGraphicsSceneMouseEvent *)(event));
+	}
+	else if (event->type() == QEvent::KeyPress)
+	{
+		keyPressEvent((QKeyEvent *)(event));
+	}
+	else if (event->type() == QEvent::GraphicsSceneWheel)
+	{
+		wheelEvent((QGraphicsSceneWheelEvent *)(event));
+	}
+
+	event->setAccepted(true);
+	return QGraphicsItem::sceneEvent(event);
+}
+
+void GraphicsRectItem::initViewer()
+{
+	m_bPainterPressed = false;
+	m_bMovedPressed = false;
+	m_bScalePressed = false;
+	m_roiRect = QRect(0, 0, 0, 0);
+	m_emCurDir = EmDirection::DIR_NONE;
+
+	/*this->setMouseTracking(true);
+	this->setFocusPolicy(Qt::StrongFocus);*/
+	setRect(m_roiRect);
+	m_pOptMenu = new QMenu();
+	m_pDelAction = new QAction(QStringLiteral("删除"), this);
+	connect(m_pDelAction, SIGNAL(triggered()), this, SLOT([&]() { m_roiRect = QRect(0, 0, 0, 0); }));
+	m_pSaveAction = new QAction(QStringLiteral("保存"), this);
+	connect(m_pSaveAction, SIGNAL(triggered()), this, SLOT(saveROIImage()));
+
+	m_pOptMenu->addAction(m_pDelAction);
+	m_pOptMenu->addAction(m_pSaveAction);
+}
+
+void GraphicsRectItem::saveROIImage()
+{
+	QString fileName = QFileDialog::getSaveFileName(nullptr, "Save", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), "*.png");
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+
+	QImage saveImg = m_backImage.copy(m_roiRect);
+	saveImg.save(fileName);
+}
+
+EmDirection GraphicsRectItem::region(QPoint point)
+{
+	int mouseX = point.x();
+	int mouseY = point.y();
+
+	QPoint roiTopLeft = m_roiRect.topLeft();
+	QPoint roiBottomRight = m_roiRect.bottomRight();
+
+	EmDirection dir = DIR_NONE;
+
+	if (mouseX <= roiTopLeft.x() + CORPADDING && mouseX >= roiTopLeft.x() && mouseY <= roiTopLeft.y() + CORPADDING && mouseY >= roiTopLeft.y())
+	{
+		//左上角
+		this->setCursor(Qt::SizeFDiagCursor);
+		dir = DIR_LEFTTOP;
+	}
+	else if (mouseX >= roiBottomRight.x() - CORPADDING && mouseX < roiBottomRight.x() && mouseY <= roiTopLeft.y() + CORPADDING && mouseY >= roiTopLeft.y())
+	{
+		//右上角
+		this->setCursor(Qt::SizeBDiagCursor);
+		dir = DIR_RIGHTTOP;
+	}
+	else if (mouseX <= roiTopLeft.x() + CORPADDING && mouseX >= roiTopLeft.x() && mouseY >= roiBottomRight.y() - CORPADDING && mouseY <= roiBottomRight.y())
+	{
+		//左下角
+		this->setCursor(Qt::SizeBDiagCursor);
+		dir = DIR_LEFTBOTTOM;
+	}
+	else if (mouseX >= roiBottomRight.x() - CORPADDING && mouseX < roiBottomRight.x() && mouseY >= roiBottomRight.y() - CORPADDING && mouseY <= roiBottomRight.y())
+	{
+		//右下角
+		this->setCursor(Qt::SizeFDiagCursor);
+		dir = DIR_RIGHTBOTTOM;
+	}
+	else if (mouseX >= roiBottomRight.x() - EDGPADDING && mouseX <= roiBottomRight.x() && mouseY >= roiTopLeft.y() && mouseY <= roiBottomRight.y())
+	{
+		//右边
+		this->setCursor(Qt::SizeHorCursor);
+		dir = DIR_RIGHT;
+	}
+	else if (mouseY <= roiTopLeft.y() + EDGPADDING && mouseY >= roiTopLeft.y() && mouseX >= roiTopLeft.x() && mouseX <= roiBottomRight.x())
+	{
+		//上边
+		this->setCursor(Qt::SizeVerCursor);
+		dir = DIR_TOP;
+	}
+	else if (mouseY >= roiBottomRight.y() - EDGPADDING && mouseY <= roiBottomRight.y() && mouseX >= roiTopLeft.x() && mouseX <= roiBottomRight.x())
+	{
+		//下边
+		this->setCursor(Qt::SizeVerCursor);
+		dir = DIR_BOTTOM;
+	}
+	else if (mouseX <= roiTopLeft.x() + EDGPADDING && mouseX >= roiTopLeft.x() && mouseY >= roiTopLeft.y() && mouseY <= roiBottomRight.y())
+	{
+		//左边
+		this->setCursor(Qt::SizeHorCursor);
+		dir = DIR_LEFT;
+	}
+	else if (m_roiRect.contains(point))
+	{
+		//中间
+		dir = DIR_MIDDLE;
+	}
+	else
+	{
+		dir = DIR_NONE;
+	}
+	setRect(m_roiRect);
+	return dir;
+}
+
+void GraphicsRectItem::scaleRect(const QPoint & mousePoint)
+{
+	QRect newRect(m_roiRect.topLeft(), m_roiRect.bottomRight());
+	int width = mousePoint.x() - m_moveStartPoint.x();   //移动的宽度
+	int height = mousePoint.y() - m_moveStartPoint.y();  //移动的高度
+
+	//根据当前的缩放状态来改变矩形的位置大小信息
+	switch (m_emCurDir)
+	{
+	case DIR_LEFT:
+		newRect.setLeft(mousePoint.x());
+		break;
+	case DIR_RIGHT:
+		newRect.setRight(mousePoint.x());
+		break;
+	case DIR_TOP:
+		newRect.setTop(mousePoint.y());
+		break;
+	case DIR_BOTTOM:
+		newRect.setBottom(mousePoint.y());
+		break;
+	case DIR_LEFTTOP:
+		newRect.setTopLeft(mousePoint);
+		break;
+	case DIR_LEFTBOTTOM:
+		newRect.setBottomLeft(mousePoint);
+		break;
+	case DIR_RIGHTTOP:
+		newRect.setTopRight(mousePoint);
+		break;
+	case DIR_RIGHTBOTTOM:
+		newRect.setBottomRight(mousePoint);
+		break;
+	}
+
+	if (newRect.width() < MIN_WIDTH || newRect.height() < MIN_HEIGHT)
+	{
+		//缩放的大小限制
+		return;
+	}
+
+	m_roiRect = newRect;
+	m_moveStartPoint = mousePoint;  //更新鼠标的起始位置
+	setRect(m_roiRect);
+}
+
+void GraphicsRectItem::paintRect(const QPoint & mousePoint)
+{
+	this->setCursor(Qt::ArrowCursor);                    //设置鼠标为指针形状
+
+	int width = mousePoint.x() - m_paintStartPoint.x();  //移动的宽度
+	int height = mousePoint.y() - m_paintStartPoint.y(); //移动的高度
+
+	if (width < 0 && height < 0)
+	{
+		//鼠标向左上角移动
+		m_roiRect.setX(mousePoint.x());
+		m_roiRect.setY(mousePoint.y());
+	}
+	else if (width < 0)
+	{
+		//鼠标向负X位置移动
+		m_roiRect.setX(mousePoint.x());
+		m_roiRect.setY(m_paintStartPoint.y());
+	}
+	else if (height < 0)
+	{
+		//鼠标向负Y位置移动
+		m_roiRect.setX(m_paintStartPoint.x());
+		m_roiRect.setY(mousePoint.y());
+	}
+	else
+	{
+		//正常  向右下移动
+		m_roiRect.setX(m_paintStartPoint.x());
+		m_roiRect.setY(m_paintStartPoint.y());
+	}
+
+	//设置矩形大小 绝对值 避免反方向的产生的负值
+	m_roiRect.setSize(QSize(abs(width), abs(height)));
+	setRect(m_roiRect);
+}
+
+void GraphicsRectItem::moveRect(const QPoint & mousePoint)
+{
+	this->setCursor(Qt::ClosedHandCursor);
+
+	int width = mousePoint.x() - m_moveStartPoint.x();
+	int height = mousePoint.y() - m_moveStartPoint.y();
+
+	QRect ret;
+	ret.setX(m_roiRect.x() + width);
+	ret.setY(m_roiRect.y() + height);
+	ret.setSize(m_roiRect.size());
+	m_roiRect = ret;
+	m_moveStartPoint = mousePoint;
+	setRect(m_roiRect);
 }

@@ -25,15 +25,21 @@ class ParameterView : public QDialog
 public:
     explicit ParameterView(QWidget *parent = nullptr);
     ~ParameterView();
-private slots:
+
+public slots:
 	void on_open_clicked();
 	void on_close_clicked();
 	void on_live_clicked();
 	void on_pause_clicked();
 	void on_stop_clicked();
+	void on_createroi01_clicked();
+	void on_createroi02_clicked();
+	void on_cancelroi01_clicked();
+	void on_cancelroi02_clicked();
 	void ReceiveCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
 signals:
 	void SendCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
+	void SendCreateAvgArea(int nIndex, bool bIsCreate);
 private:
     Ui::ParameterView *ui;
 

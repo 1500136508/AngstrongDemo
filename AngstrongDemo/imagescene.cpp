@@ -23,16 +23,19 @@ ImageScene::~ImageScene()
 
 void ImageScene::mouseMoveEvent(QGraphicsSceneMouseEvent * mouseEvent)
 {
+	update();
 	QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
 void ImageScene::mousePressEvent(QGraphicsSceneMouseEvent * mouseEvent)
 {
+	update();
 	QGraphicsScene::mousePressEvent(mouseEvent);
 }
 
 void ImageScene::mouseReleaseEvent(QGraphicsSceneMouseEvent * mouseEvent)
 {
+	update();
 	QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 

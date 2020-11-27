@@ -10,8 +10,8 @@ ParameterView::ParameterView(QWidget *parent) :
 	//初始化界面
 	ui->m_btn_open->setEnabled(true);
 	ui->m_btn_close->setEnabled(false);
-	ui->m_btn_live->setEnabled(true);
-	ui->m_btn_pause->setEnabled(true);
+	ui->m_btn_live->setEnabled(false);
+	ui->m_btn_pause->setEnabled(false);
 	ui->m_btn_stop->setEnabled(false);
 
 	//初始信号槽
@@ -26,6 +26,7 @@ ParameterView::~ParameterView()
 void ParameterView::on_open_clicked()
 {
 	emit SendCameraStatus(ECameraStatus_Open);
+	emit SendCameraStatus(ECameraStatus_Live);
 }
 
 void ParameterView::on_close_clicked()
@@ -48,9 +49,29 @@ void ParameterView::on_stop_clicked()
 	emit SendCameraStatus(ECameraStatus_Stop);
 }
 
+void ParameterView::on_createroi01_clicked()
+{
+	emit SendCreateAvgArea(1,true);
+}
+
+void ParameterView::on_createroi02_clicked()
+{
+	emit SendCreateAvgArea(2,true);
+}
+
+void ParameterView::on_cancelroi01_clicked()
+{
+	emit SendCreateAvgArea(1, false);
+}
+
+void ParameterView::on_cancelroi02_clicked()
+{
+	emit SendCreateAvgArea(2, false);
+}
+
 void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 {
-	return;//目前关闭此功能
+	//return;//目前关闭此功能
 	switch (eStatus)
 	{
 	case ECameraStatus_Unknow:
@@ -108,4 +129,8 @@ void ParameterView::BuildConnect()
 	connect(ui->m_btn_live, SIGNAL(clicked()), this, SLOT(on_live_clicked()));
 	connect(ui->m_btn_pause, SIGNAL(clicked()), this, SLOT(on_pause_clicked()));
 	connect(ui->m_btn_stop, SIGNAL(clicked()), this, SLOT(on_stop_clicked()));
+	connect(ui->m_btn_roi_01, SIGNAL(clicked()), this, SLOT(on_createroi01_clicked()));
+	connect(ui->m_btn_roi_02, SIGNAL(clicked()), this, SLOT(on_createroi02_clicked()));
+	connect(ui->m_btn_cancel_roi_01, SIGNAL(clicked()), this, SLOT(on_cancelroi01_clicked()));
+	connect(ui->m_btn_cancel_roi_02, SIGNAL(clicked()), this, SLOT(on_cancelroi02_clicked()));
 }

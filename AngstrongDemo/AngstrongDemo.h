@@ -14,6 +14,7 @@
 #include "usbdevice.h"
 #include "savedata.h"
 #include "displayview.h"
+#include "xmview.h"
 
 class AngstrongDemo : public QMainWindow
 {
@@ -24,11 +25,18 @@ public:
 	virtual ~AngstrongDemo();
 protected:
 	//Only Qt Framework
-	bool nativeEvent(const QByteArray & eventType, void * message, long*result);
+	void mousePressEvent(QMouseEvent *) override;
+	void mouseMoveEvent(QMouseEvent *) override;
+	void mouseReleaseEvent(QMouseEvent *) override;
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+	bool nativeEvent(const QByteArray & eventType, void * message, long*result) override;
+	bool eventFilter(QObject *object, QEvent *event);//事件过滤器;
 private:
 	void CreateDockWindow();
 	void AddToolBar();
 	void BuildConnect();
+	bool InitCamera();
 
 	//CameraUSB Device
 	void registerDevice();
@@ -48,6 +56,7 @@ private:
 	OutputView m_OutputView;
 	SaveData m_SaveData;
 	DisplayView m_DispView;
+	XMView m_XMView;
 
 	std::map<QString, unsigned> m_mpCameraDevice;
 	std::map<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map

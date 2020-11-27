@@ -16,6 +16,7 @@ View::View(QWidget *pParent /* = nullptr */)
 	m_spPix = nullptr;
 	m_ImageWidth = 0;
 	m_ImageHeight = 0;
+	m_vecAvgROI.clear();
 
 	//增加QGraphicsView框架相关元素
 	m_spScene = std::make_shared<ImageScene>(new ImageScene());//增加场景
@@ -27,7 +28,7 @@ View::View(QWidget *pParent /* = nullptr */)
 	setScene(m_spScene.get());//将QGraphicsView添加Scene;
 
 	//qss 皮肤美化
-	QFile file("../qss/black.qss");
+	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
 	QTextStream filetext(&file);
 	stylesheet = filetext.readAll();
@@ -45,6 +46,7 @@ View::View(QGraphicsScene *scene, QWidget *parent /* = nullptr */)
 
 View::~View()
 {
+	m_vecAvgROI.clear();
 }
 
 int View::GetImageWidth() const
@@ -109,6 +111,29 @@ float View::getLength2(const QPointF & point1, const QPointF & point2)
 	return (point1.x() - point2.x()) * (point1.x() - point2.x()) + (point1.y() - point2.y()) * (point1.y() - point2.y());
 }
 
+std::shared_ptr<ImageScene> View::GetScene() const
+{
+	return m_spScene;
+}
+
+void View::ClearAll()
+{
+	QRect view_rect = geometry();
+	QList<QGraphicsItem *> item_list_p = m_spScene->items(QRectF(0, 0, view_rect.width(), view_rect.height()), Qt::IntersectsItemShape);
+
+	//删除元素
+	for (int i = 0; i < item_list_p.size(); i++)
+	{
+		m_spScene->removeItem(item_list_p[i]);  //从scene移除		
+		//if (item_list_p[i])
+		//{
+		//	delete item_list_p[i];  //释放内存
+		//	item_list_p[i] = nullptr;
+		//}
+	}
+
+}
+
 bool View::Open()
 {
 	bool bReturn = false;
@@ -132,7 +157,9 @@ bool View::Open()
 				m_ImageWidth = qImage.width();
 				m_ImageHeight = qImage.height();
 				m_spPix->setPixmap(QPixmap::fromImage(qImage));
-				qDebug() << "ImageWidth:" << m_ImageWidth << "ImageHeight:"<<m_ImageHeight;
+#ifdef DEBUG
+				qDebug() << "ImageWidth:" << m_ImageWidth << "ImageHeight:" << m_ImageHeight;
+#endif
 
 				//处理显示位置,默认为图像居中显示
 				ZoomFit();
@@ -175,7 +202,7 @@ bool View::Save()
 
 void View::mouseMoveEvent(QMouseEvent * event)
 {
-	if (m_spRect)
+	/*if (m_spRect)
 	{
 		if (m_bTurn != true)
 		{
@@ -193,7 +220,7 @@ void View::mouseMoveEvent(QMouseEvent * event)
 		{
 			m_spRect->setRotateEnd(mapToScene(event->pos()));
 		}
-	}
+	}*/
 
 	//判断鼠标是否在ImageItem上
 	if (m_spPix)
@@ -235,31 +262,103 @@ void View::mouseMoveEvent(QMouseEvent * event)
 					int GrayValue_G = color.green();
 					int GrayValue_B = color.blue();
 					emit SendImageGray(GrayValue_R, GrayValue_G, GrayValue_B);
+#ifdef DEBUG
 					qDebug() << "X:" << x << "Y:" << y << "R:" << GrayValue_R << " G:" << GrayValue_G << " B:" << GrayValue_B;
+#endif
 				}
 				emit SendMouseInfo(x, y);
 			}
 			else
 			{
+#ifdef DEBUG
 				qDebug() << "out of range";
+#endif
 				emit SendMouseInfo(-1, -1);
 			}
 		}
-	}
 
+		if (!m_spPix->pixmap().isNull())
+		{
+			if (m_vecAvgROI.size() > 0)
+			{
+				bool bCancel[2] = { false };
+				for (int nIndex = 0; nIndex < 2; nIndex++)
+				{
+					//以下坐标全部相对于Scene
+					QPointF point_pix = m_spPix->scenePos();//获取图像左上角坐标（以Scene左上角为原点)
+					QPointF point_rect = m_vecAvgROI[nIndex]->rect().center();//获取roi中心坐标（相对于图像)
+					point_rect.setX(point_rect.x() + point_pix.x());//转换位相对于Scene的坐标
+					point_rect.setY(point_rect.y() + point_pix.y());
+					//计算出整个图像区域的rect（此时的图像是自适应窗口的，可能被拉伸或者压缩了，下边需要进行转换）
+					QRect view_rect = geometry();//view 区域
+					float ratio_x = (m_ImageWidth*1.0) / view_rect.width();
+					float ratio_y = (m_ImageHeight *1.0) / view_rect.height();
+					QRectF rect_pix;
+
+					double ratio_w = (m_ImageWidth*1.0) / m_spPix->pixmap().width();
+					double ratio_h = (m_ImageHeight*1.0) / m_spPix->pixmap().height();
+					if (ratio_x > ratio_y)//横、纵向压缩对比
+					{
+						int h = (m_ImageHeight*1.0) / m_ImageWidth * view_rect.width();//根据压缩比，计算出图像高度
+						rect_pix = QRectF(point_pix, QPointF(view_rect.width(), (view_rect.height() - h) / 2 + h));
+
+						QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex]->rect().height() / 2),
+							QPointF(point_rect.x() + m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() + m_vecAvgROI[nIndex]->rect().height() / 2));//计算出ROI相对于scene的rect
+						if (rect_pix.contains(rect_roi))
+						{
+							rect_roi = QRectF(QPointF(rect_roi.topLeft().x() * ratio_w, (rect_roi.topLeft().y()- (view_rect.height() - h) / 2) * ratio_h),
+								QPointF(rect_roi.bottomRight().x()*ratio_w, (rect_roi.bottomRight().y() - (view_rect.height() - h) / 2)*ratio_h));
+
+							emit SendAvgArea(nIndex, rect_roi);
+						}
+						else
+						{
+							bCancel[nIndex] = true;
+						}
+					}
+					else
+					{
+						//同理
+						int w = (m_ImageWidth*1.0) / m_ImageHeight * view_rect.height();//根据压缩比，计算出图像宽度
+						rect_pix = QRectF(point_pix, QPointF((view_rect.width()-w)/2+w, view_rect.height()));
+
+						QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex]->rect().height() / 2),
+							QPointF(point_rect.x() + m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() + m_vecAvgROI[nIndex]->rect().height() / 2));//计算出ROI相对于scene的rect
+						if (rect_pix.contains(rect_roi))
+						{
+							rect_roi = QRectF(QPointF((rect_roi.topLeft().x()-(view_rect.width()-w)/2) * ratio_w, rect_roi.topLeft().y() * ratio_h),
+								QPointF((rect_roi.bottomRight().x() - (view_rect.width() - w) / 2)*ratio_w, rect_roi.bottomRight().y()*ratio_h));
+
+							emit SendAvgArea(nIndex, rect_roi);
+						}
+						else
+						{
+							bCancel[nIndex] = true;
+						}
+					}
+					if (bCancel[0] && bCancel[1])
+					{
+						emit SendAvgArea(-1, QRectF(0,0,0,0));
+					}
+				}
+			}
+		}
+	}
+	
+	m_spScene->update();
 	QGraphicsView::mouseMoveEvent(event);
 }
 
 void View::mousePressEvent(QMouseEvent * event)
 {
-	if (m_spRect)
+	/*if (m_spRect)
 	{
 		if (!m_spRect->getRotateCursor(mapToScene(event->pos())).pixmap().isNull())
 		{
 			m_spRect->setRotateStart(mapToScene(event->pos()));
 			m_bTurn = true;
 		}
-	}
+	}*/
 	QGraphicsView::mousePressEvent(event);
 }
 
@@ -269,6 +368,7 @@ void View::mouseReleaseEvent(QMouseEvent * event)
 	{
 		m_bTurn = false;
 	}
+
 	QGraphicsView::mouseReleaseEvent(event);
 }
 
@@ -427,11 +527,14 @@ void View::on_close_clicked()
 			m_spScene->removeItem(m_list_item[i]);
 			m_spRect = nullptr;
 		}
+
+		m_spRect->setROIRect(QRect(0, 0, 0, 0));
 	}
 }
 
 void View::on_zoomIn_clicked()
 {
+	setCursor(Qt::SizeAllCursor);
 }
 
 void View::on_zoomOut_clicked()
@@ -454,11 +557,19 @@ void View::on_measureRect_clicked()
 	{
 		m_spRect = std::make_shared<GraphicsRectItem>(new GraphicsRectItem());
 		m_spRect->setPos(width() / 2 - 50, height() / 2 - 50);
-		m_spRect->setRect(0, 0, 100, 100);
+		//m_spRect->setRect(0, 0, 100, 100);
 		m_spRect->setTransformOriginPoint(25, 25);
 		//m_spRect->setRotation(45);
 		m_spRect->setFocus(Qt::MouseFocusReason);
 		m_spScene->addItem(m_spRect.get());
+		m_spRect->setROIRect(QRect(50, 50, 100, 100));
+	}
+	else
+	{
+		if (m_spRect->rect().width() == 0 && m_spRect->rect().height() == 0)
+		{
+			m_spRect->setROIRect(QRect(50, 50, 100, 100));
+		}
 	}
 }
 
@@ -479,6 +590,99 @@ void View::SetImage(cv::Mat mat)
 
 			ZoomFit();
 			emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);
+		}
+	}
+}
+
+void View::ReceiveCreateAvgArea(int nIndex, bool bIsCreate)
+{
+	if (bIsCreate)
+	{
+		if (m_vecAvgROI.size() == 0)//在第一次创建时，直接往容器里放入两个ROI对象,至程序结束自动销毁
+		{
+			m_vecAvgROI.push_back(std::make_shared<GraphicsRectItem>(new GraphicsRectItem()));
+			m_vecAvgROI.push_back(std::make_shared<GraphicsRectItem>(new GraphicsRectItem()));
+
+			for (size_t sz = 0; sz < m_vecAvgROI.size(); sz++)
+			{
+				m_vecAvgROI[sz]->setFocus(Qt::MouseFocusReason);
+				m_vecAvgROI[sz]->setTitle("ROI_0" + QString::number(sz));
+				m_spScene->addItem(m_vecAvgROI[sz].get());
+			}
+		}
+
+		if (m_vecAvgROI[nIndex - 1])
+		{
+			if (m_spPix)
+			{
+				if (!m_spPix->pixmap().isNull())
+				{
+					m_vecAvgROI[nIndex - 1]->setROIRect(QRect(0, 0, 50, 50));
+					m_vecAvgROI[nIndex - 1]->setPos(m_spPix->scenePos());
+					//以下坐标全部相对于Scene
+					QPointF point_pix = m_spPix->scenePos();//获取图像左上角坐标（以Scene左上角为原点)
+					QPointF point_rect = m_vecAvgROI[nIndex-1]->rect().center();//获取roi中心坐标（相对于图像)
+					point_rect.setX(point_rect.x() + point_pix.x());//转换位相对于Scene的坐标
+					point_rect.setY(point_rect.y() + point_pix.y());
+					//计算出整个图像区域的rect（此时的图像是自适应窗口的，可能被拉伸或者压缩了，下边需要进行转换）
+					QRect view_rect = geometry();//view 区域
+					float ratio_x = (m_ImageWidth*1.0) / view_rect.width();
+					float ratio_y = (m_ImageHeight *1.0) / view_rect.height();
+					QRectF rect_pix;
+
+					double ratio_w = (m_ImageWidth*1.0) / m_spPix->pixmap().width();
+					double ratio_h = (m_ImageHeight*1.0) / m_spPix->pixmap().height();
+					if (ratio_x > ratio_y)//横、纵向压缩对比
+					{
+						int h = (m_ImageHeight*1.0) / m_ImageWidth * view_rect.width();//根据压缩比，计算出图像高度
+						rect_pix = QRectF(point_pix, QPointF(view_rect.width(), (view_rect.height() - h) / 2 + h));
+
+						QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex - 1]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex - 1]->rect().height() / 2),
+							QPointF(point_rect.x() + m_vecAvgROI[nIndex - 1]->rect().width() / 2, point_rect.y() + m_vecAvgROI[nIndex - 1]->rect().height() / 2));//计算出ROI相对于scene的rect
+						if (rect_pix.contains(rect_roi))
+						{
+							rect_roi = QRectF(QPointF(rect_roi.topLeft().x() * ratio_w, (rect_roi.topLeft().y() - (view_rect.height() - h) / 2) * ratio_h),
+								QPointF(rect_roi.bottomRight().x()*ratio_w, (rect_roi.bottomRight().y() - (view_rect.height() - h) / 2)*ratio_h));
+
+							emit SendAvgArea(nIndex - 1, rect_roi);
+						}
+						else
+						{
+							emit SendAvgArea(-1, rect_roi);
+						}
+					}
+					else
+					{
+						//同理
+						int w = (m_ImageWidth*1.0) / m_ImageHeight * view_rect.height();//根据压缩比，计算出图像宽度
+						rect_pix = QRectF(point_pix, QPointF((view_rect.width() - w) / 2 + w, view_rect.height()));
+
+						QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex - 1]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex - 1]->rect().height() / 2),
+							QPointF(point_rect.x() + m_vecAvgROI[nIndex - 1]->rect().width() / 2, point_rect.y() + m_vecAvgROI[nIndex - 1]->rect().height() / 2));//计算出ROI相对于scene的rect
+						if (rect_pix.contains(rect_roi))
+						{
+							rect_roi = QRectF(QPointF((rect_roi.topLeft().x() - (view_rect.width() - w) / 2) * ratio_w, rect_roi.topLeft().y() * ratio_h),
+								QPointF((rect_roi.bottomRight().x() - (view_rect.width() - w) / 2)*ratio_w, rect_roi.bottomRight().y()*ratio_h));
+
+							emit SendAvgArea(nIndex - 1, rect_roi);
+						}
+						else
+						{
+							emit SendAvgArea(-1, rect_roi);
+						}
+					}
+				}
+			}
+			
+		}
+	}
+	else
+	{
+		if (m_vecAvgROI[nIndex - 1])
+		{
+			m_vecAvgROI[nIndex - 1]->setROIRect(QRect(0, 0, 0, 0));
+			m_spScene->update();
+			emit SendAvgArea(nIndex, m_vecAvgROI[nIndex - 1]->rect());
 		}
 	}
 }

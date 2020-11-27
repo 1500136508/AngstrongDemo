@@ -34,12 +34,6 @@
     <Filter Include="Source Files\FormView">
       <UniqueIdentifier>{aef67656-ae65-456b-bd8d-6171b0967fe4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Sequence">
-      <UniqueIdentifier>{e8aba5ef-1b2b-4cea-947c-0ba1eb19cda8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Sequence">
-      <UniqueIdentifier>{d224a5c8-62f9-4cca-821f-d59c9f8d06b4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Device">
       <UniqueIdentifier>{d9aa2a87-82e9-40eb-a9b5-ab4b60f891eb}</UniqueIdentifier>
     </Filter>
@@ -57,6 +51,30 @@
     </Filter>
     <Filter Include="Source Files\FormView\ImageView">
       <UniqueIdentifier>{1371cf53-4077-4360-bb44-93d50588a304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Device\USB">
+      <UniqueIdentifier>{eb46d930-e6c1-4998-b93d-c60e7e10b014}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device\USB">
+      <UniqueIdentifier>{1dbdfb8e-f0c2-4db7-9766-357a278f826b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FormView\Sequence">
+      <UniqueIdentifier>{e8aba5ef-1b2b-4cea-947c-0ba1eb19cda8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Device\XM">
+      <UniqueIdentifier>{a321c577-9256-44bc-890f-4c9b9ae2dbb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device\XM">
+      <UniqueIdentifier>{709b5607-f8af-4238-b153-befee502835b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{1d9a60a2-5a43-41f3-80f2-55556365db52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{506f9dc3-e719-4bda-b32b-c68833ec186d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sequence">
+      <UniqueIdentifier>{d224a5c8-62f9-4cca-821f-d59c9f8d06b4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -86,17 +104,8 @@
     <ClCompile Include="CameraDS.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="logwriter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="imagepix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="imagereader.cpp">
       <Filter>Source Files\Device\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="usbdevice.cpp">
-      <Filter>Source Files\Device</Filter>
     </ClCompile>
     <ClCompile Include="imageitem.cpp">
       <Filter>Source Files\FormView\ImageView</Filter>
@@ -110,14 +119,41 @@
     <ClCompile Include="View.cpp">
       <Filter>Source Files\FormView\ImageView</Filter>
     </ClCompile>
+    <ClCompile Include="displayview.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="usbdevice.cpp">
+      <Filter>Source Files\Device\USB</Filter>
+    </ClCompile>
     <ClCompile Include="graphicsrectitem.cpp">
       <Filter>Source Files\FormView\ImageView</Filter>
     </ClCompile>
-    <ClCompile Include="savedata.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="imagepix.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
     </ClCompile>
-    <ClCompile Include="displayview.cpp">
+    <ClCompile Include="xmview.cpp">
       <Filter>Source Files\FormView</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\xmodem.c">
+      <Filter>Source Files\Device\XM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\utilcom.c">
+      <Filter>Source Files\Device\XM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\otp_interface.cpp">
+      <Filter>Source Files\Device\XM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\xmodemV2\comm.c">
+      <Filter>Source Files\Device\XM</Filter>
+    </ClCompile>
+    <ClCompile Include="widgetui.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="titlebar.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="savedata.cpp">
+      <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +178,15 @@
     <QtUic Include="displayview.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="xmview.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="widgetui.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="titlebar.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="cameraview.h">
@@ -152,9 +197,6 @@
     </QtMoc>
     <QtMoc Include="parameterview.h">
       <Filter>Header Files\FormView</Filter>
-    </QtMoc>
-    <QtMoc Include="imagepix.h">
-      <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="imagereader.h">
       <Filter>Header Files\Device\Camera</Filter>
@@ -171,28 +213,74 @@
     <QtMoc Include="View.h">
       <Filter>Header Files\FormView\ImageView</Filter>
     </QtMoc>
-    <QtMoc Include="savedata.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="displayview.h">
       <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="imagepix.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
+    </QtMoc>
+    <QtMoc Include="graphicsrectitem.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
+    </QtMoc>
+    <QtMoc Include="xmview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
+    <QtMoc Include="widgetui.h">
+      <Filter>Header Files\UI</Filter>
+    </QtMoc>
+    <QtMoc Include="titlebar.h">
+      <Filter>Header Files\UI</Filter>
+    </QtMoc>
+    <QtMoc Include="savedata.h">
+      <Filter>Header Files\Device\Camera</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h">
       <Filter>Header Files\Device\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="logwriter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="definitionmenu.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="usbdevice.h">
-      <Filter>Header Files\Device</Filter>
+      <Filter>Header Files\Device\USB</Filter>
     </ClInclude>
-    <ClInclude Include="graphicsrectitem.h">
+    <ClInclude Include="..\xmodemV2\xmodem.h">
+      <Filter>Header Files\Device\XM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\utilcom.h">
+      <Filter>Header Files\Device\XM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\data_type.h">
+      <Filter>Header Files\Device\XM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\comm.h">
+      <Filter>Header Files\Device\XM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\xmodemV2\otp_interface.h">
+      <Filter>Header Files\Device\XM</Filter>
+    </ClInclude>
+    <ClInclude Include="definitionmenu.h">
       <Filter>Header Files\FormView\ImageView</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="image_ico\放大版摄像头.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="image_ico\放大版摄像头.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="camera.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Angstrong.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

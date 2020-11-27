@@ -17,6 +17,7 @@ public:
 private slots:
 	void ReceiveLocationDepth(int x, int y, float depth);
 	void ReceiveImageGray(int r, int g, int b);
+	void ReceiveAvgDepth(float avg0, float avg1);
 private:
     Ui::DisplayView *ui;
 };

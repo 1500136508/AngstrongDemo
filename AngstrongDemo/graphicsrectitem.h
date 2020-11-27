@@ -1,136 +1,88 @@
-#pragma once
-#include <QCursor>
-#include <QGraphicsRectItem>
-#include <QStyleOption>
-
-const Qt::CursorShape handleCursors[] = 
+﻿#ifndef MYGRAPHICCALIPERITEM_H
+#define MYGRAPHICCALIPERITEM_H
+#include <QObject>
+#include <QGraphicsItem>
+#include <QGraphicsSceneHoverEvent>
+/* 缩放方向 */
+enum EmDirection
 {
-	Qt::SizeFDiagCursor,
-	Qt::SizeVerCursor,
-	Qt::SizeBDiagCursor,
-	Qt::SizeHorCursor,
-	Qt::SizeFDiagCursor,
-	Qt::SizeVerCursor,
-	Qt::SizeBDiagCursor,
-	Qt::SizeHorCursor,
+	DIR_TOP = 0,
+	DIR_BOTTOM,
+	DIR_LEFT,
+	DIR_RIGHT,
+	DIR_LEFTTOP,
+	DIR_LEFTBOTTOM,
+	DIR_RIGHTTOP,
+	DIR_RIGHTBOTTOM,
+	DIR_MIDDLE,
+	DIR_NONE
 };
 
-const QString mapCursors[] = 
+#define EDGPADDING       5        //四周边缘可拉伸宽度
+#define CORPADDING       6        //四角可拉伸宽度
+
+#define MIN_WIDTH        5        //可拉伸的最小宽度
+#define MIN_HEIGHT       5        //可拉伸的最小高度
+
+#define POINT_WIDTH      6        //边缘9点的宽度
+#define POINT_HEIGHT     6        //边缘9点的高度
+
+#define EDGE_WIDTH       3        //边框的宽度
+#define MIDDLELINE_WIDTH 2        //辅助线的宽度
+
+#define DRAW_TEN_POINT            //绘制十个点
+#define DRAW_SUB_LINE             //绘制辅助线
+
+class QMenu;
+class QAction;
+class GraphicsRectItem :public QObject, public QGraphicsRectItem
 {
-	"",
-	":/QtGuiApplication4/Resources/rotate_top_left.png",
-	":/QtGuiApplication4/Resources/rotate_top_middle.png",
-	":/QtGuiApplication4/Resources/rotate_top_right.png",
-	":/QtGuiApplication4/Resources/rotate_middle_right.png",
-	":/QtGuiApplication4/Resources/rotate_bottom_right.png",
-	":/QtGuiApplication4/Resources/rotate_bottom_middle.png",
-	":/QtGuiApplication4/Resources/rotate_bottom_left.png",
-	":/QtGuiApplication4/Resources/rotate_middle_left.png"
-};
-
-class GraphicsRectItem : public QGraphicsRectItem
-{
-	enum MOUSEHANDLE {
-		handleNone = 0,
-		handleTopLeft = 1,
-		handleTopMiddle = 2,
-		handleTopRight = 3,
-		handleMiddleRight = 4,
-		handleBottomRight = 5,
-		handleBottomMiddle = 6,
-		handleBottomLeft = 7,
-		handleMiddleLeft = 8,
-	};
-
-	enum MOUSEROTATEHANDLE {
-		handleRotateNone = 0,
-		handleRotateTopLeft = 1,
-		handleRotateTopMiddle = 2,
-		handleRotateTopRight = 3,
-		handleRotateMiddleRight = 4,
-		handleRotateBottomRight = 5,
-		handleRotateBottomMiddle = 6,
-		handleRotateBottomLeft = 7,
-		handleRotateMiddleLeft = 8,
-	};
-
-	const float c_handle_size = 8;
-	const float c_handle_space = -4.0;
-
-	const float c_rotate_tolerance = 20.0;
-	const int c_handle_cursors_size = 8;	// handleCursors[] size
-	const int c_rotate_cursors_size = 9;	// MOUSEROTATEHANDLE size
-	const QSize c_rotate_cursor_size = QSize(20, 20);
-
+	Q_OBJECT
+	Q_INTERFACES(QGraphicsItem)
 public:
-	GraphicsRectItem(QGraphicsRectItem *parent = Q_NULLPTR);
+	GraphicsRectItem(QGraphicsRectItem *parent = nullptr);
 	~GraphicsRectItem();
-
-	// Returns the shape of this item as a QPainterPath in local coordinates.
-	QPainterPath shape() const override;
-
-	// Returns the bounding rect of the shape (including the resize handles).
-	QRectF boundingRect() const override;
-
-	void updateHandlesPos();
-
-	bool isHover();
-
-	// point is scene coordinate
-	QCursor getRotateCursor(const QPointF& point);
-	// set point for start rorate
-	// @note point is scene coordinate
-	void setRotateStart(const QPointF& point);
-	// set point for end rorate
-	// @note point is scene coordinate
-	void setRotateEnd(const QPointF& point);
-
+	QRect getRoiRect() const;               //获取已经圈选的框 外部调用
+	void setBackImage(const QImage &img);   //设置背景图片  外部调用
+	void setROIRect(QRect rect);
+	void setTitle(QString qstrTitle);
 protected:
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
+	QRectF boundingRect() const override;
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
 
-	void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-
-	//  Executed when the mouse leaves the shape (NOT PRESSED).
-	void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-
-	// Executed when the mouse moves over the shape (NOT PRESSED).
-	void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
-
-	//  Executed when the mouse is being moved over the item while being pressed.
+	void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 	void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-
-	// Executed when the mouse is pressed on the item.
 	void mousePressEvent(QGraphicsSceneMouseEvent *event);
-
-	// Executed when the mouse is released from the item.
 	void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-
-	// Executed when the key is pressed on the item.
 	void keyPressEvent(QKeyEvent *event);
 
+	void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+	void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+	void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
+
+	bool sceneEvent(QEvent *event);
 private:
-	//  Returns the resize handle below the given point.
-	MOUSEHANDLE handleAt(const QPointF& point);
-	//  Perform shape interactive resize.
-	void interactiveResize(const QPointF& mousePos);
+	void initViewer();                         //初始化
+	void saveROIImage();                       //把ROI区域的图片存储下来
+	EmDirection region(QPoint point);   //根据鼠标位置设置鼠标形状
+	void scaleRect(const QPoint &mousePoint);  //缩放矩形
+	void paintRect(const QPoint &mousePoint);  //绘制矩形
+	void moveRect(const QPoint &mousePoint);   //移动矩形
 
-	// the length2 with point1 and point2
-	float getLength2(const QPointF& point1, const QPointF& point2);
+	bool m_bPainterPressed;        //是否正在绘制
+	bool m_bMovedPressed;          //是否正在拖动
+	bool m_bScalePressed;          //是否正在缩放大小
+	QPoint m_paintStartPoint;      //绘制的初始位置
+	QPoint m_moveStartPoint;       //拖动的初始位置
+	QRect m_roiRect;               //绘制的ROI
+	EmDirection m_emCurDir;        //拖动的方向
 
-private:
-	std::map<MOUSEROTATEHANDLE, QPointF> m_points;
-	std::map<MOUSEROTATEHANDLE, QCursor> m_cursorRotate;
-	std::map<MOUSEHANDLE, QRectF> m_handles;
-	MOUSEHANDLE m_handle;
-	QCursor m_cursor;
-	QPointF m_mousePressPos;
-	QRectF m_mousePressRect;
+	QImage m_backImage;            //背景图
+	QString m_qstrTitle;           //标题
 
-	QPointF m_mouseRotateStart;
-	float m_fLastAngle;
-
-	MOUSEHANDLE m_bhandleSelected;
-
-	bool m_isHover;
+	QMenu *m_pOptMenu;
+	QAction *m_pDelAction;
+	QAction *m_pSaveAction;
 };
 
+#endif // MYGRAPHICCALIPERITEM_H

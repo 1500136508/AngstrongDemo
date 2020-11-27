@@ -1,5 +1,5 @@
 ﻿#include "imagereader.h"
-#include "util.hpp"
+#include "utilimage.hpp"
 #include <QDebug>
 #include "../dense_tencent/dsense_interface.h"
 #include <QDir>
@@ -68,8 +68,6 @@ imageReader::imageReader(QObject *parent)
 	m_bIsSaveImage = false;//初始化保存数据信号
 	m_MouseX = -1;
 	m_MouseY = -1;
-	//初始化Camera
-	Initialize();
 }
 
 imageReader::~imageReader()
@@ -77,41 +75,61 @@ imageReader::~imageReader()
     release();
 }
 
-void imageReader::OpenCamera(int index)
+bool imageReader::OpenCamera(int index)
 {
+	bool bReturn = false;
+	do 
+	{
 #ifndef EFE_FORMAT
-	if (!camds->isOpened() && !camds->OpenCamera(index, frameWidth, 1200, true))
-	{
-#else
-	//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
-	if (!camds->isOpened())
-	{
-#endif
-		if (!camds->OpenCamera(index, frameWidth, 480, true))
+		if (!camds->isOpened() && !camds->OpenCamera(index, frameWidth, 1200, true))
 		{
-			qDebug() << "camera init failed";
-			//emit sendLostServer(true);
-			return;
+#else
+		//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
+		if (!camds->isOpened())
+		{
+#endif
+			//CloseCamera();
+			if (!camds->OpenCamera(index, frameWidth, 480, true))
+			{
+#ifdef DEBUG
+				qDebug() << "camera init failed";
+#endif
+				break;
+			}
 		}
-	}
-	else if (camds->isOpened())
-	{
-		//emit sendLostServer(false);
-	}
+
+		bReturn = true;
+	} while (false);
+
+	return bReturn;
 }
 
 void imageReader::CloseCamera()
 {
-	camds->CloseCamera();
+	isRunning = false;
+	getParam = false;
+	Sleep(2000);
+	if (camds->isOpened())
+	{
+		camds->CloseCamera();
+	}
+	else
+	{
+
+	}
+}
+
+bool imageReader::IsOpen() const
+{
+	return camds->isOpened();
 }
 
 void imageReader::Live()
 {
-	if (!camds->isOpened())
+	if (camds->isOpened())
 	{
-		OpenCamera(0);
+		isRunning = true;
 	}
-	isRunning = true;
 }
 
 void imageReader::Pause()
@@ -122,7 +140,7 @@ void imageReader::Pause()
 void imageReader::Stop()
 {
 	isRunning = false;
-	CloseCamera();
+	//CloseCamera();
 }
 
 void imageReader::buildDataThread()
@@ -131,7 +149,6 @@ void imageReader::buildDataThread()
 	{
 		bool irGet = false;
 		bool depthGet = false;
-		bool getParam = false;
 		int moveX = 45;
 		int moveY = 105;
 		int preMoveX = 45;
@@ -157,6 +174,7 @@ void imageReader::buildDataThread()
 				readpdData();
 				getParam = true;
 			}
+			
 			bool thisRoundIR = true;
 			uchar* ptr = datagroup + frameHeight * frameWidth * 2;
 			memcpy(&rgbT, datagroup + 640 * 480 * 2 - 8, sizeof(long long));
@@ -169,6 +187,7 @@ void imageReader::buildDataThread()
 			{
 				lastRgbT = rgbT;
 			}
+
 			cv::Mat rgbyuv(cv::Size(frameWidthR, frameHeightR), CV_8U, ptr);
 			//write data
 			/*std::ofstream out("datagroup.bin", std::ofstream::binary);
@@ -243,7 +262,6 @@ void imageReader::buildDataThread()
 				memcpy(predepthData, depthData, frameHeight*frameWidth * sizeof(float));
 #endif
 				depth2RGB(depthData, depthDataRGB, tmpdepth, frameHeightR, frameWidthR, frameHeight, frameWidth, rgb_param);
-
 				depthFrame = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_32FC1, depthDataRGB);
 				cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 				dilate(depthFrame, depthFrame, element);
@@ -268,6 +286,37 @@ void imageReader::buildDataThread()
 					}
 					tmp += frameWidth;
 				}
+				//判断图像数据是否正常，解决闪屏问题
+				/*for (int i = 0; i < frameHeight*frameWidth; ++i)
+				{
+					if (i == frameHeight * frameWidth-1)
+					{
+						Sleep(3);
+						continue;
+					}
+					if (*irData != '0')
+					{
+						break;
+					}
+					else
+					{
+						irData += i;
+					}
+				}*/
+				//int sum = 0;
+				/*for (int i = 0; i < frameWidthR*frameHeightR; i++)
+				{
+					int ftemp = *(irData + i);
+					if (ftemp == 0)
+					{
+						++sum;
+					}
+					if (sum == frameWidthR * frameHeightR)
+					{
+						Sleep(3);
+						continue;
+					}
+				}*/
 				irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irData);
 				irFrame.copyTo(irFrame16bit);
 				cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
@@ -292,7 +341,10 @@ void imageReader::buildDataThread()
 				irGet = true;
 				thisRoundIR = true;
 			}
+
+#ifdef DEBUG
 			//        qDebug() << irT <<" " << depthT << " " << rgbT;
+#endif
 			irGet = depthGet = true;
 			if (irGet && depthGet && getParam)
 			{
@@ -318,7 +370,75 @@ void imageReader::buildDataThread()
 					emit SendLocationDepth(-1, -1, 0);
 				}
 			}
+			//发送平均深度信息
+			if (calcArea)
+			{
+				float avg0 = 0.0;
+				float avg1 = 0.0;
+				if (getFirstArea)
+				{
+#ifdef DEBUG
+					qDebug() << "real one" << realX1 << " " << realY1 << " " << realX2 << " " << realY2;
+#endif
+					float pointNum = 0;
+					float allDepth = 0.0;
+					for (int x = realX1; x <= realX2; x++)
+					{
+						for (int y = realY1; y <= realY2; y++)
+						{
+							float d = 0.0;
+							if (!isWarp)
+							{
+								//d = depthData[x + y * frameHeightR];
+								d = depthData[x + y * frameHeightR];
+							}
+							else
+							{
+								//d = depthDataRGB[x + y * frameHeightR];
+								d = depthDataRGB[x + y * frameHeightR];
+							}
+							if (d > 0.0)
+							{
+								allDepth += d;
+								pointNum += 1;
+							}
+						}
+					}
+					avg0 = allDepth / pointNum;
+				}
+				if (getSecondArea)
+				{
+#ifdef DEBUG
+					qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
+#endif
+					float pointNum = 0;
+					float allDepth = 0.0;
+					for (int x = realX1s; x <= realX2s; x++)
+					{
+						for (int y = realY1s; y <= realY2s; y++)
+						{
+							float d = 0.0;
+							if (!isWarp)
+								d = depthData[x + y * frameHeightR];
+							else
+								d = depthDataRGB[x + y * frameHeightR];
+							if (d > 0.0)
+							{
+								allDepth += d;
+								pointNum += 1;
+							}
+						}
+					}
+					
+					avg1 = allDepth / pointNum;
 
+				}
+#ifdef DEBUG
+				qDebug() << "avg0=" << avg0 << " " << "avg1=" << avg1;
+#endif
+				emit SendAvgDepth(avg0, avg1);
+				//calcArea = false;
+			}
 			if (m_bIsSaveImage)
 			{
 				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
@@ -331,10 +451,12 @@ void imageReader::buildDataThread()
 			}
 
 			clock_t t2 = clock();
-			if (t2 - t1 < 30)
-				Sleep(30 - t2 + t1);
+			if (t2 - t1 < 34)
+				Sleep(34 - t2 + t1);
 			else Sleep(10);
+#ifdef DEBUG
 			qDebug() << "ONE ROUND : " << t2 - t1;
+#endif
 			
 		}
 	}
@@ -357,43 +479,58 @@ int imageReader::setParam(float _fx, float _fy, float _cx, float _cy)
 void imageReader::release()
 {
     quitProgram = true;
-    delete[] datagroup;
-    delete[] datagroupR;
-    delete[] irData;
-    delete[] depthData;
-    delete[] predepthData;
-    delete[] depthDataRGB;
-    delete[] tmpdepth;
-    delete[] _buf;
-    delete[] _buf2;
-
+	if (datagroup)
+	{
+		delete[] datagroup;
+		datagroup = nullptr;
+	}
+	if (datagroupR)
+	{
+		delete[] datagroupR;
+		datagroupR = nullptr;
+	}
+    if (irData)
+    {
+		delete[] irData;
+		irData = nullptr;
+    }
+    if (depthData)
+    {
+		delete[] depthData;
+		depthData = nullptr;
+    }
+    if (predepthData)
+    {
+		delete[] predepthData;
+		predepthData = nullptr;
+    }
+    if (depthDataRGB)
+    {
+		delete[] depthDataRGB;
+		depthDataRGB = nullptr;
+    }
+    if (tmpdepth)
+    {
+		delete[] tmpdepth;
+		tmpdepth = nullptr;
+    }
+    if (_buf)
+    {
+		delete[] _buf;
+		_buf = nullptr;
+    }
+    if (_buf2)
+    {
+		delete[] _buf2;
+		_buf2 = nullptr;
+    }
+    
     CloseCamera();
 }
 
 bool imageReader::IsRunning() const
 {
 	return isRunning;
-}
-
-bool imageReader::Initialize()
-{
-	bool bReturn = false;
-	do 
-	{
-		int cameraNum = CCameraDS::CameraCount();
-		char camName[100];
-		for (int i = 0; i < cameraNum; i++) {
-			CCameraDS::CameraName(i, camName, 100);
-			std::string cN(camName);
-			//if (cN.find("UVC") != std::string::npos) ui.comboBoxModule->addItem(QString::number(i));
-		}
-		/*if (ui.comboBoxModule->count() == 0) {
-			QMessageBox::critical(NULL, "ERROR", "No Camera Found", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes); camIndex = -1; return;
-		}*/
-
-		bReturn = true;
-	} while (false);
-	return false;
 }
 
 void imageReader::run(int camIndex)
@@ -408,7 +545,9 @@ void imageReader::run(int camIndex)
 #endif
 		if (!camds->OpenCamera(camIndex, frameWidth, 480, true))
 		{
+#ifdef DEBUG
 			qDebug() << "camera init failed";
+#endif
 			return;
 		}
 		isRunning = true;
@@ -436,7 +575,9 @@ void imageReader::readpdData()
     int i = 0;
     while (i < datalen) {
         memcpy(&realpd[i], ptr, sizeof(float)); ptr += sizeof(float);
-        qDebug()<<"param "<< i << " " << realpd[i];
+#ifdef DEBUG
+		qDebug() << "param " << i << " " << realpd[i];
+#endif
         i++;
     }
 #ifdef EFE_FORMAT
@@ -513,4 +654,54 @@ void imageReader::ReceiveMouseInfo(int x, int y)
 {
 	m_MouseX = x;
 	m_MouseY = y;
+}
+
+void imageReader::ReceiveAvgArea(int nIndxe, QRectF rect)
+{
+	int flag = nIndxe;
+	int x1 = rect.topLeft().x();
+	int y1 = rect.topLeft().y();
+	int x2 = rect.bottomRight().x();
+	int y2 = rect.bottomRight().y();
+
+	if (flag == -1  || rect.width() <= 0 || rect.height()<=0)
+	{
+		calcArea = false;
+		realX1 = realX1s = realX2 = realX2s = realY1 = realY1s = realY2 = realY2s = -1;
+		getFirstArea = false;
+		getSecondArea = false;
+		return;
+	}
+	if (x2 < x1)
+	{
+		int temp = x2;
+		x2 = x1;
+		x1 = temp;
+	}
+	isWarp = true;
+	if (flag == 0)
+	{
+		realX1 = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
+		realY1 = y1 % frameWidthR;
+		realX2 = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
+		realY2 = y2 % frameWidthR;
+		//isWarp = x1 < frameHeightR ? false : true;
+		calcArea = true;
+		getFirstArea = true;
+	}
+	else if (flag == 1)
+	{
+		realX1s = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
+		realY1s = y1 % frameWidthR;
+		realX2s = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
+		realY2s = y2 % frameWidthR;
+		calcArea = true;
+		getSecondArea = true;
+		if (isWarp && realX1s > frameHeightR)
+		{
+			getFirstArea = getSecondArea = false;
+			calcArea = false;
+			return;
+		}
+	}
 }

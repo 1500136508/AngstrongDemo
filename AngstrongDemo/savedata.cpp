@@ -3,6 +3,7 @@
 #include <QTextCodec>
 #include <QFileDialog>
 #include <qDebug>
+#include <QDateTime>
 #include "savedata.h"
 #include "ui_savedata.h"
 
@@ -42,7 +43,9 @@ void SaveData::on_chose_file_clicked()
 {
 	QTextCodec *code = QTextCodec::codecForName("GB2312");
 	std::string workPath = code->fromUnicode(QFileDialog::getExistingDirectory(this, tr("Open Directory"), " ", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks)).data();
+#if DEBUG
 	qDebug() << QString::fromLocal8Bit(workPath.c_str());
+#endif
 	ui->m_lineEdit_file->setText(QString::fromLocal8Bit(workPath.c_str()));
 
 	QFileInfo qfi(ui->m_lineEdit_file->text());
@@ -60,7 +63,6 @@ void SaveData::on_start_clicked()
 {
 	m_bIsStart = true;//启动保存图像标志
 	m_nSaveCount = ui->m_lineEdit_pfs_counts->text().toInt();//保存图像帧数
-	QDir qd;
 	QString savePath = ui->m_lineEdit_file->text();
 	if (savePath.toStdString().empty())
 	{
@@ -85,24 +87,35 @@ void SaveData::on_start_clicked()
 	dir.setPath(QString::fromStdString(savePath + "//pointcloud"));
 	dir.removeRecursively();*/
 
+	//建立时间文件夹
+	QDateTime dt;
+	QTime time;
+	QDate date;
+	dt.setTime(time.currentTime());
+	dt.setDate(date.currentDate());
+	QString currentDate = dt.toString("/yyyy-MM-dd");
+	QString currentTime = dt.toString("/hh-mm-ss");
+
+	QDir qd;
+	savePath = savePath + currentDate + currentTime;
 	switch (m_eCurSaveMode)
 	{
 	case ESaveMode_3Pix:
 	{
-		qd.mkdir(savePath);
-		qd.mkdir(savePath + "//rgb");
-		qd.mkdir(savePath + "//ir");
-		qd.mkdir(savePath + "//depth");
-		qd.mkdir(savePath + "//rgb-alone");
+		qd.mkpath(savePath);
+		qd.mkpath(savePath + "//rgb");
+		qd.mkpath(savePath + "//ir");
+		qd.mkpath(savePath + "//depth");
+		//qd.mkpath(savePath + "//rgb-alone");
 	}
 		break;
 	case ESaveMode_4Pix:
 	{
-		qd.mkdir(savePath);
-		qd.mkdir(savePath + "//rgb");
-		qd.mkdir(savePath + "//ir");
-		qd.mkdir(savePath + "//depth");
-		qd.mkdir(savePath + "//pointcloud");
+		qd.mkpath(savePath);
+		qd.mkpath(savePath + "//rgb");
+		qd.mkpath(savePath + "//ir");
+		qd.mkpath(savePath + "//depth");
+		qd.mkpath(savePath + "//pointcloud");
 	}
 		break;
 	default:

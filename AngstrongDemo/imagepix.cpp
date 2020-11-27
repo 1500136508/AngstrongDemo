@@ -24,28 +24,6 @@ ImagePix::~ImagePix()
 
 void ImagePix::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-	//int x = QCursor::pos().x();
-	//int y = QCursor::pos().y();
-
-	//QPixmap pixmap = QPixmap::fromImage(qImage);
-	//if (!pixmap.isNull()) //如果像素图不为NULL
-	//{
-	//	QImage image = pixmap.toImage();//将像素图转换为QImage
-	//	if (!image.isNull()) //如果image不为空
-	//	{
-	//		if (image.valid(0, 0)) //坐标位置有效
-	//		{
-	//			QColor color = image.pixel(0, 0);
-	//			int mousedPressed_R = color.red();
-	//			int mousedPressed_G = color.green();
-	//			int mousedPressed_B = color.blue();
-	//			//int text = QString("RGB: %1, %2, %3").arg(mousedPressed_R).arg(mousedPressed_G).arg(mousedPressed_B);
-	//			//qDebug() << text;
-	//		}
-	//	}
-	//}
-
-	//int a = 6;
 	return QGraphicsPixmapItem::mouseMoveEvent(event);
 }
 
@@ -57,7 +35,6 @@ void ImagePix::wheelEvent(QGraphicsSceneWheelEvent * event)
 	}
 	else if ((event->delta() < 0) && (m_fScale <= 0.5))//图像缩小到自适应大小之后就不继续缩小
 	{
-		//ResetItemPos();//重置图片大小和位置，使之自适应控件窗口大小
 	}
 	else
 	{

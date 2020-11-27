@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WidgetUI</class>
+ <widget class="QWidget" name="WidgetUI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1500</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="AngstrongDemo.qrc">
+    <normaloff>:/AngstrongDemo/camera.ico</normaloff>:/AngstrongDemo/camera.ico</iconset>
+  </property>
+ </widget>
+ <resources>
+  <include location="AngstrongDemo.qrc"/>
+ </resources>
+ <connections/>
+</ui>

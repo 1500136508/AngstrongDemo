@@ -5,9 +5,6 @@
 #include <QTimer>
 #include <highgui.hpp>
 #include <imgproc.hpp>
-#include <QDateTime>
-//#include <QDate>
-//#include <QTime>
 #include "imageview.h"
 #include "savedata.h"
 
@@ -47,7 +44,7 @@ ImageView::ImageView(QWidget *parent) :
 	//qRegisterMetaType<std::string>("std::string");
 	BuildConnet();//建立信号槽
 	//qss 界面美化
-	QFile file("../qss/black.qss");
+	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
 	QTextStream filetext(&file);
 	stylesheet = filetext.readAll();
@@ -248,9 +245,10 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			//m_pCamera->OpenCamera(0);
-			m_pCamera->run(0);
-			emit SendCameraStatus(ECameraStatus_Open);
+			if (m_pCamera->OpenCamera(0))
+			{
+				emit SendCameraStatus(ECameraStatus_Open);
+			}
 		}
 	}
 		break;
@@ -260,6 +258,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 		{
 			m_pCamera->CloseCamera();
 			emit SendCameraStatus(ECameraStatus_Close);
+			//ui->m_gView_ImageView->ClearAll();
 		}
 	}
 		break;
@@ -267,8 +266,11 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			m_pCamera->Live();
-			emit SendCameraStatus(ECameraStatus_Live);
+			if (m_pCamera->IsOpen())
+			{
+				m_pCamera->Live();
+				emit SendCameraStatus(ECameraStatus_Live);
+			}
 		}
 	}
 		break;
@@ -276,8 +278,11 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			m_pCamera->Pause();
-			emit SendCameraStatus(ECameraStatus_Pause);
+			if (m_pCamera->IsRunning())
+			{
+				m_pCamera->Pause();
+				emit SendCameraStatus(ECameraStatus_Pause);
+			}
 		}
 	}
 		break;
@@ -285,7 +290,10 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			m_pCamera->Stop();
+			if (m_pCamera->IsRunning())
+			{
+				m_pCamera->Stop();
+			}
 			emit SendCameraStatus(ECameraStatus_Stop);
 		}
 	}
@@ -303,6 +311,7 @@ void ImageView::BuildConnet()
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendImageGray(int,int,int)), this, SLOT(ReceiveImageGray(int, int, int)));//接收鼠标对应的图像像素灰度值信息
 	ret = connect(m_pCamera, SIGNAL(sendSaveImageData(cv::Mat,cv::Mat,float*)), this, SLOT(ReceiveSaveImageData(cv::Mat, cv::Mat, float*)));
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), m_pCamera, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
+	connect(ui->m_gView_ImageView, SIGNAL(SendAvgArea(int, QRectF)), m_pCamera, SLOT(ReceiveAvgArea(int, QRectF)));
 }
 
 void ImageView::SaveImageThread()
@@ -351,19 +360,11 @@ void ImageView::SaveImageThread()
 			{
 				qstrNameExtra = "0";
 			}
-			//建立时间文件夹
-			QDateTime dt;
-			QTime time;
-			QDate date;
-			dt.setTime(time.currentTime());
-			dt.setDate(date.currentDate());
-			QString currentDate = dt.toString("//yyyy:MM:dd//");
-			QString currentTime = dt.toString("//hh:mm:ss//");
 			
 			try
 			{
 				//先保存IR图
-				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" +currentDate+ qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
+				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
 				cv::cvtColor(m_cvImageIR[m_nWriteIndex], m_cvImageIR[m_nWriteIndex], cv::COLOR_RGB2GRAY);
 				cv::imwrite(qstrSavePath_IR.toStdString(), m_cvImageIR[m_nWriteIndex]);
 				//保存深度图
