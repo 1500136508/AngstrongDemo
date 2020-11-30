@@ -15,6 +15,12 @@
 
 class imageReader:public QObject
 {
+	enum EIMAGETYPE
+	{
+		EIMAGETYPE_RGB = 0,
+		EIMAGETYPE_IR,
+		EIMAGETYPE_DEPTH,
+	};
     Q_OBJECT
 public:
     imageReader(QObject *parent=NULL);
@@ -41,14 +47,14 @@ private:
     clock_t time1,time2,startTime, stopTime;
     int datalen = 1280;
 
-    int frameHeight = 400;
-    int frameWidth = 640;
+    const int frameHeight = 400;
+    const int frameWidth = 640;
 #ifdef EFE_FORMAT
-    int frameHeightR = 480;
-    int frameWidthR = 848;
+    const int frameHeightRGB = 480;
+    const int frameWidthRGB = 848;
 #else
-    int frameHeightR = 400;
-    int frameWidthR = 640;
+    const int frameHeightRGB = 400;
+    const int frameWidthRGB = 640;
 #endif
 
     cv::Mat edge = cv::Mat::zeros(cv::Size(frameHeight,frameWidth),CV_8UC1);
@@ -56,7 +62,7 @@ private:
     cv::Mat edge_th = cv::Mat::zeros(cv::Size(frameWidth,frameHeight),CV_8UC1);
 
     uchar* datagroup;
-    uchar* datagroupR;
+    //uchar* datagroupR;
     cv::Mat irFrame;
     cv::Mat irFrameAlign;
     cv::Mat temp;
@@ -78,7 +84,10 @@ private:
     unsigned char* _buf2;
 
 
-    long long rgbT, irT,depthT;
+	long long rgbT;
+	long long irT;
+	long long depthT;
+	long long lastRgbT;
 
 
     bool isRunning = false;
@@ -115,6 +124,24 @@ private:
 	int realY2s = -1;
 
     void buildDataThread();
+
+	inline bool GetImageData(uchar *image_data) const
+	{
+		memset(datagroup, 0, frameWidth * frameHeightRGB * 2);
+		return camds->readRawData(datagroup);
+	}
+	void GenImage(uchar *image_data);
+	cv::Mat GenRGBImage(uchar *rgb_image_data);
+	cv::Mat GenDepthImage();
+	cv::Mat GenIRImage();
+	bool IsNewImageData(uchar *image_data);
+	void InitPDData(uchar *image_data);
+	bool IsInitPDData()const { return getParam; }
+	void DispImage();
+	void SendDepthImageData(float *depth_image_data);
+	void CalcAvgDepthData(float *depth_image_data);
+
+	void WriteImageBinFile(uchar *image_data,long long size);
 	// 设置内外参
 	int setParam(float _fx, float _fy, float _cx, float _cy);
 	volatile bool m_bIsSaveImage;
@@ -128,5 +155,4 @@ signals:
 	void SendLocationDepth(int x, int y, float depth);
 	void SendAvgDepth(float avg0, float avg1);
 };
-
 #endif // IMAGEREADER_H

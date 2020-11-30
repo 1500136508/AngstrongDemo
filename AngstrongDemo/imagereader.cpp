@@ -31,9 +31,9 @@ imageReader::imageReader(QObject *parent)
 {
     // 初始化各种buffer
 #ifdef EFE_FORMAT
-    depthFrame = cv::Mat(cv::Size(frameHeightR,frameWidthR),CV_8UC3);
-    irFrame = cv::Mat(cv::Size(frameHeightR,frameWidthR),CV_8UC3);
-    RGBFrame = cv::Mat(cv::Size(frameHeightR,frameWidthR),CV_8UC3);
+    depthFrame = cv::Mat(cv::Size(frameHeightRGB,frameWidthRGB),CV_8UC3);
+    irFrame = cv::Mat(cv::Size(frameHeightRGB,frameWidthRGB),CV_8UC3);
+    RGBFrame = cv::Mat(cv::Size(frameHeightRGB,frameWidthRGB),CV_8UC3);
 #else
     depthFrame = cv::Mat(cv::Size(frameHeight,frameWidth),CV_8UC3);
     irFrame = cv::Mat(cv::Size(frameHeight,frameWidth),CV_8UC3);
@@ -44,21 +44,18 @@ imageReader::imageReader(QObject *parent)
     depthFrame.copyTo(container[1]);
     RGBFrame.copyTo(container[2]);
 
-    datagroup = new uchar[frameWidth*frameHeight*4 + frameWidthR*frameHeightR*2];
-    datagroupR = new uchar[frameWidthR*frameHeightR*2];
+    datagroup = new uchar[frameWidth*frameHeightRGB*2];
     irData = new unsigned char[frameWidth*frameHeight];
     irDataGamma = new unsigned char[frameWidth*frameHeight];
-    depthData = new float[frameWidthR*frameHeightR];
-    for(int i = 0; i < frameHeightR * frameWidthR;i++) depthData[i] = 500.0f;
-    predepthData = new float[frameWidthR*frameHeightR];
-    depthDataRGB = new float[frameWidthR*frameHeightR];
-    tmpdepth = new float[frameWidthR*frameHeightR*4];
-    _buf = new unsigned char[frameHeightR * frameWidthR * (3 * sizeof(int) + sizeof(uchar))];
-    _buf2 = new unsigned char[frameHeightR * frameWidthR * (4 * sizeof(int) + sizeof(uchar))];
+    depthData = new float[frameWidthRGB*frameHeightRGB];
+    for(int i = 0; i < frameHeightRGB * frameWidthRGB;i++) depthData[i] = 500.0f;
+    predepthData = new float[frameWidthRGB*frameHeightRGB];
+    depthDataRGB = new float[frameWidthRGB*frameHeightRGB];
+    tmpdepth = new float[frameWidthRGB*frameHeightRGB*4];
+    _buf = new unsigned char[frameHeightRGB * frameWidthRGB * (3 * sizeof(int) + sizeof(uchar))];
+    _buf2 = new unsigned char[frameHeightRGB * frameWidthRGB * (4 * sizeof(int) + sizeof(uchar))];
 
     camds = new CCameraDS();
-
-    rgbT = irT = depthT = 0;
 
     startTime = stopTime = 0;
     poolDepth = new QThreadPool(0);
@@ -147,298 +144,42 @@ void imageReader::buildDataThread()
 {
 	try
 	{
-		bool irGet = false;
-		bool depthGet = false;
-		int moveX = 45;
-		int moveY = 105;
-		int preMoveX = 45;
-		int preMoveY = 105;
-		faceRectIn rectIn{ 130,195,170,215 };
-		long long irT = 0;
-		long long rgbT = 0;
-		long long depthT = 0;
-		long long lastRgbT = 0;
+		clock_t t1;
+		irT = 0;
+		rgbT = 0;
+		depthT = 0;
+		lastRgbT = 0;
 		while (!quitProgram)
 		{
 			if (!isRunning)
 			{
-				Sleep(3);//优化cpu占用率
+				//优化cpu占用率
+				Sleep(3);
 				continue;
 			}
-			memset(datagroup, 0, 640 * 480 * 2);
-			camds->readRawData(datagroup);
-			clock_t t1 = clock();
-			if (!getParam)
-			{
-				memcpy(PD, datagroup + 640 * 480 * 2 - 1032, 1024);
-				readpdData();
-				getParam = true;
-			}
-			
-			bool thisRoundIR = true;
-			uchar* ptr = datagroup + frameHeight * frameWidth * 2;
-			memcpy(&rgbT, datagroup + 640 * 480 * 2 - 8, sizeof(long long));
-			if (rgbT == lastRgbT)
+			if (!GetImageData(datagroup))
 			{
 				Sleep(3);
 				continue;
 			}
-			else
+			t1 = clock();
+			InitPDData(datagroup);
+			if (!IsNewImageData(datagroup))
 			{
-				lastRgbT = rgbT;
+				Sleep(3);
+				continue;
 			}
-
-			cv::Mat rgbyuv(cv::Size(frameWidthR, frameHeightR), CV_8U, ptr);
-			//write data
-			/*std::ofstream out("datagroup.bin", std::ofstream::binary);
-			if (out.fail())
-			{
-				std::cout << "failed to open file" << std::endl;
-				return;
-			}*/
-			//std::ostringstream out;
-			//for (size_t r = 0; r < rgbyuv.rows;++r)
-			//{
-			//	const int *ptr = rgbyuv.ptr<int>(r);
-			//	for (size_t c = 0;  c< rgbyuv.cols; c++)
-			//	{
-			//		//std::cout << rgbyuv.at<int>(i, j) << " ";
-			//		//int temp = rgbyuv.at<int>(i, j);
-			//		int temp = ptr[c];
-			//		std::string strTemp;
-			//		strTemp = std::to_string(temp);
-			//		out << strTemp<<" ";
-			//	}
-			//	out << std::endl;
-			//}
-			//out.write((char*)rgbyuv.data, rgbyuv.cols*rgbyuv.elemSize());
-			/*for (int r = 0; r < rgbyuv.rows; r++)
-			{
-				out.write(reinterpret_cast<const char*>(rgbyuv.ptr(r)), rgbyuv.cols*rgbyuv.elemSize());
-			}*/
-			/*for (int i = 0; i < 640 * 480 * 2;++i)
-			{
-				out.write((const char*)datagroup, 640 * 480 * 2);
-				out.close();
-				datagroup++;
-			}*/
-
-		/*	FILE* file = fopen("data_rgb.bin", "wb");
-			if (file == NULL || rgbyuv.empty())
-				return;
-			fwrite("CmMat", sizeof(char), 5, file);
-			int headData[3] = { rgbyuv.cols, rgbyuv.rows, rgbyuv.type() };
-			fwrite(headData, sizeof(int), 3, file);
-			fwrite(rgbyuv.data, sizeof(char), rgbyuv.step * rgbyuv.rows, file);
-			fclose(file);*/
 			
-			//out.close();
-			//cv::imwrite("test.tiff", rgbyuv);
-			RGBFrame = cv::imdecode(rgbyuv, CV_LOAD_IMAGE_COLOR);
-			cv::transpose(RGBFrame, RGBFrame);
-			cv::flip(RGBFrame, RGBFrame, 0);
-			cv::flip(RGBFrame, RGBFrame, -1);
-			RGBFrame.copyTo(container[2]);
-			//cv::imwrite("test.tiff", RGBFrame);
-			ptr = datagroup;
-			int flag = ptr[frameHeight*frameWidth * 2 - 1];
-			unsigned short* tmp = (unsigned short*)ptr;
-			if (flag == 2 || flag == 6)
-			{
-				memcpy(&depthT, ptr, sizeof(long long));
-				float* dst = depthData;
-				for (int y = 0; y < frameHeight; y++)
-				{
-					for (int x = 0; x < frameWidth; x++)
-					{
-						dst[x*frameHeight + (frameHeight - 1 - y)] = (float)(tmp[x] >> 4);
-					}
-					tmp += frameWidth;
-				}
-				denoise(depthData, 0, 200, 80, _buf, 2000, frameHeight, frameWidth);
-				filling(edge.data, depthData, 0, 300, 10, _buf2, frameHeight, frameWidth);
-
-#ifdef KEEP_ORI
-				memcpy(predepthData, depthData, frameHeight*frameWidth * sizeof(float));
-#endif
-				depth2RGB(depthData, depthDataRGB, tmpdepth, frameHeightR, frameWidthR, frameHeight, frameWidth, rgb_param);
-				depthFrame = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_32FC1, depthDataRGB);
-				cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-				dilate(depthFrame, depthFrame, element);
-				memcpy(depthDataRGB, depthFrame.data, frameWidthR*frameHeightR * sizeof(float));
-				depthFrame = dealDepthMapColor(depthDataRGB, frameHeightR, frameWidthR);
-				depthFrame.copyTo(container[1]);
-				//cv::imwrite("depth.tiff", depthFrame);
-				depthGet = true;
-				thisRoundIR = false;
-			}
-			else if (flag == 1)
-			{
-				memcpy(&irT, ptr, sizeof(long long));
-				unsigned char* dst = irData;
-				unsigned char* dst2 = irDataGamma;
-				for (int y = 0; y < frameHeight; y++)
-				{
-					for (int x = 0; x < frameWidth; x++)
-					{
-						dst[x*frameHeight + (frameHeight - 1 - y)] = (unsigned char)(tmp[x] >> 8);
-						dst2[x*frameHeight + (frameHeight - 1 - y)] = hash_grayscale[(unsigned char)(tmp[x] >> 8)];
-					}
-					tmp += frameWidth;
-				}
-				//判断图像数据是否正常，解决闪屏问题
-				/*for (int i = 0; i < frameHeight*frameWidth; ++i)
-				{
-					if (i == frameHeight * frameWidth-1)
-					{
-						Sleep(3);
-						continue;
-					}
-					if (*irData != '0')
-					{
-						break;
-					}
-					else
-					{
-						irData += i;
-					}
-				}*/
-				//int sum = 0;
-				/*for (int i = 0; i < frameWidthR*frameHeightR; i++)
-				{
-					int ftemp = *(irData + i);
-					if (ftemp == 0)
-					{
-						++sum;
-					}
-					if (sum == frameWidthR * frameHeightR)
-					{
-						Sleep(3);
-						continue;
-					}
-				}*/
-				irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irData);
-				irFrame.copyTo(irFrame16bit);
-				cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
-				Canny(irFrame, edge_clear, 35, 70);
-				GaussianBlur(edge_clear, edge_th, cv::Size(3, 3), 0.5);
-				threshold(edge_th, edge, 10, 255, cv::THRESH_BINARY);
-
-				irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irDataGamma);
-				cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
-				//            moveMat2(irFrame,irFrameAlign,temp,frameHeightR,frameWidthR,moveX,moveY);
-				//            moveMat16Bit2(irFrame16bit,irFrame16bit,temp,frameHeightR,frameWidthR,moveX,moveY);
-				//            float rN = 1.45;
-				//            int rNWidth = frameHeightR * rN;int rNHeight = frameWidthR * rN;
-				//            int cutWidth = (rNWidth - frameHeightR) / 2;int cutHeight = (rNHeight - frameWidthR) / 2;
-				//            cv::resize(irFrameAlign,irFrameAlign,cv::Size(rNWidth,rNHeight));
-				//            irFrameAlign = cv::Mat(irFrameAlign,cv::Rect(cutWidth, cutHeight, frameHeightR,frameWidthR));
-				//            cv::resize(irFrame16bit,irFrame16bit,cv::Size(rNWidth,rNHeight));
-				//            irFrame16bit = cv::Mat(irFrame16bit,cv::Rect(cutWidth, cutHeight, frameHeightR,frameWidthR));
-				cv::warpPerspective(irFrame, irFrameAlign, tmpM, cv::Size(480, 848));
-				irFrameAlign.copyTo(container[0]);
-				//cv::imwrite("ir.tiff", irFrameAlign);
-				irGet = true;
-				thisRoundIR = true;
-			}
-
+			GenImage(datagroup);
 #ifdef DEBUG
-			//        qDebug() << irT <<" " << depthT << " " << rgbT;
+			qDebug() << irT <<" " << depthT << " " << rgbT;
 #endif
-			irGet = depthGet = true;
-			if (irGet && depthGet && getParam)
-			{
-				if (flag_rd)
-				{
-					cv::Mat plus = RGBFrame / 2 + depthFrame / 2;
-					plus.copyTo(container[2]);
-				}
-				cv::hconcat(container, combineFrame);
-				emit sendImage(combineFrame);
-			}
+			DispImage();
 			//发送深度信息
-			if (m_MouseX >= 0 && m_MouseY >= 0)
-			{
-				int xhere = m_MouseX % frameHeightR;
-				int yhere = m_MouseY % frameWidthR;
-				if (m_MouseX >= frameHeightR)
-				{
-					emit SendLocationDepth(xhere, yhere, depthDataRGB[yhere*frameHeightR + xhere]);
-				}
-				else
-				{
-					emit SendLocationDepth(-1, -1, 0);
-				}
-			}
+			SendDepthImageData(depthDataRGB);
 			//发送平均深度信息
-			if (calcArea)
-			{
-				float avg0 = 0.0;
-				float avg1 = 0.0;
-				if (getFirstArea)
-				{
-#ifdef DEBUG
-					qDebug() << "real one" << realX1 << " " << realY1 << " " << realX2 << " " << realY2;
-#endif
-					float pointNum = 0;
-					float allDepth = 0.0;
-					for (int x = realX1; x <= realX2; x++)
-					{
-						for (int y = realY1; y <= realY2; y++)
-						{
-							float d = 0.0;
-							if (!isWarp)
-							{
-								//d = depthData[x + y * frameHeightR];
-								d = depthData[x + y * frameHeightR];
-							}
-							else
-							{
-								//d = depthDataRGB[x + y * frameHeightR];
-								d = depthDataRGB[x + y * frameHeightR];
-							}
-							if (d > 0.0)
-							{
-								allDepth += d;
-								pointNum += 1;
-							}
-						}
-					}
-					avg0 = allDepth / pointNum;
-				}
-				if (getSecondArea)
-				{
-#ifdef DEBUG
-					qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
-#endif
-					float pointNum = 0;
-					float allDepth = 0.0;
-					for (int x = realX1s; x <= realX2s; x++)
-					{
-						for (int y = realY1s; y <= realY2s; y++)
-						{
-							float d = 0.0;
-							if (!isWarp)
-								d = depthData[x + y * frameHeightR];
-							else
-								d = depthDataRGB[x + y * frameHeightR];
-							if (d > 0.0)
-							{
-								allDepth += d;
-								pointNum += 1;
-							}
-						}
-					}
-					
-					avg1 = allDepth / pointNum;
-
-				}
-#ifdef DEBUG
-				qDebug() << "avg0=" << avg0 << " " << "avg1=" << avg1;
-#endif
-				emit SendAvgDepth(avg0, avg1);
-				//calcArea = false;
-			}
+			CalcAvgDepthData(depthDataRGB);
+			//保存图像
 			if (m_bIsSaveImage)
 			{
 				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
@@ -457,7 +198,7 @@ void imageReader::buildDataThread()
 #ifdef DEBUG
 			qDebug() << "ONE ROUND : " << t2 - t1;
 #endif
-			
+			qDebug() << "ONE ROUND : " << t2 - t1;
 		}
 	}
 	catch (cv::Exception &e)
@@ -465,6 +206,231 @@ void imageReader::buildDataThread()
 		const char *err_msg = e.what();
 		return;
 	}
+}
+
+void imageReader::GenImage(uchar * image_data)
+{
+	//rgb
+	uchar* ptr = image_data + frameHeight * frameWidth * 2;
+	GenRGBImage(ptr);
+	
+	ptr = image_data;
+	int flag = ptr[frameHeight*frameWidth * 2 - 1];
+	if (flag == 2 || flag == 6)//depth
+	{
+		GenDepthImage();
+	}
+	else if (flag == 1)//ir
+	{
+		GenIRImage();
+	}
+}
+
+cv::Mat imageReader::GenRGBImage(uchar * rgb_image_data)
+{
+	cv::Mat rgbyuv(cv::Size(frameWidthRGB, frameHeightRGB), CV_8U, rgb_image_data);
+	RGBFrame = cv::imdecode(rgbyuv, CV_LOAD_IMAGE_COLOR);
+	cv::transpose(RGBFrame, RGBFrame);
+	cv::flip(RGBFrame, RGBFrame, 0);
+	cv::flip(RGBFrame, RGBFrame, -1);
+	RGBFrame.copyTo(container[2]);
+	return RGBFrame;
+}
+
+cv::Mat imageReader::GenDepthImage()
+{
+	float* dst = depthData;
+	unsigned short* tmp = (unsigned short*)datagroup;
+	for (int y = 0; y < frameHeight; y++)
+	{
+		for (int x = 0; x < frameWidth; x++)
+		{
+			dst[x*frameHeight + (frameHeight - 1 - y)] = (float)(tmp[x] >> 4);
+		}
+		tmp += frameWidth;
+	}
+	denoise(depthData, 0, 200, 80, _buf, 2000, frameHeight, frameWidth);
+	filling(edge.data, depthData, 0, 300, 10, _buf2, frameHeight, frameWidth);
+#ifdef KEEP_ORI
+	memcpy(predepthData, depthData, frameHeight*frameWidth * sizeof(float));
+#endif
+	depth2RGB(depthData, depthDataRGB, tmpdepth, frameHeightRGB, frameWidthRGB, frameHeight, frameWidth, rgb_param);
+	depthFrame = cv::Mat(cv::Size(frameHeightRGB, frameWidthRGB), CV_32FC1, depthDataRGB);
+	cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	dilate(depthFrame, depthFrame, element);
+	memcpy(depthDataRGB, depthFrame.data, frameWidthRGB*frameHeightRGB * sizeof(float));
+	depthFrame = dealDepthMapColor(depthDataRGB, frameHeightRGB, frameWidthRGB);
+	depthFrame.copyTo(container[1]);
+	return depthFrame;
+}
+
+cv::Mat imageReader::GenIRImage()
+{
+	memcpy(&irT, datagroup, sizeof(long long));
+	unsigned char* dst = irData;
+	unsigned char* dst2 = irDataGamma;
+	unsigned short* tmp = (unsigned short*)datagroup;
+	for (int y = 0; y < frameHeight; y++)
+	{
+		for (int x = 0; x < frameWidth; x++)
+		{
+			dst[x*frameHeight + (frameHeight - 1 - y)] = (unsigned char)(tmp[x] >> 8);
+			dst2[x*frameHeight + (frameHeight - 1 - y)] = hash_grayscale[(unsigned char)(tmp[x] >> 8)];
+		}
+		tmp += frameWidth;
+	}
+	irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irData);
+	irFrame.copyTo(irFrame16bit);
+	cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
+	Canny(irFrame, edge_clear, 35, 70);
+	GaussianBlur(edge_clear, edge_th, cv::Size(3, 3), 0.5);
+	threshold(edge_th, edge, 10, 255, cv::THRESH_BINARY);
+	irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irDataGamma);
+	cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
+	cv::warpPerspective(irFrame, irFrameAlign, tmpM, cv::Size(480, 848));
+	irFrameAlign.copyTo(container[0]);
+	return irFrameAlign;
+}
+
+bool imageReader::IsNewImageData(uchar * image_data)
+{
+	bool bReturn = false;
+	do 
+	{
+		memcpy(&rgbT, datagroup + 640 * 480 * 2 - 8, sizeof(long long));
+		if (rgbT == lastRgbT)
+		{
+			break;
+		}
+		else
+		{
+			lastRgbT = rgbT;
+		}
+		bReturn = true;
+	} while (false);
+	return bReturn;
+}
+
+void imageReader::InitPDData(uchar * image_data)
+{
+	if (!getParam)
+	{
+		memcpy(PD, datagroup + 640 * 480 * 2 - 1032, 1024);
+		readpdData();
+		getParam = true;
+	}
+}
+
+void imageReader::DispImage()
+{
+	if (getParam)
+	{
+		if (flag_rd)
+		{
+			cv::Mat plus = RGBFrame / 2 + depthFrame / 2;
+			plus.copyTo(container[2]);
+		}
+		cv::hconcat(container, combineFrame);
+		emit sendImage(combineFrame);
+	}
+}
+
+void imageReader::SendDepthImageData(float *depth_image_data)
+{
+	if (m_MouseX >= 0 && m_MouseY >= 0)
+	{
+		int xhere = m_MouseX % frameHeightRGB;
+		int yhere = m_MouseY % frameWidthRGB;
+		if (m_MouseX >= frameHeightRGB)
+		{
+			emit SendLocationDepth(xhere, yhere, depth_image_data[yhere*frameHeightRGB + xhere]);
+		}
+		else
+		{
+			emit SendLocationDepth(-1, -1, 0);
+		}
+	}
+}
+
+void imageReader::CalcAvgDepthData(float *depth_image_data)
+{
+	if (calcArea)
+	{
+		float avg0 = 0.0;
+		float avg1 = 0.0;
+		if (getFirstArea)
+		{
+#ifdef DEBUG
+			qDebug() << "real one" << realX1 << " " << realY1 << " " << realX2 << " " << realY2;
+#endif
+			float pointNum = 0;
+			float allDepth = 0.0;
+			for (int x = realX1; x <= realX2; x++)
+			{
+				for (int y = realY1; y <= realY2; y++)
+				{
+					float d = 0.0;
+					if (!isWarp)
+					{
+						d = depthData[x + y * frameHeightRGB];
+					}
+					else
+					{
+						d = depth_image_data[x + y * frameHeightRGB];
+					}
+					if (d > 0.0)
+					{
+						allDepth += d;
+						pointNum += 1;
+					}
+				}
+			}
+			avg0 = allDepth / pointNum;
+		}
+		if (getSecondArea)
+		{
+#ifdef DEBUG
+			qDebug() << "real two" << realX1s << " " << realY1s << " " << realX2s << " " << realY2s;
+#endif
+			float pointNum = 0;
+			float allDepth = 0.0;
+			for (int x = realX1s; x <= realX2s; x++)
+			{
+				for (int y = realY1s; y <= realY2s; y++)
+				{
+					float d = 0.0;
+					if (!isWarp)
+						d = depthData[x + y * frameHeightRGB];
+					else
+						d = depth_image_data[x + y * frameHeightRGB];
+					if (d > 0.0)
+					{
+						allDepth += d;
+						pointNum += 1;
+					}
+				}
+			}
+
+			avg1 = allDepth / pointNum;
+
+		}
+#ifdef DEBUG
+		qDebug() << "avg0=" << avg0 << " " << "avg1=" << avg1;
+#endif
+		emit SendAvgDepth(avg0, avg1);
+	}
+}
+
+void imageReader::WriteImageBinFile(uchar * image_data,long long size)
+{
+	std::ofstream out_image_data("datagroup.bin", std::ofstream::binary);
+	if (out_image_data.fail())
+	{
+		std::cout << "failed to open file" << std::endl;
+		return;
+	}
+	out_image_data.write((const char*)datagroup, size);
+	out_image_data.close();
 }
 
 int imageReader::setParam(float _fx, float _fy, float _cx, float _cy)
@@ -483,11 +449,6 @@ void imageReader::release()
 	{
 		delete[] datagroup;
 		datagroup = nullptr;
-	}
-	if (datagroupR)
-	{
-		delete[] datagroupR;
-		datagroupR = nullptr;
 	}
     if (irData)
     {
@@ -681,23 +642,23 @@ void imageReader::ReceiveAvgArea(int nIndxe, QRectF rect)
 	isWarp = true;
 	if (flag == 0)
 	{
-		realX1 = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
-		realY1 = y1 % frameWidthR;
-		realX2 = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
-		realY2 = y2 % frameWidthR;
-		//isWarp = x1 < frameHeightR ? false : true;
+		realX1 = ((x1 == 0) || (x1 == frameHeightRGB) || (x1 == frameHeightRGB * 2)) ? 0 : x1 % frameHeightRGB;
+		realY1 = y1 % frameWidthRGB;
+		realX2 = ((x2 == frameHeightRGB) || (x2 == frameHeightRGB * 2) || (x2 == frameHeightRGB * 3)) ? frameHeightRGB : x2 % frameHeightRGB;
+		realY2 = y2 % frameWidthRGB;
+		//isWarp = x1 < frameHeightRGB ? false : true;
 		calcArea = true;
 		getFirstArea = true;
 	}
 	else if (flag == 1)
 	{
-		realX1s = ((x1 == 0) || (x1 == frameHeightR) || (x1 == frameHeightR * 2)) ? 0 : x1 % frameHeightR;
-		realY1s = y1 % frameWidthR;
-		realX2s = ((x2 == frameHeightR) || (x2 == frameHeightR * 2) || (x2 == frameHeightR * 3)) ? frameHeightR : x2 % frameHeightR;
-		realY2s = y2 % frameWidthR;
+		realX1s = ((x1 == 0) || (x1 == frameHeightRGB) || (x1 == frameHeightRGB * 2)) ? 0 : x1 % frameHeightRGB;
+		realY1s = y1 % frameWidthRGB;
+		realX2s = ((x2 == frameHeightRGB) || (x2 == frameHeightRGB * 2) || (x2 == frameHeightRGB * 3)) ? frameHeightRGB : x2 % frameHeightRGB;
+		realY2s = y2 % frameWidthRGB;
 		calcArea = true;
 		getSecondArea = true;
-		if (isWarp && realX1s > frameHeightR)
+		if (isWarp && realX1s > frameHeightRGB)
 		{
 			getFirstArea = getSecondArea = false;
 			calcArea = false;

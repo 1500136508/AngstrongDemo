@@ -167,7 +167,7 @@ bool View::Open()
 #endif
 
 				//处理显示位置,默认为图像居中显示
-				//ZoomFit();
+				ZoomFit();
 				emit SendImageInfo(true, m_ImageWidth, m_ImageHeight);//发送图像信息
 			}
 		}
@@ -269,19 +269,19 @@ void View::mouseMoveEvent(QMouseEvent * event)
 					float ratio_y = (m_ImageHeight *1.0) / view_rect.height();
 					QRectF rect_pix;
 
-					double ratio_w = (m_ImageWidth*1.0) / m_spPix->pixmap().width();
-					double ratio_h = (m_ImageHeight*1.0) / m_spPix->pixmap().height();
+					//double ratio_w = (m_ImageWidth*1.0) / m_spPix->pixmap().width();
+					//double ratio_h = (m_ImageHeight*1.0) / m_spPix->pixmap().height();
 					if (ratio_x > ratio_y)//横、纵向压缩对比
 					{
-						int h = (m_ImageHeight*1.0) / m_ImageWidth * view_rect.width();//根据压缩比，计算出图像高度
-						rect_pix = QRectF(point_pix, QPointF(view_rect.width(), (view_rect.height() - h) / 2 + h));
+						int h = (m_ImageHeight*1.0) * m_spPix->GetScale();//根据压缩比，计算出图像高度
+						rect_pix = QRectF(point_pix, QPointF(view_rect.width(), ((view_rect.height() - h)*1.0 / 2 + h)));
 
 						QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex]->rect().height() / 2),
 							QPointF(point_rect.x() + m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() + m_vecAvgROI[nIndex]->rect().height() / 2));//计算出ROI相对于scene的rect
 						if (rect_pix.contains(rect_roi))
 						{
-							rect_roi = QRectF(QPointF(rect_roi.topLeft().x() * ratio_w, (rect_roi.topLeft().y()- (view_rect.height() - h) / 2) * ratio_h),
-								QPointF(rect_roi.bottomRight().x()*ratio_w, (rect_roi.bottomRight().y() - (view_rect.height() - h) / 2)*ratio_h));
+							rect_roi = QRectF(QPointF(rect_roi.topLeft().x() * m_spPix->GetScale(), (rect_roi.topLeft().y()- (view_rect.height() - h) / 2) * m_spPix->GetScale()),
+								QPointF(rect_roi.bottomRight().x()*m_spPix->GetScale(), (rect_roi.bottomRight().y() - (view_rect.height() - h) / 2)*m_spPix->GetScale()));
 
 							emit SendAvgArea(nIndex, rect_roi);
 						}
@@ -293,15 +293,15 @@ void View::mouseMoveEvent(QMouseEvent * event)
 					else
 					{
 						//同理
-						int w = (m_ImageWidth*1.0) / m_ImageHeight * view_rect.height();//根据压缩比，计算出图像宽度
+						int w = (m_ImageWidth*1.0) * m_spPix->GetScale();//根据压缩比，计算出图像宽度
 						rect_pix = QRectF(point_pix, QPointF((view_rect.width()-w)/2+w, view_rect.height()));
 
 						QRectF rect_roi(QPointF(point_rect.x() - m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() - m_vecAvgROI[nIndex]->rect().height() / 2),
 							QPointF(point_rect.x() + m_vecAvgROI[nIndex]->rect().width() / 2, point_rect.y() + m_vecAvgROI[nIndex]->rect().height() / 2));//计算出ROI相对于scene的rect
 						if (rect_pix.contains(rect_roi))
 						{
-							rect_roi = QRectF(QPointF((rect_roi.topLeft().x()-(view_rect.width()-w)/2) * ratio_w, rect_roi.topLeft().y() * ratio_h),
-								QPointF((rect_roi.bottomRight().x() - (view_rect.width() - w) / 2)*ratio_w, rect_roi.bottomRight().y()*ratio_h));
+							rect_roi = QRectF(QPointF((rect_roi.topLeft().x()-(view_rect.width()-w)/2) * m_spPix->GetScale(), rect_roi.topLeft().y() * m_spPix->GetScale()),
+								QPointF((rect_roi.bottomRight().x() - (view_rect.width() - w) / 2)*m_spPix->GetScale(), rect_roi.bottomRight().y()*m_spPix->GetScale()));
 
 							emit SendAvgArea(nIndex, rect_roi);
 						}

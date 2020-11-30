@@ -316,8 +316,8 @@ void ImageView::BuildConnet()
 
 void ImageView::SaveImageThread()
 {
-	int frameHeightR = 480;
-	int frameWidthR = 848;
+	int frameHeightRGB = 480;
+	int frameWidthRGB = 848;
 	int frameHeight = 400;
 	int frameWidth = 640;
 	FILE *plyfile;
@@ -370,10 +370,10 @@ void ImageView::SaveImageThread()
 				//保存深度图
 				QString qstrSavePath_Depth = m_qstrSavePath + "//depth//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
 #ifndef KEEP_ORI
-				cv::Mat saveMat = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_16UC1);
-				for (int x = 0; x < frameHeightR; x++) {
-					for (int y = 0; y < frameWidthR; y++) {
-						saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeightR + x]);
+				cv::Mat saveMat = cv::Mat(cv::Size(frameHeightRGB, frameWidthRGB), CV_16UC1);
+				for (int x = 0; x < frameHeightRGB; x++) {
+					for (int y = 0; y < frameWidthRGB; y++) {
+						saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeightRGB + x]);
 					}
 				}
 #else
@@ -401,11 +401,11 @@ void ImageView::SaveImageThread()
 					//保存点云图
 					QString qstrSavePath_CloudPoint = m_qstrSavePath + "//pointcloud//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".txt";
 					fopen_s(&plyfile, qstrSavePath_CloudPoint.toStdString().c_str(), "w");
-					for (int x = 0; x < frameHeightR; x++)
+					for (int x = 0; x < frameHeightRGB; x++)
 					{
-						for (int y = 0; y < frameWidthR; y++)
+						for (int y = 0; y < frameWidthRGB; y++)
 						{
-							float z = m_pDataDepth[m_nWriteIndex][y*frameHeightR + x];
+							float z = m_pDataDepth[m_nWriteIndex][y*frameHeightRGB + x];
 							if (z < 10e-6 && z > -10e-6) continue;
 							float x_rw = ((float)x - m_pCamera->cx) * z / m_pCamera->fx;
 							float y_rw = ((float)y - m_pCamera->cy) * z / m_pCamera->fy;
