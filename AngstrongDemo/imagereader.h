@@ -43,6 +43,7 @@ public:
 	float cy = 0;
 private:
     std::vector<cv::Mat> container;
+	std::vector<cv::Mat> container_test;
 
     clock_t time1,time2,startTime, stopTime;
     int datalen = 1280;

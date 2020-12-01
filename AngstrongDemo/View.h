@@ -21,8 +21,6 @@ public:
 	void ZoomIn(QPointF poinF, double fScale = 1.2f);
 	void ZoomOut(QPointF pointF, double fScale = 0.8f);
 	void ZoomFit();
-	// the length2 with point1 and point2
-	float getLength2(const QPointF& point1, const QPointF& point2);
 
 	std::shared_ptr<ImageScene> GetScene()const;
 	void ClearAll();
@@ -53,6 +51,8 @@ private slots:
 	void SetImage(cv::Mat mat);//接收图像专用槽函数
 
 	void ReceiveCreateAvgArea(int nIndex,bool bIsCreate);//接收avgArea的信息
+	void CalcInfo(QPointF point);
+	void CalcAvgArea();
 signals:
 	void SendImageInfo(bool bIsEmpty,int nImageWidth,int nImageHeight);
 	void SendMouseInfo(int x, int y);
@@ -67,7 +67,7 @@ private:
 	std::shared_ptr<ImageItem>			m_spItem;
 	std::shared_ptr<ImagePix>			m_spPix;
 	std::shared_ptr<GraphicsRectItem>   m_spRect;
-	volatile bool m_bTurn;
+	volatile bool first_time_to_live_;
 
 	std::vector<std::shared_ptr<GraphicsRectItem>>   m_vecAvgROI;//用于存储AvgROI的相关信息
 	//与图像相关的变量

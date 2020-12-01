@@ -40,9 +40,12 @@ imageReader::imageReader(QObject *parent)
     RGBFrame = cv::Mat(cv::Size(frameHeight,frameWidth),CV_8UC3);
 #endif
     for (int i = 0; i < 3 ;i++) container.push_back(cv::Mat());
+    for (int i = 0; i < 2 ;i++) container_test.push_back(cv::Mat());
     irFrame.copyTo(container[0]);
     depthFrame.copyTo(container[1]);
     RGBFrame.copyTo(container[2]);
+	irFrame.copyTo(container_test[0]);
+	depthFrame.copyTo(container_test[1]);
 
     datagroup = new uchar[frameWidth*frameHeightRGB*2];
     irData = new unsigned char[frameWidth*frameHeight];
@@ -182,22 +185,20 @@ void imageReader::buildDataThread()
 			//保存图像
 			if (m_bIsSaveImage)
 			{
+				emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
 				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
 #ifndef KEEP_ORI
-					emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
+					//emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
 #else
-					dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
+					//dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
 #endif
 				}
 			}
 
 			clock_t t2 = clock();
-			if (t2 - t1 < 34)
-				Sleep(34 - t2 + t1);
-			else Sleep(10);
-#ifdef DEBUG
-			qDebug() << "ONE ROUND : " << t2 - t1;
-#endif
+			//if (t2 - t1 < 34)
+			//	Sleep(34 - t2 + t1);
+			//else Sleep(10);
 			qDebug() << "ONE ROUND : " << t2 - t1;
 		}
 	}
@@ -210,20 +211,18 @@ void imageReader::buildDataThread()
 
 void imageReader::GenImage(uchar * image_data)
 {
-	//rgb
-	uchar* ptr = image_data + frameHeight * frameWidth * 2;
-	GenRGBImage(ptr);
-	
-	ptr = image_data;
-	int flag = ptr[frameHeight*frameWidth * 2 - 1];
-	if (flag == 2 || flag == 6)//depth
-	{
-		GenDepthImage();
-	}
-	else if (flag == 1)//ir
+	int flag = image_data[frameHeight*frameWidth * 2 - 1];
+	if (flag == 1)//ir
 	{
 		GenIRImage();
 	}
+	else if (flag == 2 || flag == 6)//depth
+	{
+		GenDepthImage();
+	}
+	//rgb
+	uchar* ptr = image_data + frameHeight * frameWidth * 2;
+	GenRGBImage(ptr);
 }
 
 cv::Mat imageReader::GenRGBImage(uchar * rgb_image_data)
@@ -261,6 +260,7 @@ cv::Mat imageReader::GenDepthImage()
 	memcpy(depthDataRGB, depthFrame.data, frameWidthRGB*frameHeightRGB * sizeof(float));
 	depthFrame = dealDepthMapColor(depthDataRGB, frameHeightRGB, frameWidthRGB);
 	depthFrame.copyTo(container[1]);
+	depthFrame.copyTo(container_test[1]);
 	return depthFrame;
 }
 
@@ -289,6 +289,7 @@ cv::Mat imageReader::GenIRImage()
 	cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
 	cv::warpPerspective(irFrame, irFrameAlign, tmpM, cv::Size(480, 848));
 	irFrameAlign.copyTo(container[0]);
+	irFrameAlign.copyTo(container_test[0]);
 	return irFrameAlign;
 }
 
@@ -331,6 +332,7 @@ void imageReader::DispImage()
 			plus.copyTo(container[2]);
 		}
 		cv::hconcat(container, combineFrame);
+		//cv::hconcat(container_test, combineFrame);
 		emit sendImage(combineFrame);
 	}
 }

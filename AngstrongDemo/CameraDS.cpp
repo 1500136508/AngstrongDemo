@@ -745,27 +745,20 @@ bool CCameraDS::read(cv::Mat & outputArray)
 
 bool CCameraDS::readRawData(unsigned char* data)
 {
-	try
+	long evCode, size = 0;
+
+	m_pMediaControl->Run();
+	//m_pMediaEvent->WaitForCompletion(INFINITE, &evCode);
+	m_pMediaEvent->WaitForCompletion(2000, &evCode);//yxl
+	m_pSampleGrabber->GetCurrentBuffer(&size, NULL);
+
+	if (size != 0)
 	{
-		long evCode, size = 0;
-
-		m_pMediaControl->Run();
-		//m_pMediaEvent->WaitForCompletion(INFINITE, &evCode);
-		m_pMediaEvent->WaitForCompletion(2000, &evCode);//yxl
-		m_pSampleGrabber->GetCurrentBuffer(&size, NULL);
-
-		if (size != 0)
-		{
-			m_nBufferSize = size;
-			m_pSampleGrabber->GetCurrentBuffer(&size, (long*)data);
-			//        memcpy(data, m_nBuffer, size);
-			return true;
-		}
-		else {
-			return false;
-		}
+		m_nBufferSize = size;
+		m_pSampleGrabber->GetCurrentBuffer(&size, (long*)data);
+		return true;
 	}
-	catch (...)
+	else
 	{
 		return false;
 	}
