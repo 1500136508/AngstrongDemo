@@ -22,7 +22,6 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "CameraDS.h"
-
 #pragma comment(lib,"Strmiids.lib")
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -40,9 +39,6 @@
                     (mt).pUnk->Release();					\
                     (mt).pUnk = NULL;						\
                 }}
-
-
-
 
 CCameraDS::CCameraDS()
 {
@@ -142,7 +138,7 @@ bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 			return false;
 
 		m_pGraph->AddFilter(m_pDeviceFilter, NULL);
-
+		//Create the capture graph builder
 		CComPtr<IEnumPins> pEnum;
 		m_pDeviceFilter->EnumPins(&pEnum);
 
@@ -250,6 +246,7 @@ bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 
 		m_pSampleGrabber->SetBufferSamples(TRUE);
 		m_pSampleGrabber->SetOneShot(TRUE);
+		m_pSampleGrabber->SetCallback(&g_sampleGrabberCB, 1);
 
 		hr = m_pSampleGrabber->GetConnectedMediaType(&mt);
 		if (FAILED(hr))

@@ -33,11 +33,10 @@
 #include "dshow.h"
 
 #include <windows.h>
-//#include <opencv/cxcore.h>	// lyd
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <string>
-
+#include "SampleGrabberCallback.h"
 
 class  CCameraDS
 {
@@ -60,6 +59,7 @@ private:
     CComPtr<IBaseFilter> m_pSampleGrabberFilter;
     CComPtr<IBaseFilter> m_pDeviceFilter;
     CComPtr<IBaseFilter> m_pNullFilter;
+	ICaptureGraphBuilder2 *m_pCaptureGB;
 
     CComPtr<IPin> m_pGrabberInput;
     CComPtr<IPin> m_pGrabberOutput;
@@ -72,7 +72,7 @@ private:
     void SetCrossBar();
 
     bool isFormatYUY2 = false;
-
+	SampleGrabberCallback g_sampleGrabberCB;  //CallBack
 public:
 
     CCameraDS();
