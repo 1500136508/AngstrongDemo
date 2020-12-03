@@ -1,15 +1,14 @@
 ﻿#ifndef IMAGEREADER_H
 #define IMAGEREADER_H
-#include <opencv.hpp>
-#include <QThread>
-#include <QString>
-#include "camerads.h"
-#include <QThreadPool>
 #include <queue>
-#include <QMutex>
 #include <fstream>
+#include <thread>
+#include <mutex>
+#include <QObject>
 #include <QRectF>
-//#include "logwriter.h"
+#include <QString>
+#include <opencv.hpp>
+#include "camerads.h"
 #define EFE_FORMAT
 //#define KEEP_ORI
 
@@ -33,23 +32,32 @@ public:
 	HRESULT STDMETHODCALLTYPE SampleCB(double Time, IMediaSample *pSample);
 	HRESULT STDMETHODCALLTYPE BufferCB(double Time, BYTE *pBuffer, long BufferLen);
 
-    void release();
-	bool IsRunning()const;
-	bool OpenCamera(int index);
+	bool OpenCamera(int camera_index);
 	void CloseCamera();
 	bool IsOpen()const;
+	bool IsRunning()const;
 	void Live();
 	void Pause();
 	void Stop();
 	void SetSaveImageStatus(bool bIsSaveImage);
+	void release();
 
 	float fx = 0;
 	float fy = 0;
 	float cx = 0;
 	float cy = 0;
 private:
+	std::thread thread_get_rgb_image_;
+	std::thread thread_get_depth_image_;
+	std::thread thread_get_ir_image_;
+	std::thread thread_wait_grab_image_finished_;
+	std::mutex mutex_;
+	volatile bool get_rgb_image_finished_ = false;
+	volatile bool get_depth_image_finished_ = false;
+	volatile bool get_ir_image_finished_ = false;
+	volatile bool grab_image_finished_ = false;
+	volatile bool is_first_time_grab_ = true;
     std::vector<cv::Mat> container;
-	std::vector<cv::Mat> container_test;
 
     clock_t time1,time2,startTime, stopTime;
     int datalen = 1280;
@@ -68,7 +76,6 @@ private:
     cv::Mat edge_clear = cv::Mat::zeros(cv::Size(frameWidth,frameHeight),CV_8UC1);
     cv::Mat edge_th = cv::Mat::zeros(cv::Size(frameWidth,frameHeight),CV_8UC1);
 
-    uchar* datagroup;
     cv::Mat irFrame;
     cv::Mat irFrameAlign;
     cv::Mat temp;
@@ -95,10 +102,8 @@ private:
 	long long depthT;
 	long long lastRgbT;
 
-
-    bool isRunning = false;
-    bool quitProgram = false;
 	bool getParam = false;
+	volatile bool is_running_ = false;
 
     bool flag_ir = false;
     bool flag_rgb =false;
@@ -106,9 +111,7 @@ private:
     bool flag_rd=false;
 
     CCameraDS* camds;
-
-    QThreadPool* poolDepth;
-
+	
 	//当前鼠标位置
 	int m_MouseX;
 	int m_MouseY;
@@ -129,17 +132,16 @@ private:
 	int realX2s = -1;
 	int realY2s = -1;
 
-    void buildDataThread();
+	void GetRGBImageThread(BYTE *rgb_image_data);
+	void GetDepthImageThread(BYTE *depth_image_data);
+	void GetIRImageThread(BYTE *ir_image_data);
+    void WaitGrabImageFinished();
+	void RunThread(BYTE *image_data);
 
-	inline bool GetImageData(uchar *image_data) const
-	{
-		memset(datagroup, 0, frameWidth * frameHeightRGB * 2);
-		return camds->readRawData(datagroup);
-	}
-	void GenImage(uchar *image_data);
-	cv::Mat GenRGBImage(uchar *rgb_image_data);
-	cv::Mat GenDepthImage();
-	cv::Mat GenIRImage();
+	void GetRGBImage(BYTE *rgb_image_data);
+	void GetDepthImage(BYTE *depth_image_data);
+	void GetIRImage(BYTE *ir_image_data);
+
 	bool IsNewImageData(uchar *image_data);
 	void InitPDData(uchar *image_data);
 	bool IsInitPDData()const { return getParam; }

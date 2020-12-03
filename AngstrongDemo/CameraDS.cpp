@@ -115,7 +115,7 @@ bool CCameraDS::Live()
 
 		bReturn = true;
 	} while (false);
-	return false;
+	return bReturn;
 }
 
 bool CCameraDS::Pause()
@@ -132,7 +132,7 @@ bool CCameraDS::Pause()
 
 		bReturn = true;
 	} while (false);
-	return false;
+	return bReturn;
 }
 
 bool CCameraDS::Stop()
@@ -149,7 +149,7 @@ bool CCameraDS::Stop()
 
 		bReturn = true;
 	} while (false);
-	return false;
+	return bReturn;
 }
 
 bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
@@ -612,7 +612,6 @@ bool CCameraDS::BindFilter(IBaseFilter ** pFilter, std::string pid, std::string 
 void CCameraDS::SetCallBack(imageReader * function)
 {
 	m_pSampleGrabber->SetCallback(function, 1);
-	m_pMediaControl->Run();
 }
 
 //将输入crossbar变成PhysConn_Video_Composite
