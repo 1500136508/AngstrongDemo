@@ -33,12 +33,11 @@
 #include "dshow.h"
 
 #include <windows.h>
-//#include <opencv/cxcore.h>	// lyd
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <string>
 
-
+class imageReader;
 class  CCameraDS
 {
 private:
@@ -60,6 +59,7 @@ private:
     CComPtr<IBaseFilter> m_pSampleGrabberFilter;
     CComPtr<IBaseFilter> m_pDeviceFilter;
     CComPtr<IBaseFilter> m_pNullFilter;
+	ICaptureGraphBuilder2 *m_pCaptureGB;
 
     CComPtr<IPin> m_pGrabberInput;
     CComPtr<IPin> m_pGrabberOutput;
@@ -68,11 +68,9 @@ private:
 
     bool BindFilter(int nCamIDX, IBaseFilter **pFilter);
     bool BindFilter(IBaseFilter **pFilter,std::string pid,std::string vid);
-
     void SetCrossBar();
 
     bool isFormatYUY2 = false;
-
 public:
 
     CCameraDS();
@@ -83,10 +81,14 @@ public:
     //nWidth和nHeight设置的摄像头的宽和高，如果摄像头不支持所设定的宽度和高度，则返回false
     bool OpenCamera(int nCamID, int nWidth = 1280, int nHeight = 800, bool isYUV2 = true);
     bool OpenCamera(std::string pid, std::string vid, int nWidth= 1280, int nHeight=800, bool isYUV2 = true);
+	void SetCallBack(imageReader *function);
     //关闭摄像头，析构函数会自动调用这个函数
     void CloseCamera();
 
     bool isOpened();
+	bool Live();
+	bool Pause();
+	bool Stop();
     //返回摄像头的数目
     //可以不用创建CCameraDS实例，采用int c=CCameraDS::CameraCount();得到结果。
     static int CameraCount();
