@@ -266,11 +266,8 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->IsOpen())
-			{
-				m_pCamera->Live();
-				emit SendCameraStatus(ECameraStatus_Live);
-			}
+			m_pCamera->Live();
+			emit SendCameraStatus(ECameraStatus_Live);
 		}
 	}
 		break;
@@ -278,11 +275,8 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->IsRunning())
-			{
-				m_pCamera->Pause();
-				emit SendCameraStatus(ECameraStatus_Pause);
-			}
+			m_pCamera->Pause();
+			emit SendCameraStatus(ECameraStatus_Pause);
 		}
 	}
 		break;
@@ -290,10 +284,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->IsRunning())
-			{
-				m_pCamera->Stop();
-			}
+			m_pCamera->Stop();
 			emit SendCameraStatus(ECameraStatus_Stop);
 		}
 	}

@@ -13,7 +13,7 @@
 #define EFE_FORMAT
 //#define KEEP_ORI
 
-class imageReader:public QObject
+class imageReader:public QObject, public ISampleGrabberCB
 {
 	enum EIMAGETYPE
 	{
@@ -26,8 +26,14 @@ public:
     imageReader(QObject *parent=NULL);
     ~imageReader();
 
+	ULONG STDMETHODCALLTYPE AddRef();
+	ULONG STDMETHODCALLTYPE Release();
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject);
+
+	HRESULT STDMETHODCALLTYPE SampleCB(double Time, IMediaSample *pSample);
+	HRESULT STDMETHODCALLTYPE BufferCB(double Time, BYTE *pBuffer, long BufferLen);
+
     void release();
-	void run(int camIndex);
 	bool IsRunning()const;
 	bool OpenCamera(int index);
 	void CloseCamera();
@@ -63,7 +69,6 @@ private:
     cv::Mat edge_th = cv::Mat::zeros(cv::Size(frameWidth,frameHeight),CV_8UC1);
 
     uchar* datagroup;
-    //uchar* datagroupR;
     cv::Mat irFrame;
     cv::Mat irFrameAlign;
     cv::Mat temp;

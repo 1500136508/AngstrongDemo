@@ -86,7 +86,6 @@ imageReader::imageReader(QObject *parent)
     startTime = stopTime = 0;
     poolDepth = new QThreadPool(0);
     poolDepth->setMaxThreadCount(1);
-    QtConcurrent::run( this,&imageReader::buildDataThread);
 
 	m_bIsSaveImage = false;//初始化保存数据信号
 	m_MouseX = -1;
@@ -96,6 +95,34 @@ imageReader::imageReader(QObject *parent)
 imageReader::~imageReader()
 {
     release();
+}
+
+ULONG __stdcall imageReader::AddRef()
+{
+	return 0;
+}
+
+ULONG __stdcall imageReader::Release()
+{
+	return 0;
+}
+
+HRESULT __stdcall imageReader::QueryInterface(REFIID riid, void ** ppvObject)
+{
+	return S_OK;
+}
+
+HRESULT __stdcall imageReader::SampleCB(double Time, IMediaSample * pSample)
+{
+	return S_OK;
+}
+
+HRESULT __stdcall imageReader::BufferCB(double Time, BYTE * pBuffer, long BufferLen)
+{
+	memset(datagroup, 0, frameWidth * frameHeightRGB * 2);
+	memcpy(datagroup, pBuffer, BufferLen);
+	buildDataThread();
+	return S_OK;
 }
 
 bool imageReader::OpenCamera(int index)
@@ -119,6 +146,7 @@ bool imageReader::OpenCamera(int index)
 #endif
 				break;
 			}
+			camds->SetCallBack(this);
 		}
 
 		bReturn = true;
@@ -131,7 +159,6 @@ void imageReader::CloseCamera()
 {
 	isRunning = false;
 	getParam = false;
-	Sleep(2000);
 	if (camds->isOpened())
 	{
 		camds->CloseCamera();
@@ -149,21 +176,17 @@ bool imageReader::IsOpen() const
 
 void imageReader::Live()
 {
-	if (camds->isOpened())
-	{
-		isRunning = true;
-	}
+	camds->Live();
 }
 
 void imageReader::Pause()
 {
-	isRunning = false;
+	camds->Pause();
 }
 
 void imageReader::Stop()
 {
-	isRunning = false;
-	//CloseCamera();
+	camds->Stop();
 }
 
 void imageReader::buildDataThread()
@@ -175,55 +198,37 @@ void imageReader::buildDataThread()
 		rgbT = 0;
 		depthT = 0;
 		lastRgbT = 0;
-		while (!quitProgram)
+		t1 = clock();
+		InitPDData(datagroup);
+		if (!IsNewImageData(datagroup))
 		{
-			if (!isRunning)
-			{
-				//优化cpu占用率
-				Sleep(3);
-				continue;
-			}
-			if (!GetImageData(datagroup))
-			{
-				Sleep(3);
-				continue;
-			}
-			t1 = clock();
-			InitPDData(datagroup);
-			if (!IsNewImageData(datagroup))
-			{
-				Sleep(3);
-				continue;
-			}
-			
-			GenImage(datagroup);
-#ifdef DEBUG
-			qDebug() << irT <<" " << depthT << " " << rgbT;
-#endif
-			DispImage();
-			//发送深度信息
-			SendDepthImageData(depthDataRGB);
-			//发送平均深度信息
-			CalcAvgDepthData(depthDataRGB);
-			//保存图像
-			if (m_bIsSaveImage)
-			{
-				emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
-				if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
-#ifndef KEEP_ORI
-					//emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
-#else
-					//dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
-#endif
-				}
-			}
-
-			clock_t t2 = clock();
-			//if (t2 - t1 < 34)
-			//	Sleep(34 - t2 + t1);
-			//else Sleep(10);
-			qDebug() << "ONE ROUND : " << t2 - t1;
+			return;
 		}
+
+		GenImage(datagroup);
+#ifdef DEBUG
+		qDebug() << irT << " " << depthT << " " << rgbT;
+#endif
+		DispImage();
+		//发送深度信息
+		SendDepthImageData(depthDataRGB);
+		//发送平均深度信息
+		CalcAvgDepthData(depthDataRGB);
+		//保存图像
+		if (m_bIsSaveImage)
+		{
+			emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
+			if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
+#ifndef KEEP_ORI
+				//emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
+#else
+				//dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
+#endif
+			}
+		}
+
+		clock_t t2 = clock();
+		qDebug() << "ONE ROUND : " << t2 - t1;
 	}
 	catch (cv::Exception &e)
 	{
@@ -234,7 +239,6 @@ void imageReader::buildDataThread()
 
 void imageReader::GenImage(uchar * image_data)
 {
-	WriteImageBinFile(image_data, 640 * 480 * 2);
 	int flag = image_data[frameHeight*frameWidth * 2 - 1];
 	if (flag == 1)//ir
 	{
@@ -356,7 +360,6 @@ void imageReader::DispImage()
 			plus.copyTo(container[2]);
 		}
 		cv::hconcat(container, combineFrame);
-		//cv::hconcat(container_test, combineFrame);
 		emit sendImage(combineFrame);
 	}
 }
@@ -518,36 +521,6 @@ void imageReader::release()
 bool imageReader::IsRunning() const
 {
 	return isRunning;
-}
-
-void imageReader::run(int camIndex)
-{
-#ifndef EFE_FORMAT
-	if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 1200, true))
-	{
-#else
-	//if (!camds->isOpened() && !camds->OpenCamera(camIndex, frameWidth, 480, true))
-	if (!camds->isOpened())
-	{
-#endif
-		if (!camds->OpenCamera(camIndex, frameWidth, 480, true))
-		{
-#ifdef DEBUG
-			qDebug() << "camera init failed";
-#endif
-			return;
-		}
-		isRunning = true;
-	}
-	else if (camds->isOpened())
-	{
-	}
-	//isRunning = !isRunning;
-	Sleep(100);
-	if (!isRunning)
-	{
-		//camds->CloseCamera();
-	}
 }
 
 void imageReader::SetSaveImageStatus(bool bIsSaveImage)

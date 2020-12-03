@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "CameraDS.h"
+#include "imagereader.h"
 #pragma comment(lib,"Strmiids.lib")
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -39,7 +40,6 @@
                     (mt).pUnk->Release();					\
                     (mt).pUnk = NULL;						\
                 }}
-
 CCameraDS::CCameraDS()
 {
     m_bConnected = m_bLock = m_bChanged = false;
@@ -101,12 +101,69 @@ bool CCameraDS::isOpened()
     return m_bConnected;
 }
 
+bool CCameraDS::Live()
+{
+	bool bReturn = false;
+	do
+	{
+		if (!m_bConnected)
+			break;
+		if (!m_pMediaControl)
+			break;
+		if (!m_pMediaControl->Run())
+			break;
+
+		bReturn = true;
+	} while (false);
+	return false;
+}
+
+bool CCameraDS::Pause()
+{
+	bool bReturn = false;
+	do
+	{
+		if (!m_bConnected)
+			break;
+		if (!m_pMediaControl)
+			break;
+		if (!m_pMediaControl->Pause())
+			break;
+
+		bReturn = true;
+	} while (false);
+	return false;
+}
+
+bool CCameraDS::Stop()
+{
+	bool bReturn = false;
+	do
+	{
+		if (!m_bConnected)
+			break;
+		if (!m_pMediaControl)
+			break;
+		if (!m_pMediaControl->Stop())
+			break;
+
+		bReturn = true;
+	} while (false);
+	return false;
+}
+
 bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 {
 	try
 	{
 		HRESULT hr = S_OK;
 		isFormatYUY2 = isYUV2;
+		if (m_bConnected)
+		{
+			if (m_pMediaControl)
+				m_pMediaControl->Stop();
+		}
+		
 		CoInitialize(NULL);
 		// Create the Filter Graph Manager.
 		hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC, IID_IGraphBuilder, (void **)&m_pGraph);
@@ -246,7 +303,6 @@ bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 
 		m_pSampleGrabber->SetBufferSamples(TRUE);
 		m_pSampleGrabber->SetOneShot(TRUE);
-		m_pSampleGrabber->SetCallback(&g_sampleGrabberCB, 1);
 
 		hr = m_pSampleGrabber->GetConnectedMediaType(&mt);
 		if (FAILED(hr))
@@ -263,9 +319,8 @@ bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 		m_bConnected = true;
 
 		pEnum = NULL;
-		hr = m_pDeviceFilter->QueryInterface(&m_pCameraControl);
-		hr = m_pDeviceFilter->QueryInterface(&m_pVideoProAmp);
-
+		//hr = m_pDeviceFilter->QueryInterface(&m_pCameraControl);
+		//hr = m_pDeviceFilter->QueryInterface(&m_pVideoProAmp);
 		return true;
 	}
 	catch (...)
@@ -552,6 +607,12 @@ bool CCameraDS::BindFilter(IBaseFilter ** pFilter, std::string pid, std::string 
         return false;
 
     return true;
+}
+
+void CCameraDS::SetCallBack(imageReader * function)
+{
+	m_pSampleGrabber->SetCallback(function, 1);
+	m_pMediaControl->Run();
 }
 
 //将输入crossbar变成PhysConn_Video_Composite
