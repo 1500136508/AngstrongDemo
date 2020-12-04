@@ -53,6 +53,7 @@ private slots:
 	void ReceiveCreateAvgArea(int nIndex,bool bIsCreate);//接收avgArea的信息
 	void CalcInfo(QPointF point);
 	void CalcAvgArea();
+	void ReceiveIsTheFirstTimeToLive(bool is_first_time_to_live);
 signals:
 	void SendImageInfo(bool bIsEmpty,int nImageWidth,int nImageHeight);
 	void SendMouseInfo(int x, int y);

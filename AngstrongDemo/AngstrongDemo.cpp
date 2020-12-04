@@ -16,15 +16,10 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 {
 	registerDevice();//注册USB检测事件
 	ui.setupUi(this);
-
 	//初始化
 	m_mpImageView.clear();
 	m_pMainImageView = nullptr;
 	m_pMainImageView = new ImageView();
-
-	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
-	qRegisterMetaType<ECameraStatus>("ECameraStatus");
-	BuildConnect();
 
 	setCentralWidget(m_pMainImageView);
 	CreateDockWindow();
@@ -40,6 +35,7 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	m_pMainImageView->setStyleSheet(stylesheet);
 	m_pMainImageView->setParent(this);
 
+	BuildConnect();
 	//初始化识别相机列表
 	InitCamera();
 
@@ -135,8 +131,6 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		{
 		case DBT_DEVICEARRIVAL:
 		{
-			Sleep(50);
-			InitCamera();
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME)
 			{
 				PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
@@ -169,6 +163,8 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 			}
 			if (lpdb->dbch_devicetype = DBT_DEVTYP_DEVICEINTERFACE)
 			{
+				Sleep(50);
+				InitCamera();
 				PDEV_BROADCAST_DEVICEINTERFACE pDevInf = (PDEV_BROADCAST_DEVICEINTERFACE)lpdb;
 				QString strname = QString::fromWCharArray(pDevInf->dbcc_name);
 				//对U盘信息进行提取
@@ -202,7 +198,6 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		break;
 		case DBT_DEVICEREMOVECOMPLETE:
 		{
-			InitCamera();//检查camera
 			m_ParamView.on_close_clicked();
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME)
 			{
@@ -224,6 +219,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 			}
 			if (lpdb->dbch_devicetype = DBT_DEVTYP_DEVICEINTERFACE)
 			{
+				InitCamera();//检查camera
 				PDEV_BROADCAST_DEVICEINTERFACE pDevInf = (PDEV_BROADCAST_DEVICEINTERFACE)lpdb;
 				QString strname = QString::fromWCharArray(pDevInf->dbcc_name);
 				//对U盘信息进行提取
@@ -298,7 +294,7 @@ bool AngstrongDemo::InitCamera()
 	bool bReturn = false;
 	do 
 	{
-		//static int m_sCameraDeviceIndex = -1;              //局部静态变量，用来存储USBCamera序号
+		static int m_sCameraDeviceIndex = -1;              //局部静态变量，用来存储USBCamera序号
 		int cameraNum = CCameraDS::CameraCount();
 		if (cameraNum <= 0)
 		{
@@ -306,6 +302,8 @@ bool AngstrongDemo::InitCamera()
 			m_mpCameraDevice.clear();
 			break;
 		}
+		IsCameraUSB(false, QString(""), -1);
+		m_mpCameraDevice.clear();
 		char camName[100];
 		for (int i = 0; i < cameraNum; i++)
 		{
@@ -318,7 +316,6 @@ bool AngstrongDemo::InitCamera()
 				m_mpCameraDevice.insert({ QString::fromStdString(cN)+QString::number(i), i });
 			}
 		}
-
 		bReturn = true;
 	} while (false);
 
@@ -328,13 +325,13 @@ bool AngstrongDemo::InitCamera()
 void AngstrongDemo::CreateDockWindow()
 {
 	//增加camerlist停靠窗口
-	QDockWidget *m_dock_cameralist = new QDockWidget(tr("CameraList"));
-	m_dock_cameralist->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
-	//m_dock_cameralist->setAllowedAreas(Qt::LeftDockWidgetArea/* | Qt::RightDockWidgetArea*/);
-	m_dock_cameralist->setAllowedAreas(Qt::AllDockWidgetAreas);
-	addDockWidget(Qt::LeftDockWidgetArea, m_dock_cameralist);
-	m_dock_cameralist->setWidget(&m_CameraView);
-	m_dock_cameralist->setMaximumWidth(200);
+	//QDockWidget *m_dock_cameralist = new QDockWidget(tr("CameraList"));
+	//m_dock_cameralist->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	////m_dock_cameralist->setAllowedAreas(Qt::LeftDockWidgetArea/* | Qt::RightDockWidgetArea*/);
+	//m_dock_cameralist->setAllowedAreas(Qt::AllDockWidgetAreas);
+	//addDockWidget(Qt::LeftDockWidgetArea, m_dock_cameralist);
+	//m_dock_cameralist->setWidget(&m_CameraView);
+	//m_dock_cameralist->setMaximumWidth(200);
 	//增加parameter停靠窗口
 	QDockWidget *m_dock_paramlist = new QDockWidget(tr("ParameterList"));
 	m_dock_paramlist->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -403,11 +400,17 @@ void AngstrongDemo::AddToolBar()
 
 void AngstrongDemo::BuildConnect()
 {
-	connect(this, SIGNAL(IsCameraUSB(bool, QString, int)), &m_CameraView, SLOT(DetectCameraUSB(bool, QString, int)));
+	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
+	qRegisterMetaType<ECameraStatus>("ECameraStatus");
+	qRegisterMetaType<EDisplayMode>("EDisplayMode");
+
+	bool ret = connect(this, SIGNAL(IsCameraUSB(bool, QString, int)), &m_CameraView, SLOT(DetectCameraUSB(bool, QString, int)));
+	connect(this, SIGNAL(IsCameraUSB(bool, QString, int)), &m_ParamView, SLOT(ReceiveAddCameraUSBString(bool, QString, int)));
 	connect(&m_CameraView, SIGNAL(SelectCamera(QString,int)), this, SLOT(ShowImageView(QString,int)));
 	connect(&m_SaveData, SIGNAL(SendSaveDataStatus(bool, int, int,QString)), m_pMainImageView, SLOT(ReceiveSaveDataStatus(bool, int, int,QString)));
-	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus)));
+	connect(&m_ParamView, SIGNAL(SendCameraStatus(ECameraStatus, int)), m_pMainImageView, SLOT(ReceiveCameraStatus(ECameraStatus, int)));
 	connect(&m_ParamView, SIGNAL(SendCreateAvgArea(int, bool)), m_pMainImageView->ui->m_gView_ImageView, SLOT(ReceiveCreateAvgArea(int, bool)));
+	ret = connect(&m_ParamView, SIGNAL(SendImageDisplayMode(EDisplayMode)), m_pMainImageView, SLOT(ReceiveImageDisplayMode(EDisplayMode)));
 	connect(m_pMainImageView, SIGNAL(SendCameraStatus(ECameraStatus)), &m_ParamView, SLOT(ReceiveCameraStatus(ECameraStatus)));
 	connect(m_pMainImageView, SIGNAL(SendSaveImageInfo(QString)), &m_SaveData, SLOT(ReceiveSaveImageInfo(QString)));
 	connect(m_pMainImageView->m_pCamera, SIGNAL(SendLocationDepth(int, int, float)), &m_DispView, SLOT(ReceiveLocationDepth(int, int, float)));

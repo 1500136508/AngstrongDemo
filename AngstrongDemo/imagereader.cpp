@@ -115,36 +115,25 @@ HRESULT __stdcall imageReader::BufferCB(double Time, BYTE * pBuffer, long Buffer
 	{
 		return S_FALSE;
 	}
-	grab_image_finished_ = false;
-	//初始化相机内外参
+
 	InitPDData(pBuffer);
 	if (!IsNewImageData(pBuffer))
 	{
 		return S_FALSE;
 	}
-
-	//RunThread(pBuffer);
-	/*get_rgb_image_finished_ = false;
 	GetRGBImage(pBuffer);
-	get_rgb_image_finished_ = true;
-
-	get_depth_image_finished_ = false;
 	GetDepthImage(pBuffer);
-	get_depth_image_finished_ = true;
-
-	get_ir_image_finished_ = false;
 	GetIRImage(pBuffer);
-	get_ir_image_finished_ = true;
-	WaitGrabImageFinished();*/
-	/*thread_get_rgb_image_ = std::thread(&imageReader::GetRGBImageThread, this, pBuffer);
-	thread_get_depth_image_ = std::thread(&imageReader::GetDepthImageThread, this, pBuffer);
-	thread_get_ir_image_ = std::thread(&imageReader::GetIRImageThread, this, pBuffer);
-	thread_wait_grab_image_finished_ = std::thread(&imageReader::WaitGrabImageFinished, this);
-
-	thread_get_rgb_image_.detach();
-	thread_get_depth_image_.detach();
-	thread_get_ir_image_.detach();
-	thread_wait_grab_image_finished_.detach();*/
+	DispImage();
+	//发送深度信息
+	SendDepthImageData(depthDataRGB);
+	//发送平均深度信息
+	CalcAvgDepthData(depthDataRGB);
+	//保存图像
+	if (m_bIsSaveImage)
+	{
+		emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
+	}
 	return S_OK;
 }
 
@@ -206,176 +195,12 @@ void imageReader::Pause()
 {
 	camds->Pause();
 	is_running_ = false;
-	is_first_time_grab_ = true;
 }
 
 void imageReader::Stop()
 {
 	camds->Stop();
 	is_running_ = false;
-	is_first_time_grab_ = true;
-}
-
-void imageReader::GetRGBImageThread(BYTE * rgb_image_data)
-{
-	return;
-	while (true)
-	{
-		if (is_first_time_grab_)
-		{
-			get_rgb_image_finished_ = false;
-			GetRGBImage(rgb_image_data);
-			get_rgb_image_finished_ = true;
-			break;
-		}
-		else
-		{
-			if (grab_image_finished_)
-			{
-				get_rgb_image_finished_ = false;
-				GetRGBImage(rgb_image_data);
-				get_rgb_image_finished_ = true;
-				break;
-			}
-			else
-			{
-				Sleep(3);
-				continue;
-			}
-		}
-	}
-}
-
-void imageReader::GetDepthImageThread(BYTE * depth_image_data)
-{
-	while (true)
-	{
-		if (is_first_time_grab_)
-		{
-			get_depth_image_finished_ = false;
-			GetDepthImage(depth_image_data);
-			get_depth_image_finished_ = true;
-			break;
-		}
-		else
-		{
-			if (grab_image_finished_)
-			{
-				get_depth_image_finished_ = false;
-				GetDepthImage(depth_image_data);
-				get_depth_image_finished_ = true;
-				break;
-			}
-			else
-			{
-				Sleep(3);
-				continue;
-			}
-		}
-	}
-}
-
-void imageReader::GetIRImageThread(BYTE * ir_image_data)
-{
-	while (true)
-	{
-		if (is_first_time_grab_)
-		{
-			get_ir_image_finished_ = false;
-			GetIRImage(ir_image_data);
-			get_ir_image_finished_ = true;
-			break;
-		}
-		else
-		{
-			if (grab_image_finished_)
-			{
-				get_ir_image_finished_ = false;
-				GetIRImage(ir_image_data);
-				get_ir_image_finished_ = true;
-				break;
-			}
-			else
-			{
-				Sleep(3);
-				continue;
-			}
-		}
-	}
-}
-
-void imageReader::WaitGrabImageFinished()
-{
-	try
-	{
-		clock_t t1;
-		irT = 0;
-		rgbT = 0;
-		depthT = 0;
-		lastRgbT = 0;
-		t1 = clock();
-#ifdef DEBUG
-		qDebug() << irT << " " << depthT << " " << rgbT;
-#endif
-		while (true)
-		{
-			if (get_rgb_image_finished_&&get_depth_image_finished_&&get_ir_image_finished_)
-			{
-				std::unique_lock<std::mutex> locker(mutex_);
-				DispImage();
-				//发送深度信息
-				SendDepthImageData(depthDataRGB);
-				//发送平均深度信息
-				CalcAvgDepthData(depthDataRGB);
-				//保存图像
-				if (m_bIsSaveImage)
-				{
-					emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
-					if (abs(rgbT - irT) < 34000 && abs(rgbT - depthT) < 34000) {
-#ifndef KEEP_ORI
-						//emit sendSaveImageData(irFrameAlign, RGBFrame, depthDataRGB);
-#else
-						//dsaver->storeData(irFrameAlign, RGBFrame, predepthData);
-#endif
-					}
-				}
-
-				clock_t t2 = clock();
-				qDebug() << "ONE ROUND : " << t2 - t1;
-				locker.unlock();
-				grab_image_finished_ = true;
-				if (is_first_time_grab_)
-				{
-					is_first_time_grab_ = false;
-				}
-				break;
-			}
-			else
-			{
-				Sleep(3);
-				continue;;
-			}
-		}
-	}
-	catch (cv::Exception &e)
-	{
-		const char *err_msg = e.what();
-		grab_image_finished_ = true;
-		return;
-	}
-}
-
-void imageReader::RunThread(BYTE * image_data)
-{
-	/*thread_get_rgb_image_ = std::thread(&imageReader::GetRGBImageThread, this, image_data);
-	thread_get_depth_image_ = std::thread(&imageReader::GetDepthImageThread, this, image_data);
-	thread_get_ir_image_ = std::thread(&imageReader::GetIRImageThread, this, image_data);
-	thread_wait_grab_image_finished_ = std::thread(&imageReader::WaitGrabImageFinished, this);
-
-	thread_get_rgb_image_.detach();
-	thread_get_depth_image_.detach();
-	thread_get_ir_image_.detach();
-	thread_wait_grab_image_finished_.detach();*/
 }
 
 void imageReader::GetRGBImage(BYTE * rgb_image_data)
@@ -383,19 +208,15 @@ void imageReader::GetRGBImage(BYTE * rgb_image_data)
 	try
 	{
 		uchar* ptr = rgb_image_data + frameHeight * frameWidth * 2;
-		cv::Mat rgbyuv(cv::Size(frameWidthRGB, frameHeightRGB), CV_8U, rgb_image_data);
-		//std::unique_lock<std::mutex> locker(mutex_);
+		cv::Mat rgbyuv(cv::Size(frameWidthRGB, frameHeightRGB), CV_8U, ptr);
 		RGBFrame = cv::imdecode(rgbyuv, CV_LOAD_IMAGE_COLOR);
 		cv::transpose(RGBFrame, RGBFrame);
 		cv::flip(RGBFrame, RGBFrame, 0);
 		cv::flip(RGBFrame, RGBFrame, -1);
 		RGBFrame.copyTo(container[2]);
-		//locker.unlock();
-		/*cv::imwrite("rgb.tiff", RGBFrame);*/
 	}
-	catch (cv::Exception &e)
+	catch (...)
 	{
-		std::string err_msg = e.what();
 		return;
 	}
 }
@@ -417,7 +238,6 @@ void imageReader::GetDepthImage(BYTE * depth_image_data)
 				}
 				tmp += frameWidth;
 			}
-			std::unique_lock<std::mutex> locker(mutex_);
 			denoise(depthData, 0, 200, 80, _buf, 2000, frameHeight, frameWidth);
 			filling(edge.data, depthData, 0, 300, 10, _buf2, frameHeight, frameWidth);
 #ifdef KEEP_ORI
@@ -430,7 +250,6 @@ void imageReader::GetDepthImage(BYTE * depth_image_data)
 			memcpy(depthDataRGB, depthFrame.data, frameWidthRGB*frameHeightRGB * sizeof(float));
 			depthFrame = dealDepthMapColor(depthDataRGB, frameHeightRGB, frameWidthRGB);
 			depthFrame.copyTo(container[1]);
-			locker.unlock();
 		}
 	}
 	catch (cv::Exception &e)
@@ -460,7 +279,6 @@ void imageReader::GetIRImage(BYTE * ir_image_data)
 				}
 				tmp += frameWidth;
 			}
-			std::unique_lock<std::mutex> locker(mutex_);
 			irFrame = cv::Mat(cv::Size(frameHeight, frameWidth), CV_8UC1, irData);
 			irFrame.copyTo(irFrame16bit);
 			cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
@@ -471,7 +289,6 @@ void imageReader::GetIRImage(BYTE * ir_image_data)
 			cv::cvtColor(irFrame, irFrame, cv::COLOR_GRAY2BGR);
 			cv::warpPerspective(irFrame, irFrameAlign, tmpM, cv::Size(480, 848));
 			irFrameAlign.copyTo(container[0]);
-			locker.unlock();
 		}
 	}
 	catch (cv::Exception &e)
@@ -514,12 +331,38 @@ void imageReader::DispImage()
 {
 	if (getParam)
 	{
-		if (flag_rd)
+		switch (image_display_mode_)
+		{
+		case EDisplayMode_IR_Depth_RGB:
+		{
+			cv::hconcat(container, combineFrame);
+		}
+			break;
+		case EDisplayMode_IR:
+		{
+			combineFrame = irFrameAlign;
+		}
+			break;
+		case EDisplayMode_Depth:
+		{
+			combineFrame = depthFrame;
+		}
+			break;
+		case EDisplayMode_RGB:
+		{
+			combineFrame = RGBFrame;
+		}
+			break;
+		case EDisplayMode_IR_Depth_RGBAddDepth:
 		{
 			cv::Mat plus = RGBFrame / 2 + depthFrame / 2;
 			plus.copyTo(container[2]);
+			cv::hconcat(container, combineFrame);
 		}
-		cv::hconcat(container, combineFrame);
+			break;
+		default:
+			break;
+		}
 		emit sendImage(combineFrame);
 	}
 }
@@ -633,6 +476,7 @@ int imageReader::setParam(float _fx, float _fy, float _cx, float _cy)
 
 void imageReader::release()
 {
+	program_quite = true;
     if (irData)
     {
 		delete[] irData;
@@ -675,6 +519,17 @@ void imageReader::release()
 void imageReader::SetSaveImageStatus(bool bIsSaveImage)
 {
 	m_bIsSaveImage = bIsSaveImage;
+}
+
+void imageReader::set_image_display_mode(EDisplayMode image_display_mode)
+{
+	emit SendIsFirstTimeToLive(true);
+	image_display_mode_ = image_display_mode;
+}
+
+EDisplayMode imageReader::get_image_display_mode() const
+{
+	return image_display_mode_;
 }
 
 void imageReader::readpdData()

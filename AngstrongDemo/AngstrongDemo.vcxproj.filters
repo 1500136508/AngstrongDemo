@@ -58,9 +58,6 @@
     <Filter Include="Source Files\Device\USB">
       <UniqueIdentifier>{1dbdfb8e-f0c2-4db7-9766-357a278f826b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\FormView\Sequence">
-      <UniqueIdentifier>{e8aba5ef-1b2b-4cea-947c-0ba1eb19cda8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Device\XM">
       <UniqueIdentifier>{a321c577-9256-44bc-890f-4c9b9ae2dbb9}</UniqueIdentifier>
     </Filter>
@@ -75,6 +72,9 @@
     </Filter>
     <Filter Include="Header Files\Sequence">
       <UniqueIdentifier>{d224a5c8-62f9-4cca-821f-d59c9f8d06b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sequence">
+      <UniqueIdentifier>{e8aba5ef-1b2b-4cea-947c-0ba1eb19cda8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="common.h">
       <Filter>Header Files\Device\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="definition_camera.h">
+      <Filter>Header Files\FormView\ImageView</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

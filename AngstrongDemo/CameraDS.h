@@ -76,6 +76,7 @@ public:
     CCameraDS();
     virtual ~CCameraDS();
 
+	//void InitializeEnvironment();
     //打开摄像头，nCamID指定打开哪个摄像头，取值可以为0,1,2,...
     //bDisplayProperties指示是否自动弹出摄像头属性页
     //nWidth和nHeight设置的摄像头的宽和高，如果摄像头不支持所设定的宽度和高度，则返回false
@@ -99,7 +100,6 @@ public:
     //nBufferSize: sName的大小
     //可以不用创建CCameraDS实例，采用CCameraDS::CameraName();得到结果。
     static int CameraName(int nCamID, char* sName, int nBufferSize);
-
     //返回图像宽度
     int GetWidth(){return m_nWidth;}
 

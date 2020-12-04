@@ -4,11 +4,13 @@
 #include <fstream>
 #include <thread>
 #include <mutex>
+#include <queue>
 #include <QObject>
 #include <QRectF>
 #include <QString>
 #include <opencv.hpp>
 #include "camerads.h"
+#include "definition_camera.h"
 #define EFE_FORMAT
 //#define KEEP_ORI
 
@@ -40,6 +42,8 @@ public:
 	void Pause();
 	void Stop();
 	void SetSaveImageStatus(bool bIsSaveImage);
+	void set_image_display_mode(EDisplayMode image_display_mode);
+	EDisplayMode get_image_display_mode()const;
 	void release();
 
 	float fx = 0;
@@ -47,16 +51,6 @@ public:
 	float cx = 0;
 	float cy = 0;
 private:
-	std::thread thread_get_rgb_image_;
-	std::thread thread_get_depth_image_;
-	std::thread thread_get_ir_image_;
-	std::thread thread_wait_grab_image_finished_;
-	std::mutex mutex_;
-	volatile bool get_rgb_image_finished_ = false;
-	volatile bool get_depth_image_finished_ = false;
-	volatile bool get_ir_image_finished_ = false;
-	volatile bool grab_image_finished_ = false;
-	volatile bool is_first_time_grab_ = true;
     std::vector<cv::Mat> container;
 
     clock_t time1,time2,startTime, stopTime;
@@ -102,13 +96,9 @@ private:
 	long long depthT;
 	long long lastRgbT;
 
+	bool program_quite = false;
 	bool getParam = false;
 	volatile bool is_running_ = false;
-
-    bool flag_ir = false;
-    bool flag_rgb =false;
-    bool flag_depth =false;
-    bool flag_rd=false;
 
     CCameraDS* camds;
 	
@@ -132,11 +122,8 @@ private:
 	int realX2s = -1;
 	int realY2s = -1;
 
-	void GetRGBImageThread(BYTE *rgb_image_data);
-	void GetDepthImageThread(BYTE *depth_image_data);
-	void GetIRImageThread(BYTE *ir_image_data);
-    void WaitGrabImageFinished();
-	void RunThread(BYTE *image_data);
+	//display mode
+	EDisplayMode image_display_mode_ = EDisplayMode_IR_Depth_RGB;
 
 	void GetRGBImage(BYTE *rgb_image_data);
 	void GetDepthImage(BYTE *depth_image_data);
@@ -162,5 +149,6 @@ signals:
 	void sendSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB,float *depth);
 	void SendLocationDepth(int x, int y, float depth);
 	void SendAvgDepth(float avg0, float avg1);
+	void SendIsFirstTimeToLive(bool is_first_time_to_live);
 };
 #endif // IMAGEREADER_H

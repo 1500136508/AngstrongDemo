@@ -549,6 +549,11 @@ void View::CalcAvgArea()
 	}
 }
 
+void View::ReceiveIsTheFirstTimeToLive(bool is_first_time_to_live)
+{
+	first_time_to_live_ = is_first_time_to_live;
+}
+
 QImage View::cvMat2QImage(const cv::Mat & mat)
 {
 	if (mat.type() == CV_8UC1 || mat.type() == CV_32FC1)
