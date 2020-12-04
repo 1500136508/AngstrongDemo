@@ -171,6 +171,7 @@ void ParameterView::ReceiveAddCameraUSBString(bool bUSB, QString qstrUSBName, in
 
 void ParameterView::BuildConnect()
 {
+
 	connect(ui->m_btn_open, SIGNAL(clicked()), this, SLOT(on_open_clicked()));
 	connect(ui->m_btn_close, SIGNAL(clicked()), this, SLOT(on_close_clicked()));
 	connect(ui->m_btn_live, SIGNAL(clicked()), this, SLOT(on_live_clicked()));
