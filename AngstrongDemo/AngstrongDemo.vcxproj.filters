@@ -161,6 +161,15 @@
     <ClCompile Include="common.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="setupview.cpp">
+      <Filter>Source Files\FormView\ImageView</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigInstance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AngstrongDemo.ui">
@@ -191,6 +200,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="titlebar.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="setupview.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -240,6 +252,9 @@
     <QtMoc Include="savedata.h">
       <Filter>Header Files\Device\Camera</Filter>
     </QtMoc>
+    <QtMoc Include="setupview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h">
@@ -277,6 +292,12 @@
     </ClInclude>
     <ClInclude Include="definition_camera.h">
       <Filter>Header Files\FormView\ImageView</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigInstance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logmanager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

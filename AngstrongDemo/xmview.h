@@ -21,6 +21,7 @@ private:
 	void BuildConnect();
 private:
     Ui::XMView *ui;
+	std::string log_msg_;
 };
 
 #endif // XMVIEW_H

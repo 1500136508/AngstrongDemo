@@ -1,6 +1,7 @@
 #include "parameterview.h"
 #include "ui_parameterview.h"
 #include <QDebug>
+#include <logmanager.h>
 
 ParameterView::ParameterView(QWidget *parent) :
     QDialog(parent),

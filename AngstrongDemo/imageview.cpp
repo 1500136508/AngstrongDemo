@@ -7,6 +7,7 @@
 #include <imgproc.hpp>
 #include "imageview.h"
 #include "savedata.h"
+#include "logmanager.h"
 
 ImageView::ImageView(QWidget *parent) :
     QDialog(parent),
@@ -194,6 +195,7 @@ void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount, QSt
 void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 {
 	//对接收到的相机状态进行处理
+	std::string log_msg("");
 	switch (eStatus)
 	{
 	case ECameraStatus_Unknow:
@@ -208,6 +210,11 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 			if (m_pCamera->OpenCamera(camera_index))
 			{
 				emit SendCameraStatus(ECameraStatus_Open);
+				log_msg = "相机打开成功！";
+			}
+			else
+			{
+				log_msg = "相机打开失败！";
 			}
 		}
 	}
@@ -218,7 +225,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 		{
 			m_pCamera->CloseCamera();
 			emit SendCameraStatus(ECameraStatus_Close);
-			//ui->m_gView_ImageView->ClearAll();
+			log_msg = "相机关闭成功！";
 		}
 	}
 		break;
@@ -228,6 +235,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 		{
 			m_pCamera->Live();
 			emit SendCameraStatus(ECameraStatus_Live);
+			log_msg = "Live";
 		}
 	}
 		break;
@@ -237,6 +245,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 		{
 			m_pCamera->Pause();
 			emit SendCameraStatus(ECameraStatus_Pause);
+			log_msg = "Pause";
 		}
 	}
 		break;
@@ -246,12 +255,15 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 		{
 			m_pCamera->Stop();
 			emit SendCameraStatus(ECameraStatus_Stop);
+			log_msg = "Stop";
 		}
 	}
 		break;
 	default:
 		break;
 	}
+
+	LogManager::Write(log_msg);
 }
 
 void ImageView::ReceiveImageDisplayMode(EDisplayMode image_display_mode)

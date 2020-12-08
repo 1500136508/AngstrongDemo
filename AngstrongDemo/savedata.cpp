@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include "savedata.h"
 #include "ui_savedata.h"
+#include "logmanager.h"
 
 SaveData::SaveData(QWidget *parent) :
     QDialog(parent),
@@ -17,6 +18,7 @@ SaveData::SaveData(QWidget *parent) :
 	m_bIsStart = false;
 	m_eCurSaveMode = ESaveMode_3Pix;
 	m_nSaveCount = 0;
+	log_msg_ = "";
 	//初始化窗口数据
 	ui->m_combo_model->addItem("三图模式");
 	ui->m_combo_model->addItem("四图模式");
@@ -43,20 +45,23 @@ void SaveData::on_chose_file_clicked()
 {
 	QTextCodec *code = QTextCodec::codecForName("GB2312");
 	std::string workPath = code->fromUnicode(QFileDialog::getExistingDirectory(this, tr("Open Directory"), " ", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks)).data();
-#if DEBUG
-	qDebug() << QString::fromLocal8Bit(workPath.c_str());
-#endif
+//#if DEBUG
+//	qDebug() << QString::fromLocal8Bit(workPath.c_str());
+//#endif
 	ui->m_lineEdit_file->setText(QString::fromLocal8Bit(workPath.c_str()));
 
 	QFileInfo qfi(ui->m_lineEdit_file->text());
 	if (qfi.isDir())
 	{
 		ui->m_lab_display_status->setText("Save Path:" + ui->m_lineEdit_file->text());
+		log_msg_ = "[savedata] Save Path:" + ui->m_lineEdit_file->text().toStdString();
 	}
 	else
 	{
-		ui->m_lab_display_status->setText("Error:Save Path Error");
+		ui->m_lab_display_status->setText("Error:Save Path Error!");
+		log_msg_ = "[savedata] Save Path Error!" + ui->m_lineEdit_file->text().toStdString();
 	}
+	LogManager::Write(log_msg_);
 }
 
 void SaveData::on_start_clicked()
@@ -67,11 +72,15 @@ void SaveData::on_start_clicked()
 	if (savePath.toStdString().empty())
 	{
 		ui->m_lab_display_status->setText("Error:Please choose the correct path!");
+		log_msg_ = "[savedata] Failed to Star to save image!";
+		LogManager::Write(log_msg_);
 		return;
 	}
 	if (m_nSaveCount == 0)
 	{
 		ui->m_lab_display_status->setText("Error:Please set the number of pictures saved!");
+		log_msg_ = "[savedata] Failed to Star to save image!";
+		LogManager::Write(log_msg_);
 		return;
 	}
 

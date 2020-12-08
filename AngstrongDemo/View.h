@@ -36,8 +36,7 @@ protected:
 
 	void paintEvent(QPaintEvent *event);
 	void contextMenuEvent(QContextMenuEvent *event);
-private slots:
-
+public slots:
 	void on_open_clicked();
 	void on_save_clicked();
 	void on_close_clicked();

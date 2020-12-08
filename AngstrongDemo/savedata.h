@@ -35,6 +35,7 @@ private:
 	bool m_bIsStart;//开始保存图像标志
 	ESaveMode m_eCurSaveMode;
 	int m_nSaveCount;
+	std::string log_msg_;
 };
 
 #endif // SAVEDATA_H
