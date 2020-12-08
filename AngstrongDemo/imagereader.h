@@ -1,15 +1,16 @@
 ﻿#ifndef IMAGEREADER_H
 #define IMAGEREADER_H
-#include <opencv.hpp>
-#include <QThread>
-#include <QString>
-#include "camerads.h"
-#include <QThreadPool>
 #include <queue>
-#include <QMutex>
 #include <fstream>
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <QObject>
 #include <QRectF>
-//#include "logwriter.h"
+#include <QString>
+#include <opencv.hpp>
+#include "camerads.h"
+#include "definition_camera.h"
 #define EFE_FORMAT
 //#define KEEP_ORI
 
@@ -33,15 +34,17 @@ public:
 	HRESULT STDMETHODCALLTYPE SampleCB(double Time, IMediaSample *pSample);
 	HRESULT STDMETHODCALLTYPE BufferCB(double Time, BYTE *pBuffer, long BufferLen);
 
-    void release();
-	bool IsRunning()const;
-	bool OpenCamera(int index);
+	bool OpenCamera(int camera_index);
 	void CloseCamera();
 	bool IsOpen()const;
+	bool IsRunning()const;
 	void Live();
 	void Pause();
 	void Stop();
 	void SetSaveImageStatus(bool bIsSaveImage);
+	void set_image_display_mode(EDisplayMode image_display_mode);
+	EDisplayMode get_image_display_mode()const;
+	void release();
 
 	float fx = 0;
 	float fy = 0;
@@ -49,7 +52,6 @@ public:
 	float cy = 0;
 private:
     std::vector<cv::Mat> container;
-	std::vector<cv::Mat> container_test;
 
     clock_t time1,time2,startTime, stopTime;
     int datalen = 1280;
@@ -68,7 +70,6 @@ private:
     cv::Mat edge_clear = cv::Mat::zeros(cv::Size(frameWidth,frameHeight),CV_8UC1);
     cv::Mat edge_th = cv::Mat::zeros(cv::Size(frameWidth,frameHeight),CV_8UC1);
 
-    uchar* datagroup;
     cv::Mat irFrame;
     cv::Mat irFrameAlign;
     cv::Mat temp;
@@ -95,20 +96,12 @@ private:
 	long long depthT;
 	long long lastRgbT;
 
-
-    bool isRunning = false;
-    bool quitProgram = false;
+	bool program_quite = false;
 	bool getParam = false;
-
-    bool flag_ir = false;
-    bool flag_rgb =false;
-    bool flag_depth =false;
-    bool flag_rd=false;
+	volatile bool is_running_ = false;
 
     CCameraDS* camds;
-
-    QThreadPool* poolDepth;
-
+	
 	//当前鼠标位置
 	int m_MouseX;
 	int m_MouseY;
@@ -129,17 +122,13 @@ private:
 	int realX2s = -1;
 	int realY2s = -1;
 
-    void buildDataThread();
+	//display mode
+	EDisplayMode image_display_mode_ = EDisplayMode_IR_Depth_RGB;
 
-	inline bool GetImageData(uchar *image_data) const
-	{
-		memset(datagroup, 0, frameWidth * frameHeightRGB * 2);
-		return camds->readRawData(datagroup);
-	}
-	void GenImage(uchar *image_data);
-	cv::Mat GenRGBImage(uchar *rgb_image_data);
-	cv::Mat GenDepthImage();
-	cv::Mat GenIRImage();
+	void GetRGBImage(BYTE *rgb_image_data);
+	void GetDepthImage(BYTE *depth_image_data);
+	void GetIRImage(BYTE *ir_image_data);
+
 	bool IsNewImageData(uchar *image_data);
 	void InitPDData(uchar *image_data);
 	bool IsInitPDData()const { return getParam; }
@@ -160,5 +149,6 @@ signals:
 	void sendSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB,float *depth);
 	void SendLocationDepth(int x, int y, float depth);
 	void SendAvgDepth(float avg0, float avg1);
+	void SendIsFirstTimeToLive(bool is_first_time_to_live);
 };
 #endif // IMAGEREADER_H

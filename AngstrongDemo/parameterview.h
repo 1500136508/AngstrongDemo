@@ -2,17 +2,7 @@
 #define PARAMETERVIEW_H
 
 #include <QDialog>
-
-enum ECameraStatus
-{
-	ECameraStatus_Unknow = -1,
-	ECameraStatus_Open = 0,
-	ECameraStatus_Close,
-	ECameraStatus_Live,
-	ECameraStatus_Pause,
-	ECameraStatus_Stop,
-	ECameraStatus_Count,
-};
+#include "definition_camera.h"
 
 namespace Ui {
 class ParameterView;
@@ -36,14 +26,20 @@ public slots:
 	void on_createroi02_clicked();
 	void on_cancelroi01_clicked();
 	void on_cancelroi02_clicked();
+	void on_get_current_camera_id_index_change(int camera_id);
+	void on_get_current_diplay_mode_index_change(int image_display_mode);
 	void ReceiveCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
+	void ReceiveAddCameraUSBString(bool bUSB, QString qstrUSBName, int nIndex);
 signals:
-	void SendCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);
+	void SendCameraStatus(ECameraStatus eStatus,int camera_index);
 	void SendCreateAvgArea(int nIndex, bool bIsCreate);
+	void SendImageDisplayMode(EDisplayMode image_display_mode);
 private:
     Ui::ParameterView *ui;
 
 	void BuildConnect();
+private:
+	int current_camera_index_;
 };
 
 #endif // PARAMETERVIEW_H

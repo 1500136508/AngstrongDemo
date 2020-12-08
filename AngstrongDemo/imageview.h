@@ -42,7 +42,8 @@ private slots:
 	void ReceiveSaveImageData(cv::Mat ImageIR, cv::Mat ImageRGB, float *depth);
 	void ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCoun,QString qstrPath);
 
-	void ReceiveCameraStatus(ECameraStatus eStatus);
+	void ReceiveCameraStatus(ECameraStatus eStatus, int camera_index);
+	void ReceiveImageDisplayMode(EDisplayMode image_display_mode);
 signals:
 	void sendCloseEven();
 	void SendCameraStatus(ECameraStatus eStatus = ECameraStatus_Unknow);

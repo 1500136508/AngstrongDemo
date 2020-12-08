@@ -53,7 +53,11 @@ CCameraDS::CCameraDS()
     m_pSampleGrabberFilter = NULL;
     m_pGraph = NULL;
 
-    CoInitialize(NULL);
+	//COM Library Initialize
+	if (FAILED(CoInitialize(NULL)))
+	{
+		QString err_msg = "CoInitialize Failed!\r\n";
+	}
 
 
     m_nBuffer = new unsigned short[1280 * 800 * 3];
@@ -115,7 +119,7 @@ bool CCameraDS::Live()
 
 		bReturn = true;
 	} while (false);
-	return false;
+	return bReturn;
 }
 
 bool CCameraDS::Pause()
@@ -132,7 +136,7 @@ bool CCameraDS::Pause()
 
 		bReturn = true;
 	} while (false);
-	return false;
+	return bReturn;
 }
 
 bool CCameraDS::Stop()
@@ -149,7 +153,7 @@ bool CCameraDS::Stop()
 
 		bReturn = true;
 	} while (false);
-	return false;
+	return bReturn;
 }
 
 bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
@@ -166,7 +170,9 @@ bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 		
 		CoInitialize(NULL);
 		// Create the Filter Graph Manager.
-		hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC, IID_IGraphBuilder, (void **)&m_pGraph);
+		
+		//hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC, IID_IGraphBuilder, (void **)&m_pGraph);
+		hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (LPVOID*) &m_pGraph);
 
 		hr = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, (LPVOID *)&m_pSampleGrabberFilter);
 
@@ -612,7 +618,6 @@ bool CCameraDS::BindFilter(IBaseFilter ** pFilter, std::string pid, std::string 
 void CCameraDS::SetCallBack(imageReader * function)
 {
 	m_pSampleGrabber->SetCallback(function, 1);
-	m_pMediaControl->Run();
 }
 
 //将输入crossbar变成PhysConn_Video_Composite
@@ -855,7 +860,7 @@ int CCameraDS::CameraCount()
 int CCameraDS::CameraName(int nCamID, char* sName, int nBufferSize)
 {
     int count = 0;
-    CoInitialize(NULL);
+    //CoInitialize(NULL);
 
     // enumerate all video capture devices
     CComPtr<ICreateDevEnum> pCreateDevEnum;
@@ -900,7 +905,6 @@ int CCameraDS::CameraName(int nCamID, char* sName, int nBufferSize)
 
     return 1;
 }
-
 
 bool CCameraDS::SetAutoExposure()
 {

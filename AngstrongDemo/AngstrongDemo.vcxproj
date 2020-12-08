@@ -53,7 +53,7 @@
       <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\dense_tencent;..\DirectShow\Include;..\AngstrongDemo;..\xmodemV2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;E:\Work\AngstrongDemo\dense_tencent;..\xmodemV2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;..\dense_tencent;..\xmodemV2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_world341.lib;dsense.lib;xmodemV2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -177,6 +177,7 @@
     <QtMoc Include="savedata.h" />
     <QtMoc Include="graphicsrectitem.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="definition_camera.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="titlebar.h" />
     <ClInclude Include="SampleGrabberCallback.h" />
