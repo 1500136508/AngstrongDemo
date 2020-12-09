@@ -2,7 +2,7 @@
 #define OUTPUTVIEW_H
 
 #include <QWidget>
-#include <memory>
+#include <mutex>
 
 namespace Ui {
 class OutputView;
@@ -16,11 +16,10 @@ public:
 	static void WriteText(QString output_msg);
 private:
     explicit OutputView(QWidget *parent = nullptr);
-	OutputView(const OutputView &);
-	OutputView& operator=(const OutputView &);
     ~OutputView();
 private:
     Ui::OutputView *ui;
+	static std::mutex mutex_;
 	static OutputView *output_view_;
 };
 

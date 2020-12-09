@@ -2,6 +2,7 @@
 #include "ui_parameterview.h"
 #include <QDebug>
 #include <logmanager.h>
+#include "modelparameter.h"
 
 ParameterView::ParameterView(QWidget *parent) :
     QDialog(parent),
@@ -22,7 +23,14 @@ ParameterView::ParameterView(QWidget *parent) :
 	ui->m_combo_display_mode->addItem("Depth");
 	ui->m_combo_display_mode->addItem("RGB");
 	ui->m_combo_display_mode->addItem("IR_Depth_RGBAddDepth");
-	ui->m_combo_display_mode->setCurrentIndex(EDisplayMode_IR_Depth_RGB);
+	if (!ModelParameter::IsOpen())
+	{
+		if (!ModelParameter::Open("model/parameter.ini"))
+		{
+			ui->m_combo_display_mode->setCurrentIndex(EDisplayMode_IR_Depth_RGB);
+		}
+	}
+	ui->m_combo_display_mode->setCurrentIndex(ModelParameter::get_int_value("AngstrongDemo","image_display_mode"));
 }
 
 ParameterView::~ParameterView()

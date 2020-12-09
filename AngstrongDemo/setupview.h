@@ -2,7 +2,6 @@
 #define SETUPVIEW_H
 
 #include <QDialog>
-#include "ConfigInstance.h"
 
 namespace Ui {
 class SetupView;
@@ -20,7 +19,10 @@ public:
 	void InitParameter();
 private slots:
 	void on_save_parameter_clicked();
+	void on_ok_clicked();
 private:
+	void Save();
+
     Ui::SetupView *ui;
 
 	QString stylesheet;							// QSSÑùÊ½±í

@@ -114,7 +114,6 @@
     <ClCompile Include="..\xmodemV2\xmodem.c" />
     <ClCompile Include="CameraDS.cpp" />
     <ClCompile Include="common.cpp" />
-    <ClCompile Include="ConfigInstance.cpp" />
     <ClCompile Include="displayview.cpp" />
     <ClCompile Include="graphicsrectitem.cpp" />
     <ClCompile Include="imageitem.cpp" />
@@ -122,6 +121,7 @@
     <ClCompile Include="imagereader.cpp" />
     <ClCompile Include="imagescene.cpp" />
     <ClCompile Include="logmanager.cpp" />
+    <ClCompile Include="modelparameter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
     <ClCompile Include="SampleGrabberCallback.cpp" />
@@ -181,9 +181,9 @@
     <QtMoc Include="savedata.h" />
     <QtMoc Include="graphicsrectitem.h" />
     <ClInclude Include="common.h" />
-    <ClInclude Include="ConfigInstance.h" />
     <ClInclude Include="definition_camera.h" />
     <ClInclude Include="logmanager.h" />
+    <ClInclude Include="modelparameter.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="titlebar.h" />
     <ClInclude Include="SampleGrabberCallback.h" />
