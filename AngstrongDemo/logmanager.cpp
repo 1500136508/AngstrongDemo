@@ -54,8 +54,17 @@ void LogManager::Write(std::string msg, ELogLevel log_level, ELogType log_type)
 	std::string msg_prefix("");
 	SYSTEMTIME system_time;
 	GetLocalTime(&system_time);
-	msg_prefix = std::to_string(system_time.wHour) + ":" + std::to_string(system_time.wMinute)
-				 + ":" + std::to_string(system_time.wSecond);
+	if (system_time.wSecond < 10)
+	{
+		msg_prefix = "[" + std::to_string(system_time.wHour) + ":" + std::to_string(system_time.wMinute)
+			+ ":0" + std::to_string(system_time.wSecond) + "]";
+	}
+	else
+	{
+		msg_prefix = "[" + std::to_string(system_time.wHour) + ":" + std::to_string(system_time.wMinute)
+			+ ":" + std::to_string(system_time.wSecond) + "]";
+	}
+	
 
 	switch (log_level)
 	{

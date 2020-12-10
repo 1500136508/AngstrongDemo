@@ -44,6 +44,7 @@ public:
 	void SetSaveImageStatus(bool bIsSaveImage);
 	void set_image_display_mode(EDisplayMode image_display_mode);
 	EDisplayMode get_image_display_mode()const;
+	bool CameraIsStillHere();
 	void release();
 
 	float fx = 0;

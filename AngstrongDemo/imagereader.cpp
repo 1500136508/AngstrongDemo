@@ -142,6 +142,7 @@ bool imageReader::OpenCamera(int camera_index)
 	bool bReturn = false;
 	do
 	{
+		CloseCamera();
 		if (!camds->isOpened())
 		{
 			if (!camds->OpenCamera(camera_index, frameWidth, 480, true))
@@ -151,8 +152,12 @@ bool imageReader::OpenCamera(int camera_index)
 #endif
 				break;
 			}
+			for (int i = 0; i < 3; i++)
+			{
+				container[i] = cv::Mat(cv::Size(frameHeightRGB, frameWidthRGB), CV_8UC3);
+			}
+
 			camds->SetCallBack(this);
-			Live();
 		}
 
 		bReturn = true;
@@ -530,6 +535,11 @@ void imageReader::set_image_display_mode(EDisplayMode image_display_mode)
 EDisplayMode imageReader::get_image_display_mode() const
 {
 	return image_display_mode_;
+}
+
+bool imageReader::CameraIsStillHere()
+{
+	return camds->CameraStillHere();
 }
 
 void imageReader::readpdData()

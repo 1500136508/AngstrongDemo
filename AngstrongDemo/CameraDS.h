@@ -71,6 +71,10 @@ private:
     void SetCrossBar();
 
     bool isFormatYUY2 = false;
+	int camera_id_;
+	bool is_camera_stiil_here_ = false;
+	IMoniker *imoniker_video_ = nullptr;
+	IMoniker *imoniker_container[10] = { nullptr };
 public:
 
     CCameraDS();
@@ -82,6 +86,8 @@ public:
     //nWidth和nHeight设置的摄像头的宽和高，如果摄像头不支持所设定的宽度和高度，则返回false
     bool OpenCamera(int nCamID, int nWidth = 1280, int nHeight = 800, bool isYUV2 = true);
     bool OpenCamera(std::string pid, std::string vid, int nWidth= 1280, int nHeight=800, bool isYUV2 = true);
+	bool FindDevice();
+	bool CameraStillHere();
 	void SetCallBack(imageReader *function);
     //关闭摄像头，析构函数会自动调用这个函数
     void CloseCamera();
@@ -92,14 +98,16 @@ public:
 	bool Stop();
     //返回摄像头的数目
     //可以不用创建CCameraDS实例，采用int c=CCameraDS::CameraCount();得到结果。
-    static int CameraCount();
+    //static int CameraCount();
+    int CameraCount();
 
     //根据摄像头的编号返回摄像头的名字
     //nCamID: 摄像头编号
     //sName: 用于存放摄像头名字的数组
     //nBufferSize: sName的大小
     //可以不用创建CCameraDS实例，采用CCameraDS::CameraName();得到结果。
-    static int CameraName(int nCamID, char* sName, int nBufferSize);
+    //static int CameraName(int nCamID, char* sName, int nBufferSize);
+    int CameraName(int nCamID, char* sName, int nBufferSize);
     //返回图像宽度
     int GetWidth(){return m_nWidth;}
 

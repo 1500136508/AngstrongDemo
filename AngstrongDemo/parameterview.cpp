@@ -112,6 +112,7 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 		break;
 	case ECameraStatus_NoCamera:
 	{
+		current_camera_status_ = ECameraStatus_NoCamera;
 		ui->m_btn_open->setEnabled(false);
 		ui->m_btn_close->setEnabled(false);
 		ui->m_btn_live->setEnabled(false);
@@ -121,6 +122,7 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 		break;
 	case ECameraStatus_Open:
 	{
+		current_camera_status_ = ECameraStatus_Open;
 		ui->m_btn_open->setEnabled(false);
 		ui->m_btn_close->setEnabled(true);
 		ui->m_btn_live->setEnabled(true);
@@ -135,10 +137,12 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 		ui->m_btn_live->setEnabled(false);
 		ui->m_btn_pause->setEnabled(false);
 		ui->m_btn_stop->setEnabled(false);
+		current_camera_status_ = ECameraStatus_Close;
 	}
 		break;
 	case ECameraStatus_Live:
 	{
+		current_camera_status_ = ECameraStatus_Live;
 		ui->m_btn_live->setEnabled(false);
 		ui->m_btn_pause->setEnabled(true);
 		ui->m_btn_stop->setEnabled(true);
@@ -146,12 +150,14 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 		break;
 	case ECameraStatus_Pause:
 	{
+		current_camera_status_ = ECameraStatus_Pause;
 		ui->m_btn_live->setEnabled(true);
 		ui->m_btn_pause->setEnabled(false);
 	}
 		break;
 	case ECameraStatus_Stop:
 	{
+		current_camera_status_ = ECameraStatus_Stop;
 		ui->m_btn_live->setEnabled(true);
 		ui->m_btn_pause->setEnabled(false);
 		ui->m_btn_stop->setEnabled(false);
@@ -167,6 +173,10 @@ void ParameterView::ReceiveAddCameraUSBString(bool bUSB, QString qstrUSBName, in
 	if (bUSB)
 	{
 		ui->m_combo_camera_list->addItem(qstrUSBName);
+		if (current_camera_status_ == ECameraStatus_NoCamera)
+		{
+			ui->m_btn_open->setEnabled(true);
+		}
 	}
 	else
 	{

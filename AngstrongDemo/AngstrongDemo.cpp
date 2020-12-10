@@ -200,7 +200,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 		break;
 		case DBT_DEVICEREMOVECOMPLETE:
 		{
-			m_ParamView.on_close_clicked();
+			//m_ParamView.on_close_clicked();
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME)
 			{
 				PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
@@ -222,6 +222,10 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 			if (lpdb->dbch_devicetype = DBT_DEVTYP_DEVICEINTERFACE)
 			{
 				LogManager::Write("检测到拔出相机");
+				if (!m_pMainImageView->m_pCamera->CameraIsStillHere())
+				{
+					emit m_pMainImageView->SendCameraStatus(ECameraStatus_Close);
+				}
 				InitCamera();//检查camera
 				PDEV_BROADCAST_DEVICEINTERFACE pDevInf = (PDEV_BROADCAST_DEVICEINTERFACE)lpdb;
 				QString strname = QString::fromWCharArray(pDevInf->dbcc_name);
@@ -297,8 +301,9 @@ bool AngstrongDemo::InitCamera()
 	bool bReturn = false;
 	do 
 	{
+		CCameraDS camerads;
 		static int m_sCameraDeviceIndex = -1;              //局部静态变量，用来存储USBCamera序号
-		int cameraNum = CCameraDS::CameraCount();
+		int cameraNum = camerads.CameraCount();
 		if (cameraNum <= 0)
 		{
 			IsCameraUSB(false, QString(""), -1);
@@ -311,7 +316,7 @@ bool AngstrongDemo::InitCamera()
 		char camName[100];
 		for (int i = 0; i < cameraNum; i++)
 		{
-			CCameraDS::CameraName(i, camName, 100);
+			camerads.CameraName(i, camName, 100);
 			std::string cN(camName);
 			if (cN.find("UVC") != std::string::npos)
 			{

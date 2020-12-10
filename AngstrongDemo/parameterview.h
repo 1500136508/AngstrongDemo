@@ -40,6 +40,7 @@ private:
 	void BuildConnect();
 private:
 	int current_camera_index_;
+	ECameraStatus current_camera_status_ = ECameraStatus_Unknow;
 };
 
 #endif // PARAMETERVIEW_H
