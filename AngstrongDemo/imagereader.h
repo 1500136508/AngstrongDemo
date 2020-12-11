@@ -126,6 +126,7 @@ private:
 	//display mode
 	EDisplayMode image_display_mode_ = EDisplayMode_IR_Depth_RGB;
 
+	void CreateHalerThread();
 	void GetRGBImage(BYTE *rgb_image_data);
 	void GetDepthImage(BYTE *depth_image_data);
 	void GetIRImage(BYTE *ir_image_data);

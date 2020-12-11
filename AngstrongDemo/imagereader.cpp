@@ -82,6 +82,7 @@ imageReader::imageReader(QObject *parent)
 	m_bIsSaveImage = false;//初始化保存数据信号
 	m_MouseX = -1;
 	m_MouseY = -1;
+	CreateHalerThread();
 }
 
 imageReader::~imageReader()
@@ -206,6 +207,11 @@ void imageReader::Stop()
 {
 	camds->Stop();
 	is_running_ = false;
+}
+
+void imageReader::CreateHalerThread()
+{
+
 }
 
 void imageReader::GetRGBImage(BYTE * rgb_image_data)

@@ -34,4 +34,5 @@ OutputView *OutputView::GetInstance()
 void OutputView::WriteText(QString output_msg)
 {
 	output_view_->ui->textBrowser->append(output_msg);
+	output_view_->ui->textBrowser->moveCursor(QTextCursor::End);
 }
