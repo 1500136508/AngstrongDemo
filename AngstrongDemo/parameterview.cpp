@@ -93,7 +93,6 @@ void ParameterView::on_get_current_camera_id_index_change(int camera_id)
 {
 
 	current_camera_index_ = camera_id;
-	qDebug() << "highlight";
 }
 
 void ParameterView::on_get_current_diplay_mode_index_change(int image_display_mode)

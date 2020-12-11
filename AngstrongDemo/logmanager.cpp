@@ -54,17 +54,22 @@ void LogManager::Write(std::string msg, ELogLevel log_level, ELogType log_type)
 	std::string msg_prefix("");
 	SYSTEMTIME system_time;
 	GetLocalTime(&system_time);
-	if (system_time.wSecond < 10)
+	if (system_time.wMinute < 10)
 	{
-		msg_prefix = "[" + std::to_string(system_time.wHour) + ":" + std::to_string(system_time.wMinute)
-			+ ":0" + std::to_string(system_time.wSecond) + "]";
+		msg_prefix = msg_prefix + "[" + std::to_string(system_time.wHour) + ":" + "0" + std::to_string(system_time.wMinute);
 	}
 	else
 	{
-		msg_prefix = "[" + std::to_string(system_time.wHour) + ":" + std::to_string(system_time.wMinute)
-			+ ":" + std::to_string(system_time.wSecond) + "]";
+		msg_prefix = msg_prefix +  "[" + std::to_string(system_time.wHour) + ":" + std::to_string(system_time.wMinute);
 	}
-	
+	if (system_time.wSecond < 10)
+	{
+		msg_prefix = msg_prefix + ":0" + std::to_string(system_time.wSecond) + "]";
+	}
+	else
+	{
+		msg_prefix = msg_prefix + ":" + std::to_string(system_time.wSecond) + "]";
+	}
 
 	switch (log_level)
 	{
@@ -119,7 +124,18 @@ void LogManager::Write(std::string msg, ELogLevel log_level, ELogType log_type)
 		break;
 	}
 	std::cout <<msg_prefix<<"	"<< msg << std::endl;
-	//OutputView::GetInstance()->WriteText(QString::fromStdString(msg_prefix) + QString::fromStdString(msg));
+	static bool text_color_change = false;
+	QString output_msg("");
+	if (!text_color_change)
+	{
+		output_msg = "<font color=\"#000000\">" + QString::fromStdString(msg_prefix) + QString::fromStdString(msg) + "</font>";
+	}
+	else
+	{
+		output_msg = "<font color=\"#008B45\">" + QString::fromStdString(msg_prefix) + QString::fromStdString(msg) + "</font>";
+	}
+	text_color_change = !text_color_change;
+	OutputView::GetInstance()->WriteText(output_msg);
 }
 
 LogManager * LogManager::GetInstance()

@@ -11,6 +11,7 @@
 #include "widgetui.h"
 #include "titlebar.h"
 #include "logmanager.h"
+#include "modelparameter.h"
 
 AngstrongDemo::AngstrongDemo(QWidget *parent)
 	: QMainWindow(parent)
@@ -77,6 +78,16 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	selMainWidget->show();//显示QWidge 最后添加
 	QDesktopWidget* desktop = QApplication::desktop();
 	selMainWidget->move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2);//居中显示
+
+	if (!ModelParameter::IsOpen())
+	{
+		if (!ModelParameter::Open("model/parameter.ini"))
+		{
+			std::string msg = "failed to open model parameter!";
+			LogManager::Write(msg);
+		}
+	}
+	m_ParamView.on_get_current_diplay_mode_index_change(ModelParameter::get_int_value("AngstrongDemo", "image_display_mode"));
 }
 
 AngstrongDemo::~AngstrongDemo()
@@ -320,9 +331,9 @@ bool AngstrongDemo::InitCamera()
 			std::string cN(camName);
 			if (cN.find("UVC") != std::string::npos)
 			{
-				IsCameraUSB(true, QString::fromStdString(cN) + QString::number(i), i);
+				IsCameraUSB(true, QString::fromStdString(cN), i);
 				++m_sCameraDeviceIndex;
-				m_mpCameraDevice.insert({ QString::fromStdString(cN)+QString::number(i), i });
+				m_mpCameraDevice.insert({ QString::fromStdString(cN), i });
 			}
 		}
 		bReturn = true;
