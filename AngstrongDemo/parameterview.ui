@@ -32,6 +32,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="m_lab_port_title">
+         <property name="text">
+          <string>ComNo:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="m_lab_display_mode_title">
          <property name="maximumSize">
           <size>
@@ -50,6 +57,9 @@
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QComboBox" name="m_combo_camera_list"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="m_combo_port"/>
        </item>
        <item>
         <widget class="QComboBox" name="m_combo_display_mode"/>

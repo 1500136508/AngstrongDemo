@@ -15,6 +15,7 @@
 #include "savedata.h"
 #include "displayview.h"
 #include "xmview.h"
+#include "setupview.h"
 
 class AngstrongDemo : public QMainWindow
 {
@@ -23,6 +24,7 @@ class AngstrongDemo : public QMainWindow
 public:
     AngstrongDemo(QWidget *parent = Q_NULLPTR);
 	virtual ~AngstrongDemo();
+
 protected:
 	//Only Qt Framework
 	void mousePressEvent(QMouseEvent *) override;
@@ -37,6 +39,7 @@ private:
 	void AddToolBar();
 	void BuildConnect();
 	bool InitCamera();
+	std::string GetVesion();
 
 	//CameraUSB Device
 	void registerDevice();
@@ -44,6 +47,10 @@ private:
 	void DestroyImageView(int nIndex);
 private slots:
 	void ShowImageView(QString qstrUSBName, int nIndex);
+	void on_open_triggered();
+	void on_save_triggered();
+	void on_setup_triggered();
+	void on_about_trrigered();
 signals:
 	void IsCameraUSB(bool bUSB, QString qstrUSBName, int nIndex);
 private:
@@ -53,10 +60,10 @@ private:
 	std::map<QString,std::pair<unsigned, ImageView*>> m_mpImageView;
 	CameraView m_CameraView;
 	ParameterView m_ParamView;
-	OutputView m_OutputView;
 	SaveData m_SaveData;
 	DisplayView m_DispView;
 	XMView m_XMView;
+	SetupView setup_view_;
 
 	std::map<QString, unsigned> m_mpCameraDevice;
 	std::map<QString, USBDevice> usbDeviceMap;             //用来存储U盘信息的Map

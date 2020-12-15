@@ -11,6 +11,7 @@
 #include <ml.hpp>
 #include "utilimage.hpp"
 #include "../dense_tencent/dsense_interface.h"
+#include "logmanager.h"
 
 cv::Mat K_rgb = cv::Mat::zeros(3,3,CV_32FC1);
 cv::Mat R = cv::Mat::zeros(3,3,CV_32FC1);
@@ -82,6 +83,7 @@ imageReader::imageReader(QObject *parent)
 	m_bIsSaveImage = false;//初始化保存数据信号
 	m_MouseX = -1;
 	m_MouseY = -1;
+	CreateHalerThread();
 }
 
 imageReader::~imageReader()
@@ -142,6 +144,7 @@ bool imageReader::OpenCamera(int camera_index)
 	bool bReturn = false;
 	do
 	{
+		CloseCamera();
 		if (!camds->isOpened())
 		{
 			if (!camds->OpenCamera(camera_index, frameWidth, 480, true))
@@ -151,8 +154,12 @@ bool imageReader::OpenCamera(int camera_index)
 #endif
 				break;
 			}
+			for (int i = 0; i < 3; i++)
+			{
+				container[i] = cv::Mat(cv::Size(frameHeightRGB, frameWidthRGB), CV_8UC3);
+			}
+
 			camds->SetCallBack(this);
-			Live();
 		}
 
 		bReturn = true;
@@ -203,20 +210,42 @@ void imageReader::Stop()
 	is_running_ = false;
 }
 
+void imageReader::CreateHalerThread()
+{
+
+}
+
 void imageReader::GetRGBImage(BYTE * rgb_image_data)
 {
 	try
 	{
 		uchar* ptr = rgb_image_data + frameHeight * frameWidth * 2;
+		if (!ptr)
+		{
+			LogManager::Write("ptr is nll!");
+			return;
+		}
 		cv::Mat rgbyuv(cv::Size(frameWidthRGB, frameHeightRGB), CV_8U, ptr);
+		if (rgbyuv.empty())
+		{
+			LogManager::Write("rgbyuv is empty!");
+			return;
+		}
 		RGBFrame = cv::imdecode(rgbyuv, CV_LOAD_IMAGE_COLOR);
+		if (RGBFrame.empty())
+		{
+			LogManager::Write("RGBFrame is empty!");
+			return;
+		}
 		cv::transpose(RGBFrame, RGBFrame);
 		cv::flip(RGBFrame, RGBFrame, 0);
 		cv::flip(RGBFrame, RGBFrame, -1);
 		RGBFrame.copyTo(container[2]);
 	}
-	catch (...)
+	catch (cv::Exception &e)
 	{
+		std::string err_msg = e.what();
+		LogManager::Write("Failed to Grab RGB Image!");
 		return;
 	}
 }
@@ -255,6 +284,7 @@ void imageReader::GetDepthImage(BYTE * depth_image_data)
 	catch (cv::Exception &e)
 	{
 		std::string err_msg = e.what();
+		LogManager::Write("Failed to Grab Depth Image!");
 		return;
 	}
 }
@@ -294,6 +324,7 @@ void imageReader::GetIRImage(BYTE * ir_image_data)
 	catch (cv::Exception &e)
 	{
 		std::string err_msg = e.what();
+		LogManager::Write("Failed to Grab IR Image!");
 		return;
 	}
 }
@@ -530,6 +561,11 @@ void imageReader::set_image_display_mode(EDisplayMode image_display_mode)
 EDisplayMode imageReader::get_image_display_mode() const
 {
 	return image_display_mode_;
+}
+
+bool imageReader::CameraIsStillHere()
+{
+	return camds->CameraStillHere();
 }
 
 void imageReader::readpdData()

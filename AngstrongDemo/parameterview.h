@@ -2,6 +2,7 @@
 #define PARAMETERVIEW_H
 
 #include <QDialog>
+#include <mutex>
 #include "definition_camera.h"
 
 namespace Ui {
@@ -16,6 +17,7 @@ public:
     explicit ParameterView(QWidget *parent = nullptr);
     ~ParameterView();
 
+	void FindAllPort();
 public slots:
 	void on_open_clicked();
 	void on_close_clicked();
@@ -34,12 +36,17 @@ signals:
 	void SendCameraStatus(ECameraStatus eStatus,int camera_index);
 	void SendCreateAvgArea(int nIndex, bool bIsCreate);
 	void SendImageDisplayMode(EDisplayMode image_display_mode);
+	void SendXMData(QString read_data);
 private:
     Ui::ParameterView *ui;
 
 	void BuildConnect();
+	void CreateHalerThread();
 private:
 	int current_camera_index_;
+	ECameraStatus current_camera_status_ = ECameraStatus_Unknow;
+	std::mutex mutex_;
+	bool quite_program_ = false;
 };
 
 #endif // PARAMETERVIEW_H

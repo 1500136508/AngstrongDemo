@@ -45,6 +45,7 @@ CCameraDS::CCameraDS()
     m_bConnected = m_bLock = m_bChanged = false;
     m_nWidth = m_nHeight = 0;
     m_nBufferSize = 0;
+	camera_id_ = 0;
 
     m_pFrame = NULL;
 
@@ -65,6 +66,19 @@ CCameraDS::CCameraDS()
 
 CCameraDS::~CCameraDS()
 {
+	if (imoniker_video_)
+	{
+		imoniker_video_->Release();
+		imoniker_video_ = nullptr;
+	}
+	for (size_t i = 0; i < 10; ++i)
+	{
+		if (imoniker_container[i])
+		{
+			imoniker_container[i]->Release();
+			imoniker_container[i] = nullptr;
+		}
+	}
     CloseCamera();
     CoUninitialize();
 
@@ -327,6 +341,11 @@ bool CCameraDS::OpenCamera(int nCamID, int nWidth, int nHeight, bool isYUV2)
 		pEnum = NULL;
 		//hr = m_pDeviceFilter->QueryInterface(&m_pCameraControl);
 		//hr = m_pDeviceFilter->QueryInterface(&m_pVideoProAmp);
+		FindDevice();
+		if (imoniker_container[nCamID])
+		{
+			imoniker_video_ = imoniker_container[nCamID];
+		}
 		return true;
 	}
 	catch (...)
@@ -497,6 +516,93 @@ bool CCameraDS::OpenCamera(std::string pid, std::string vid, int nWidth, int nHe
     hr = m_pDeviceFilter->QueryInterface(&m_pVideoProAmp);
 
     return true;
+}
+
+bool CCameraDS::FindDevice()
+{
+	bool bReturn = false;
+	do 
+	{
+		UINT    uIndex = -1;
+		HRESULT hr;
+		is_camera_stiil_here_ = false;
+		// enumerate all video capture devices
+		ICreateDevEnum *pCreateDevEnum = 0;
+		hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER,
+			IID_ICreateDevEnum, (void**)&pCreateDevEnum);
+		if (hr != NOERROR)
+		{
+			std::string msg = "Error Creating Device Enumerator";
+			break;
+		}
+
+		IEnumMoniker *pEm = 0;
+		hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEm, 0);
+		if (hr != NOERROR)
+		{
+			std::string msg = "Sorry, you have no video capture hardware.\r\n\r\n";
+			/*for (size_t i = 0; i < 10; ++i)
+			{
+				if (imoniker_container[i])
+				{
+					imoniker_container[i]->Release();
+					imoniker_container[i] = nullptr;
+				}
+			}*/
+			/*if (imoniker_video_)
+			{
+				imoniker_video_->Release();
+				imoniker_video_ = nullptr;
+			}*/
+			break;
+		}
+
+		pEm->Reset();
+		ULONG cFetched;
+		IMoniker *pM;
+
+		while (hr = pEm->Next(1, &pM, &cFetched), hr == S_OK)
+		{
+			imoniker_container[uIndex+1] = pM;
+			IPropertyBag *pBag = 0;
+
+			hr = pM->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pBag);
+			if (SUCCEEDED(hr))
+			{
+				VARIANT var;
+				var.vt = VT_BSTR;
+				hr = pBag->Read(L"FriendlyName", &var, NULL);
+				if (hr == NOERROR)
+				{
+					if (imoniker_video_ != nullptr && (S_OK == imoniker_video_->IsEqual(pM)))
+					{
+						camera_id_ = uIndex;
+						is_camera_stiil_here_ = true;
+					}
+					SysFreeString(var.bstrVal);
+					pM->AddRef();
+				}
+				pBag->Release();
+			}
+
+			pM->Release();
+			uIndex++;
+		}
+		pEm->Release();
+		if (!is_camera_stiil_here_)
+		{
+			camera_id_ = 0;
+		}
+
+		bReturn = true;
+	} while (false);
+	return bReturn;
+}
+
+bool CCameraDS::CameraStillHere()
+{
+	bool breturn = FindDevice();
+	return is_camera_stiil_here_;
 }
 
 

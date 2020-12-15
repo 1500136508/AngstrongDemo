@@ -76,6 +76,12 @@
     <Filter Include="Source Files\Sequence">
       <UniqueIdentifier>{e8aba5ef-1b2b-4cea-947c-0ba1eb19cda8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Model">
+      <UniqueIdentifier>{1df1f9c8-f907-47d7-8c72-54805dda5cd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Model">
+      <UniqueIdentifier>{cf599d26-6283-4639-8b52-bff2083fc041}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="AngstrongDemo.qrc">
@@ -161,6 +167,21 @@
     <ClCompile Include="common.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="modelparameter.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="logmanager.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="HalerThread.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumSerial.cpp">
+      <Filter>Source Files\Device\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="setupview.cpp">
+      <Filter>Source Files\FormView</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AngstrongDemo.ui">
@@ -191,6 +212,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="titlebar.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="setupview.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -240,6 +264,9 @@
     <QtMoc Include="savedata.h">
       <Filter>Header Files\Device\Camera</Filter>
     </QtMoc>
+    <QtMoc Include="setupview.h">
+      <Filter>Header Files\FormView</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraDS.h">
@@ -277,6 +304,27 @@
     </ClInclude>
     <ClInclude Include="definition_camera.h">
       <Filter>Header Files\FormView\ImageView</Filter>
+    </ClInclude>
+    <ClInclude Include="modelparameter.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="logmanager.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="HalerThread.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="HalerThreadDefinition.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumSerial.h">
+      <Filter>Header Files\Device\USB</Filter>
+    </ClInclude>
+    <ClInclude Include="definition_thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="definition_save_data.h">
+      <Filter>Header Files\Device\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -447,6 +447,10 @@ void View::ReceiveCreateAvgArea(int nIndex, bool bIsCreate)
 	}
 	else
 	{
+		if (m_vecAvgROI.size() <= 0)
+		{
+			return;
+		}
 		if (m_vecAvgROI[nIndex - 1])
 		{
 			m_vecAvgROI[nIndex - 1]->setROIRect(QRect(0, 0, 0, 0));

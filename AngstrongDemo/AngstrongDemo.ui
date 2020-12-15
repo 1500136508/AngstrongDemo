@@ -23,7 +23,7 @@
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QToolBar" name="mainToolBar">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="allowedAreas">
     <set>Qt::NoToolBarArea</set>
@@ -34,11 +34,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="m_action_new"/>
-   <addaction name="actionOpenCamera"/>
-   <addaction name="actionCloseCamera"/>
-   <addaction name="m_action_undo"/>
-   <addaction name="m_action_redo"/>
+   <addaction name="actionOpenImage"/>
+   <addaction name="actionSaveImage"/>
+   <addaction name="separator"/>
+   <addaction name="actionSetup"/>
+   <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -55,7 +55,7 @@
    </property>
    <widget class="QMenu" name="menu">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="title">
      <string>文件</string>
@@ -63,7 +63,7 @@
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="title">
      <string>窗口</string>
@@ -71,7 +71,7 @@
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="title">
      <string>图像处理</string>
@@ -81,76 +81,52 @@
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
   </widget>
-  <action name="actionOpenCamera">
+  <action name="actionOpenImage">
    <property name="icon">
     <iconset resource="AngstrongDemo.qrc">
      <normaloff>:/AngstrongDemo/image_ico/file/Open.png</normaloff>:/AngstrongDemo/image_ico/file/Open.png</iconset>
    </property>
    <property name="text">
-    <string>OpenCamera</string>
+    <string>OpenImage</string>
    </property>
    <property name="toolTip">
-    <string>打开相机</string>
+    <string>打开tup</string>
    </property>
   </action>
-  <action name="actionCloseCamera">
+  <action name="actionSaveImage">
    <property name="icon">
     <iconset resource="AngstrongDemo.qrc">
      <normaloff>:/AngstrongDemo/image_ico/file/Save.png</normaloff>:/AngstrongDemo/image_ico/file/Save.png</iconset>
    </property>
    <property name="text">
-    <string>CloseCamera</string>
+    <string>SaveImage</string>
    </property>
    <property name="toolTip">
-    <string>关闭相机</string>
+    <string>保存图片</string>
    </property>
   </action>
-  <action name="m_action_new">
+  <action name="actionSetup">
    <property name="icon">
     <iconset resource="AngstrongDemo.qrc">
-     <normaloff>:/AngstrongDemo/image_ico/file/New.png</normaloff>:/AngstrongDemo/image_ico/file/New.png</iconset>
+     <normaloff>:/AngstrongDemo/image_ico/edit/Edit_Option.png</normaloff>:/AngstrongDemo/image_ico/edit/Edit_Option.png</iconset>
    </property>
    <property name="text">
-    <string>New</string>
+    <string>Setup</string>
    </property>
    <property name="toolTip">
-    <string>新建</string>
+    <string>设置</string>
    </property>
   </action>
-  <action name="m_action_undo">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <action name="actionAbout">
    <property name="icon">
     <iconset resource="AngstrongDemo.qrc">
-     <normaloff>:/AngstrongDemo/image_ico/edit/Edit_Cancel.png</normaloff>:/AngstrongDemo/image_ico/edit/Edit_Cancel.png</iconset>
+     <normaloff>:/AngstrongDemo/image_ico/help/Help_Info.png</normaloff>:/AngstrongDemo/image_ico/help/Help_Info.png</iconset>
    </property>
    <property name="text">
-    <string>Undo</string>
+    <string>About</string>
    </property>
    <property name="toolTip">
-    <string>撤销</string>
-   </property>
-  </action>
-  <action name="m_action_redo">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="AngstrongDemo.qrc">
-     <normaloff>:/AngstrongDemo/image_ico/edit/Edit_Resume.png</normaloff>:/AngstrongDemo/image_ico/edit/Edit_Resume.png</iconset>
-   </property>
-   <property name="text">
-    <string>Redo</string>
-   </property>
-   <property name="toolTip">
-    <string>重做</string>
+    <string>版本</string>
    </property>
   </action>
  </widget>

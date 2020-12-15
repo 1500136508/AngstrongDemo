@@ -22,6 +22,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -45,8 +46,10 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <TargetName>Angstrong</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <TargetName>Angstrong</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -115,15 +118,20 @@
     <ClCompile Include="CameraDS.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="displayview.cpp" />
+    <ClCompile Include="EnumSerial.cpp" />
     <ClCompile Include="graphicsrectitem.cpp" />
+    <ClCompile Include="HalerThread.cpp" />
     <ClCompile Include="imageitem.cpp" />
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
     <ClCompile Include="imagescene.cpp" />
+    <ClCompile Include="logmanager.cpp" />
+    <ClCompile Include="modelparameter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
     <ClCompile Include="SampleGrabberCallback.cpp" />
     <ClCompile Include="savedata.cpp" />
+    <ClCompile Include="setupview.cpp" />
     <ClCompile Include="titlebar.cpp" />
     <ClCompile Include="usbdevice.cpp" />
     <ClCompile Include="View.cpp" />
@@ -142,6 +150,7 @@
     <QtUic Include="outputview.ui" />
     <QtUic Include="parameterview.ui" />
     <QtUic Include="savedata.ui" />
+    <QtUic Include="setupview.ui" />
     <QtUic Include="titlebar.ui" />
     <QtUic Include="widgetui.ui" />
     <QtUic Include="xmview.ui" />
@@ -178,9 +187,17 @@
     <QtMoc Include="graphicsrectitem.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="definition_camera.h" />
+    <ClInclude Include="definition_save_data.h" />
+    <ClInclude Include="definition_thread.h" />
+    <ClInclude Include="EnumSerial.h" />
+    <ClInclude Include="HalerThread.h" />
+    <ClInclude Include="HalerThreadDefinition.h" />
+    <ClInclude Include="logmanager.h" />
+    <ClInclude Include="modelparameter.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="titlebar.h" />
     <ClInclude Include="SampleGrabberCallback.h" />
+    <QtMoc Include="setupview.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />

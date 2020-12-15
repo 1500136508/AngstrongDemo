@@ -44,6 +44,7 @@ public:
 	void SetSaveImageStatus(bool bIsSaveImage);
 	void set_image_display_mode(EDisplayMode image_display_mode);
 	EDisplayMode get_image_display_mode()const;
+	bool CameraIsStillHere();
 	void release();
 
 	float fx = 0;
@@ -125,6 +126,7 @@ private:
 	//display mode
 	EDisplayMode image_display_mode_ = EDisplayMode_IR_Depth_RGB;
 
+	void CreateHalerThread();
 	void GetRGBImage(BYTE *rgb_image_data);
 	void GetDepthImage(BYTE *depth_image_data);
 	void GetIRImage(BYTE *ir_image_data);

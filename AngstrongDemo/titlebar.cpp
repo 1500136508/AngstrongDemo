@@ -73,7 +73,7 @@ bool TitleBar::eventFilter(QObject * obj, QEvent * event)
 		QWidget *pWidget = qobject_cast<QWidget *>(obj);
 		if (pWidget)
 		{
-			ui->m_lab_title->setText(pWidget->windowTitle());
+			//ui->m_lab_title->setText(pWidget->windowTitle());
 			return true;
 		}
 	}
