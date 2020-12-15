@@ -167,9 +167,6 @@
     <ClCompile Include="common.cpp">
       <Filter>Source Files\Device\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="setupview.cpp">
-      <Filter>Source Files\FormView\ImageView</Filter>
-    </ClCompile>
     <ClCompile Include="modelparameter.cpp">
       <Filter>Source Files\Model</Filter>
     </ClCompile>
@@ -178,6 +175,12 @@
     </ClCompile>
     <ClCompile Include="HalerThread.cpp">
       <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumSerial.cpp">
+      <Filter>Source Files\Device\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="setupview.cpp">
+      <Filter>Source Files\FormView</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -313,6 +316,15 @@
     </ClInclude>
     <ClInclude Include="HalerThreadDefinition.h">
       <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumSerial.h">
+      <Filter>Header Files\Device\USB</Filter>
+    </ClInclude>
+    <ClInclude Include="definition_thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="definition_save_data.h">
+      <Filter>Header Files\Device\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -111,5 +111,11 @@ void SetupView::Save()
 void SetupView::on_save_parameter_clicked()
 {
 	Save();
-	QMessageBox::information(NULL, "AngstrongDemo", "参数保存成功！", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+	QMessageBox message_box;
+	message_box.setStyleSheet(stylesheet);
+	message_box.setWindowTitle("设置");
+	message_box.setWindowIcon(QIcon("camera.ico"));
+	message_box.setInformativeText("参数保存成功！");
+	//message_box.setInformativeText(NULL, "参数设置", "参数保存成功！", QMessageBox::Yes, QMessageBox::Yes);
+	message_box.exec();
 }

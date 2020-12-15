@@ -6,8 +6,8 @@
 #include <highgui.hpp>
 #include <imgproc.hpp>
 #include "imageview.h"
-#include "savedata.h"
 #include "logmanager.h"
+#include "definition_save_data.h"
 
 ImageView::ImageView(QWidget *parent) :
     QDialog(parent),
@@ -364,12 +364,12 @@ void ImageView::SaveImageThread()
 
 				switch (m_nMode)
 				{
-				case SaveData::ESaveMode_3Pix:
+				case EGrabMode_3Pix:
 				{
 					//doing something.........
 				}
 				break;
-				case SaveData::ESaveMode_4Pix:
+				case EGrabMode_4Pix:
 				{
 					//±£¥Êµ„‘∆Õº
 					QString qstrSavePath_CloudPoint = m_qstrSavePath + "//pointcloud//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".txt";

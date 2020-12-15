@@ -1,5 +1,4 @@
 #pragma execution_character_set("utf-8")
-
 #include <windows.h>
 #include <QDebug>
 #include <dbt.h>
@@ -7,6 +6,7 @@
 #include <QPalette>
 #include <QString>
 #include <QDesktopWidget>
+#include <QMessageBox>
 #include "AngstrongDemo.h"
 #include "widgetui.h"
 #include "titlebar.h"
@@ -178,6 +178,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 				Sleep(50);
 				LogManager::Write("检测到插入相机");
 				InitCamera();
+				m_ParamView.FindAllPort();
 				PDEV_BROADCAST_DEVICEINTERFACE pDevInf = (PDEV_BROADCAST_DEVICEINTERFACE)lpdb;
 				QString strname = QString::fromWCharArray(pDevInf->dbcc_name);
 				//对U盘信息进行提取
@@ -238,6 +239,7 @@ bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, lo
 					emit m_pMainImageView->SendCameraStatus(ECameraStatus_Close);
 				}
 				InitCamera();//检查camera
+				m_ParamView.FindAllPort();
 				PDEV_BROADCAST_DEVICEINTERFACE pDevInf = (PDEV_BROADCAST_DEVICEINTERFACE)lpdb;
 				QString strname = QString::fromWCharArray(pDevInf->dbcc_name);
 				//对U盘信息进行提取
@@ -329,17 +331,25 @@ bool AngstrongDemo::InitCamera()
 		{
 			camerads.CameraName(i, camName, 100);
 			std::string cN(camName);
-			if (cN.find("UVC") != std::string::npos)
+			IsCameraUSB(true, QString::fromStdString(cN), i);
+			++m_sCameraDeviceIndex;
+			m_mpCameraDevice.insert({ QString::fromStdString(cN), i });
+			/*if (cN.find("UVC") != std::string::npos)
 			{
 				IsCameraUSB(true, QString::fromStdString(cN), i);
 				++m_sCameraDeviceIndex;
 				m_mpCameraDevice.insert({ QString::fromStdString(cN), i });
-			}
+			}*/
 		}
 		bReturn = true;
 	} while (false);
 
 	return bReturn;
+}
+
+std::string AngstrongDemo::GetVesion()
+{
+	return "V01b02_20201214";
 }
 
 void AngstrongDemo::CreateDockWindow()
@@ -431,10 +441,12 @@ void AngstrongDemo::BuildConnect()
 	connect(m_pMainImageView->m_pCamera, SIGNAL(SendLocationDepth(int, int, float)), &m_DispView, SLOT(ReceiveLocationDepth(int, int, float)));
 	connect(m_pMainImageView->ui->m_gView_ImageView, SIGNAL(SendImageGray(int, int, int)), &m_DispView, SLOT(ReceiveImageGray(int, int, int)));
 	connect(m_pMainImageView->m_pCamera, SIGNAL(SendAvgDepth(float,float)), &m_DispView, SLOT(ReceiveAvgDepth(float, float)));
+	connect(&m_ParamView, SIGNAL(SendXMData(QString)), &m_DispView, SLOT(ReceiveXMData(QString)));
 
 	connect(ui.actionSetup, SIGNAL(triggered()), this, SLOT(on_setup_triggered()));
 	connect(ui.actionOpenImage, SIGNAL(triggered()), this, SLOT(on_open_triggered()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(on_save_triggered()));
+	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(on_about_trrigered()));
 }
 
 void AngstrongDemo::registerDevice()
@@ -510,6 +522,16 @@ void AngstrongDemo::on_save_triggered()
 void AngstrongDemo::on_setup_triggered()
 {
 	setup_view_.show();
+}
+
+void AngstrongDemo::on_about_trrigered()
+{
+	QMessageBox message_box;
+	message_box.setStyleSheet(stylesheet);
+	message_box.setWindowTitle("版本");
+	message_box.setWindowIcon(QIcon("camera.ico"));
+	message_box.setInformativeText(QString::fromStdString(GetVesion()));
+	message_box.exec();
 }
 
 void AngstrongDemo::ShowImageView(QString qstrName,int nIndex)

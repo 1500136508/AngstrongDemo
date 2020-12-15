@@ -9,14 +9,8 @@
 #include "ui_xmview.h"
 #include "logmanager.h"
 #include "HalerThread.h"
-
+#include "definition_thread.h"
 #define HOLDER_OTP_SIZE 512
-
-enum EThreadSequence
-{
-	EThreadSequence_pContext_ReadCommand = 0,
-	EThreadSequence_Count,
-};
 
 XMView::XMView(QWidget *parent) :
     QDialog(parent),
@@ -38,7 +32,7 @@ XMView::~XMView()
     delete ui;
 	quite_program = true;
 	Sleep(500);
-	CHalerThread::Terminate(EThreadSequence_pContext_ReadCommand);
+	CHalerThread::Terminate(EThreadSequence_pContext_XM_ReadCommand);
 }
 
 void XMView::on_choose_clicked()
@@ -133,12 +127,12 @@ void XMView::on_upload_cliecked()
 
 void XMView::on_write_command_clicked()
 {
-	CHalerThread::Resume(EThreadSequence_pContext_ReadCommand);
+	CHalerThread::Resume(EThreadSequence_pContext_XM_ReadCommand);
 }
 
 void XMView::on_read_command_clicked()
 {
-	CHalerThread::Suspend(EThreadSequence_pContext_ReadCommand);
+	CHalerThread::Suspend(EThreadSequence_pContext_XM_ReadCommand);
 }
 
 void XMView::BuildConnect()
@@ -177,24 +171,24 @@ void XMView::CreateHalerThread()
 				continue;
 			}
 
-			std::string write_info("");
-			std::string read_info("");
+			std::string write_info("Failed to write data!");
+			std::string read_info("Failed to read data!");
 			std::string write_command = ui->m_lineEdit_write_command->text().toStdString();
 			std::string read_command = ui->m_lineEdit_read_command->text().toStdString();
 			cc.write_comm(write_command, write_info);
 			cc.write_comm(read_command, read_info);
 			if (ui->m_checkBox_dispaly_write_data->isChecked())
 			{
-				LogManager::Write("write:"+write_info);
+				LogManager::Write(write_info);
 			}
 			if (ui->m_checkBox_display_read_data->isChecked())
 			{
-				LogManager::Write("read:"+read_info);
+				LogManager::Write(read_info);
 			}
 			cc.close_comm();
 			locker.unlock();
 			Sleep(2);
 		}
 	};
-	CHalerThread::Run(pContext_ReadCommand, EThreadSequence_pContext_ReadCommand,true);
+	CHalerThread::Run(pContext_ReadCommand, EThreadSequence_pContext_XM_ReadCommand,true);
 }

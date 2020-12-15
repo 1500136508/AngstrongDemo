@@ -39,6 +39,7 @@ private:
 	void AddToolBar();
 	void BuildConnect();
 	bool InitCamera();
+	std::string GetVesion();
 
 	//CameraUSB Device
 	void registerDevice();
@@ -49,6 +50,7 @@ private slots:
 	void on_open_triggered();
 	void on_save_triggered();
 	void on_setup_triggered();
+	void on_about_trrigered();
 signals:
 	void IsCameraUSB(bool bUSB, QString qstrUSBName, int nIndex);
 private:

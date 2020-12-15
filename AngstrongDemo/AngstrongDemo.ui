@@ -38,6 +38,7 @@
    <addaction name="actionSaveImage"/>
    <addaction name="separator"/>
    <addaction name="actionSetup"/>
+   <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -114,6 +115,18 @@
    </property>
    <property name="toolTip">
     <string>设置</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="AngstrongDemo.qrc">
+     <normaloff>:/AngstrongDemo/image_ico/help/Help_Info.png</normaloff>:/AngstrongDemo/image_ico/help/Help_Info.png</iconset>
+   </property>
+   <property name="text">
+    <string>About</string>
+   </property>
+   <property name="toolTip">
+    <string>版本</string>
    </property>
   </action>
  </widget>

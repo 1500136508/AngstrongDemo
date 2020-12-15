@@ -1,8 +1,16 @@
+#pragma execution_character_set("utf-8")
 #include "parameterview.h"
 #include "ui_parameterview.h"
+#include <windows.h>
+#include <iterator>
+#include <tchar.h>
 #include <QDebug>
 #include <logmanager.h>
 #include "modelparameter.h"
+#include "HalerThread.h"
+#include "otp_interface.h"
+#include "EnumSerial.h"
+#include "definition_thread.h"
 
 ParameterView::ParameterView(QWidget *parent) :
     QDialog(parent),
@@ -31,11 +39,16 @@ ParameterView::ParameterView(QWidget *parent) :
 		}
 	}
 	ui->m_combo_display_mode->setCurrentIndex(ModelParameter::get_int_value("AngstrongDemo","image_display_mode"));
+	FindAllPort();
+	CreateHalerThread();
 }
 
 ParameterView::~ParameterView()
 {
     delete ui;
+	quite_program_ = true;
+	Sleep(500);
+	CHalerThread::Terminate(EThreadSequence_pContext_ReadCommand);
 }
 
 void ParameterView::on_open_clicked()
@@ -127,6 +140,7 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 		ui->m_btn_live->setEnabled(true);
 		ui->m_btn_pause->setEnabled(true);
 		ui->m_btn_stop->setEnabled(true);
+		CHalerThread::Resume(EThreadSequence_pContext_ReadCommand);
 	}
 		break;
 	case ECameraStatus_Close:
@@ -137,6 +151,7 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 		ui->m_btn_pause->setEnabled(false);
 		ui->m_btn_stop->setEnabled(false);
 		current_camera_status_ = ECameraStatus_Close;
+		CHalerThread::Suspend(EThreadSequence_pContext_ReadCommand);
 	}
 		break;
 	case ECameraStatus_Live:
@@ -169,6 +184,7 @@ void ParameterView::ReceiveCameraStatus(ECameraStatus eStatus)
 
 void ParameterView::ReceiveAddCameraUSBString(bool bUSB, QString qstrUSBName, int nIndex)
 {
+	//std::unique_lock<std::mutex> locker(mutex_);
 	if (bUSB)
 	{
 		ui->m_combo_camera_list->addItem(qstrUSBName);
@@ -185,6 +201,7 @@ void ParameterView::ReceiveAddCameraUSBString(bool bUSB, QString qstrUSBName, in
 			ui->m_combo_camera_list->clear();
 		}
 	}
+	//locker.unlock();
 }
 
 void ParameterView::BuildConnect()
@@ -201,4 +218,83 @@ void ParameterView::BuildConnect()
 	connect(ui->m_btn_cancel_roi_02, SIGNAL(clicked()), this, SLOT(on_cancelroi02_clicked()));
 	connect(ui->m_combo_camera_list, SIGNAL(currentIndexChanged(int)), this, SLOT(on_get_current_camera_id_index_change(int)));
 	bool ret = connect(ui->m_combo_display_mode, SIGNAL(currentIndexChanged(int)), this, SLOT(on_get_current_diplay_mode_index_change(int)));
+}
+
+void ParameterView::FindAllPort()
+{
+	ui->m_combo_port->clear();
+	std::vector<SSerInfo> port_container;
+	port_container.clear();
+	EnumSerialPorts(port_container);
+	for (size_t sz = 0; sz < port_container.size(); ++sz)
+	{
+		auto start_position = port_container.at(sz).strFriendlyName.find("(");
+		auto end_position = port_container.at(sz).strFriendlyName.find(")");
+		auto iter_b = port_container.at(sz).strFriendlyName.cbegin()+ start_position;
+		auto iter_e = port_container.at(sz).strFriendlyName.cbegin() + end_position;
+
+		std::string port_no_name(iter_b+1,iter_e);
+		ui->m_combo_port->addItem(QString::fromStdString(port_no_name));
+	}
+	if (port_container.size() > 0)
+	{
+		ui->m_combo_port->setCurrentIndex(0);
+	}
+}
+
+void ParameterView::CreateHalerThread()
+{
+	CreateHalerThreadContext(pContext_ReadCommand)
+	{
+		while (!quite_program_)
+		{
+			int nCom = 0;
+			std::string log_msg_("");
+			//std::unique_lock<std::mutex> locker(mutex_);
+			com_controler cc;
+			std::string port_name = ui->m_combo_port->currentText().toStdString();
+			if (port_name.empty())
+			{
+				log_msg_ = "[paramterview] fail to select the port!";
+				//LogManager::Write(log_msg_);
+				emit SendXMData("--");
+				//locker.unlock();
+				continue;
+			}
+			int M_position = port_name.find("M");
+			auto iter_b = port_name.cbegin() + M_position+1;
+			auto iter_e = port_name.cend();
+			std::string port_no(iter_b, iter_e);
+			nCom = std::stoi(port_no);
+			if (cc.init_comm(nCom) != 0)
+			{
+				log_msg_ = "[paramterview] fail to open the port!";
+				//LogManager::Write(log_msg_);
+				emit SendXMData("error");
+				//locker.unlock();
+				continue;
+			}
+
+			std::string write_info("Failed to write data!");
+			std::string read_info("Failed to read data!");
+			std::string write_command = "ARG WRITE:DIST=1";
+			std::string read_command = "ARG READ:DIST";
+			cc.write_comm(write_command, write_info);
+			cc.write_comm(read_command, read_info);
+			int find_error_position = read_info.find("error");
+			if (find_error_position != -1)
+			{
+				emit SendXMData("error");
+				//locker.unlock();
+				continue;
+			}
+			std::size_t find_position = read_info.find("=");
+			int read_return_data = read_info.at(find_position + 1) - '0';
+			emit SendXMData(QString::number(read_return_data));
+			//LogManager::Write(read_info);
+			cc.close_comm();
+			//locker.unlock();
+		}
+	};
+	CHalerThread::Run(pContext_ReadCommand, EThreadSequence_pContext_ReadCommand, true);
 }
