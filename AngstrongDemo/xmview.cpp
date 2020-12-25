@@ -177,6 +177,7 @@ void XMView::CreateHalerThread()
 			std::string read_command = ui->m_lineEdit_read_command->text().toStdString();
 			cc.write_comm(write_command, write_info);
 			cc.write_comm(read_command, read_info);
+
 			if (ui->m_checkBox_dispaly_write_data->isChecked())
 			{
 				LogManager::Write(write_info);
