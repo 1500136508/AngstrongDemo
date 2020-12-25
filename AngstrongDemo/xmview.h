@@ -20,6 +20,7 @@ private slots:
 	void on_upload_cliecked();
 	void on_write_command_clicked();
 	void on_read_command_clicked();
+	void ReceiveSN(QString sn);
 private:
 	void BuildConnect();
 	void CreateHalerThread();

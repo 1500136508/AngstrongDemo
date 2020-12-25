@@ -19,9 +19,13 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 	registerDevice();//注册USB检测事件
 	ui.setupUi(this);
 	//初始化
+	sn_ = "";
 	m_mpImageView.clear();
 	m_pMainImageView = nullptr;
 	m_pMainImageView = new ImageView();
+
+	sn_thread_ = new std::thread(&AngstrongDemo::CheckSNThread, this);
+	sn_thread_->detach();
 
 	setCentralWidget(m_pMainImageView);
 	CreateDockWindow();
@@ -92,6 +96,12 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 AngstrongDemo::~AngstrongDemo()
 {
+	is_quite_program_ = true;
+	if (sn_thread_)
+	{
+		delete sn_thread_;
+		sn_thread_ = nullptr;
+	}
 	if (!m_mpImageView.empty())
 	{
 		for (auto mp : m_mpImageView)
@@ -130,6 +140,13 @@ void AngstrongDemo::mouseReleaseEvent(QMouseEvent *event)
 void AngstrongDemo::mouseDoubleClickEvent(QMouseEvent * event)
 {
 	
+}
+
+void AngstrongDemo::keyPressEvent(QKeyEvent * keyValue)
+{
+	sn_ += keyValue->text();
+	key_press_time_ = clock();
+	is_key_press_ = true;
 }
 
 bool AngstrongDemo::nativeEvent(const QByteArray & eventType, void * message, long * result)
@@ -375,15 +392,15 @@ void AngstrongDemo::CreateDockWindow()
 	m_dock_output->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
 	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
 	m_dock_output->setAllowedAreas(Qt::AllDockWidgetAreas);
-	addDockWidget(Qt::RightDockWidgetArea, m_dock_output);
+	addDockWidget(Qt::BottomDockWidgetArea, m_dock_output);
 	m_dock_output->setWidget(OutputView::GetInstance());
 	//增加SaveData停靠窗口
-	QDockWidget *m_dock_savedata = new QDockWidget(tr("SaveData"));
-	m_dock_savedata->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
-	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
-	m_dock_savedata->setAllowedAreas(Qt::AllDockWidgetAreas);
-	addDockWidget(Qt::RightDockWidgetArea, m_dock_savedata);
-	m_dock_savedata->setWidget(&m_SaveData);
+	//QDockWidget *m_dock_savedata = new QDockWidget(tr("SaveData"));
+	//m_dock_savedata->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	////m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
+	//m_dock_savedata->setAllowedAreas(Qt::AllDockWidgetAreas);
+	//addDockWidget(Qt::RightDockWidgetArea, m_dock_savedata);
+	//m_dock_savedata->setWidget(&m_SaveData);
 	//增加DisplayView停靠窗口
 	QDockWidget *m_dock_display = new QDockWidget(tr("Display"));
 	m_dock_display->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -392,12 +409,12 @@ void AngstrongDemo::CreateDockWindow()
 	addDockWidget(Qt::RightDockWidgetArea, m_dock_display);
 	m_dock_display->setWidget(&m_DispView);
 	//增加XMView停靠窗口
-	QDockWidget *m_dock_xm = new QDockWidget(tr("XM"));
-	m_dock_xm->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
-	//m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
-	m_dock_xm->setAllowedAreas(Qt::AllDockWidgetAreas);
-	addDockWidget(Qt::RightDockWidgetArea, m_dock_xm);
-	m_dock_xm->setWidget(&m_XMView);
+	//QDockWidget *m_dock_xm = new QDockWidget(tr("XM"));
+	//m_dock_xm->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
+	////m_dock_output->setAllowedAreas(/*Qt::LeftDockWidgetArea | */Qt::BottomDockWidgetArea);
+	//m_dock_xm->setAllowedAreas(Qt::AllDockWidgetAreas);
+	//addDockWidget(Qt::RightDockWidgetArea, m_dock_xm);
+	//m_dock_xm->setWidget(&m_XMView);
 	//增加ImageView停靠窗口
 	//QDockWidget *m_dock_imageview = new QDockWidget(tr("ImageView"));
 	//m_dock_imageview->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable); //窗口可移动
@@ -413,9 +430,11 @@ void AngstrongDemo::CreateDockWindow()
 	//}
 
 	//创建窗口布局
-	tabifyDockWidget(m_dock_paramlist, m_dock_savedata);
-	tabifyDockWidget(m_dock_paramlist, m_dock_xm);
-	tabifyDockWidget(m_dock_output, m_dock_display);
+	//tabifyDockWidget(m_dock_paramlist, m_dock_savedata);
+	//tabifyDockWidget(m_dock_paramlist, m_dock_xm);
+	splitDockWidget(m_dock_output, m_dock_display, Qt::Horizontal);
+	splitDockWidget(m_dock_paramlist, m_dock_display, Qt::Vertical);
+	//tabifyDockWidget(m_dock_output, m_dock_display);
 	m_dock_paramlist->raise();//激活显示当前页面
 }
 
@@ -447,6 +466,8 @@ void AngstrongDemo::BuildConnect()
 	connect(ui.actionOpenImage, SIGNAL(triggered()), this, SLOT(on_open_triggered()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(on_save_triggered()));
 	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(on_about_trrigered()));
+
+	connect(this, SIGNAL(SendSN(QString)), &m_XMView, SLOT(ReceiveSN(QString)));
 }
 
 void AngstrongDemo::registerDevice()
@@ -505,6 +526,33 @@ void AngstrongDemo::DestroyImageView(int nIndex)
 			iter->second.second = nullptr;
 			m_mpImageView.erase(iter);
 			break;
+		}
+	}
+}
+
+void AngstrongDemo::CheckSNThread()
+{
+	while (!is_quite_program_)
+	{
+		if (is_key_press_)
+		{
+			if (clock() - key_press_time_ > 100)
+			{
+				if (sn_.isEmpty())
+				{
+					Sleep(3);
+					continue;
+				}
+				emit SendSN(sn_);
+				LogManager::Write("sn=" + sn_.toStdString());
+				sn_.clear();
+				is_key_press_ = false;
+			}
+		}
+		else
+		{
+			Sleep(3);
+			continue;
 		}
 	}
 }

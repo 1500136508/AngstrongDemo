@@ -31,6 +31,7 @@ protected:
 	void mouseMoveEvent(QMouseEvent *) override;
 	void mouseReleaseEvent(QMouseEvent *) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
+	void keyPressEvent(QKeyEvent * keyValue) override;
 
 	bool nativeEvent(const QByteArray & eventType, void * message, long*result) override;
 	bool eventFilter(QObject *object, QEvent *event);//事件过滤器;
@@ -45,6 +46,7 @@ private:
 	void registerDevice();
 	char FirstDriveFromMask(ULONG unitmask);
 	void DestroyImageView(int nIndex);
+	void CheckSNThread();
 private slots:
 	void ShowImageView(QString qstrUSBName, int nIndex);
 	void on_open_triggered();
@@ -53,9 +55,11 @@ private slots:
 	void on_about_trrigered();
 signals:
 	void IsCameraUSB(bool bUSB, QString qstrUSBName, int nIndex);
+	void SendSN(QString sn);
 private:
     Ui::AngstrongDemoClass ui;
 
+	bool is_quite_program_=false;
 	ImageView *m_pMainImageView;
 	std::map<QString,std::pair<unsigned, ImageView*>> m_mpImageView;
 	CameraView m_CameraView;
@@ -70,4 +74,8 @@ private:
 	QStringList m_usbList;                                //存储U盘中间信息
 
 	QString stylesheet;							// QSS样式表
+	QString sn_;
+	clock_t key_press_time_;
+	bool is_key_press_;
+	std::thread *sn_thread_;
 };

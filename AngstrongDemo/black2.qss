@@ -52,13 +52,13 @@ QMainWindow{
 	border-radius:1px;
 }
 
-/*QMainWindow::separator{
+QMainWindow::separator{
 	background:#888888;
 	width: 1px;height:1px;margin:0px;padding: 0px;background-color: white;
-}*/
-    QMainWindow::separator:hover {
-        background: #ef2e45;
-    }
+}
+QMainWindow::separator:hover {
+	background:#aaaaaa;
+}
 /*QDialog*/
 QDialog{
 	background:#444444;
@@ -72,12 +72,12 @@ QFrame{
 	border-radius:3px;
 }
 /*tabwidget、TabBar*/
-QTabWidget::pane {
-    border: 1px solid #242424;
-    selection-background-color: #f1d95b;
-    selection-color: #DCDCDC;
-    alternate-background-color: #525252;
-    gridline-color: #242424;
+QTabWidget::pane{
+border:1px solid #242424;
+selection-background-color:#646464;
+selection-color:#DCDCDC;
+alternate-background-color:#525252;
+gridline-color:#242424;
 }
 QTabBar::tab{
 border:1px solid #242424;
@@ -86,11 +86,11 @@ margin:0px;
 min-height:20px;
 background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #646464,stop:1 #525252);
 }
-    QTabBar::tab:selected, QTabBar::tab:hover {
-        border-style: solid;
-        border-color: #00BB9E;
-        background: qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #484848,stop:1 #efae1a); /*#383838*/
-    }
+QTabBar::tab:selected,QTabBar::tab:hover{
+border-style:solid;
+border-color:#00BB9E;
+background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 #484848,stop:1 #383838);
+}
 
 QTabBar::tab:top,QTabBar::tab:bottom{
 padding:3px 8px 3px 8px;
@@ -291,9 +291,6 @@ QRadioButton{
 	border-radius:1px;
 }
 
-QRadioButton:hover {
-        border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
-    }
 QRadioButton::indicator {
     width: 13px;
     height: 13px;
@@ -333,9 +330,6 @@ QCheckBox::indicator {
     width: 15px;
     height: 15px;
 }
-QCheckBox:hover {
-    border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
-}
 /*
 QCheckBox::indicator:unchecked {
     image: url(:/buttonbg/checkbox_normal);
@@ -352,7 +346,6 @@ QCheckBox::indicator:checked {
 QCheckBox::indicator:indeterminate {
     image: url(:/buttonbg/checkbox_indeterminate);
 }*/
-
 /*QToolTip*/
 QToolTip{
 border:0px solid #DCDCDC;
@@ -527,9 +520,6 @@ QLineEdit:disabled,QTextEdit:disabled,QPlainTextEdit:disabled{
 QLineEdit[readOnly="true"],QTextEdit[readOnly="true"],QPlainTextEdit[readOnly="true"]{
 	background:#DDDDDD;
 }
-QLineEdit:hover {
-        border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
-    }
 
 /*QProgressBar*/
 QProgressBar{

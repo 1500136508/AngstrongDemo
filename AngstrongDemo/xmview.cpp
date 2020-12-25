@@ -135,6 +135,46 @@ void XMView::on_read_command_clicked()
 	CHalerThread::Suspend(EThreadSequence_pContext_XM_ReadCommand);
 }
 
+void XMView::ReceiveSN(QString sn)
+{
+	int nCom = 0;
+	if (ui->m_lineEdit_com->text().isEmpty())
+	{
+		ui->m_lab_display_msg->setText("Invalid port number!");
+		log_msg_ = "[xmview] Invalid port number!";
+		LogManager::Write(log_msg_);
+	}
+	else
+	{
+		nCom = ui->m_lineEdit_com->text().toInt();
+	}
+	std::unique_lock<std::mutex> locker(mutex_);
+	com_controler cc;
+	if (cc.init_comm(nCom) != 0)
+	{
+		ui->m_lab_display_msg->setText("fail to open the port!");
+		log_msg_ = "[xmview] fail to open the port!";
+		LogManager::Write(log_msg_);
+	}
+
+	std::string write_info("Failed to write data!");
+	std::string read_info("Failed to read data!");
+	std::string write_command = "ARG WRITE:SN=" + sn.toStdString();
+	std::string read_command = "ARG READ:SN=";
+	cc.write_comm(write_command, write_info);
+	cc.write_comm(read_command, read_info);
+
+	if (ui->m_checkBox_dispaly_write_data->isChecked())
+	{
+		LogManager::Write(write_info);
+	}
+	if (ui->m_checkBox_display_read_data->isChecked())
+	{
+		LogManager::Write(read_info);
+	}
+	cc.close_comm();
+}
+
 void XMView::BuildConnect()
 {
 	connect(ui->m_btn_chose_file, SIGNAL(clicked(bool)), this, SLOT(on_choose_clicked()));
