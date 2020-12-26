@@ -51,7 +51,7 @@ AngstrongDemo::AngstrongDemo(QWidget *parent)
 
 	//¾ÓÖÐÏÔÊ¾
 	QDesktopWidget* desktop = QApplication::desktop();
-	move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2);
+	move((desktop->width() - this->width()) / 2, (desktop->height() - this->height()) / 2+50);
 }
 
 AngstrongDemo::~AngstrongDemo()

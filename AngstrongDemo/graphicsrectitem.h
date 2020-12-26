@@ -1,7 +1,7 @@
 ﻿#ifndef MYGRAPHICCALIPERITEM_H
 #define MYGRAPHICCALIPERITEM_H
 #include <QObject>
-#include <QGraphicsItem>
+#include <QGraphicsRectItem>
 #include <QGraphicsSceneHoverEvent>
 /* 缩放方向 */
 enum EmDirection
@@ -35,12 +35,12 @@ enum EmDirection
 
 class QMenu;
 class QAction;
-class GraphicsRectItem :public QObject, public QGraphicsItem
+class GraphicsRectItem :public QObject, public QGraphicsRectItem
 {
 	Q_OBJECT
 	Q_INTERFACES(QGraphicsItem)
 public:
-	GraphicsRectItem(QGraphicsItem *parent = nullptr);
+	GraphicsRectItem(QGraphicsRectItem *parent = nullptr);
 	~GraphicsRectItem();
 	QRect getRoiRect() const;               //获取已经圈选的框 外部调用
 	void setBackImage(const QImage &img);   //设置背景图片  外部调用

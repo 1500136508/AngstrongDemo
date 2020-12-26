@@ -485,6 +485,7 @@ void View::on_measureRect_clicked()
 		//m_spRect->setRotation(45);
 		m_spRect->setFocus(Qt::MouseFocusReason);
 		m_spScene->addItem(m_spRect.get());
+		m_spRect->setRect(50, 50, 100, 100);
 	}
 }
 

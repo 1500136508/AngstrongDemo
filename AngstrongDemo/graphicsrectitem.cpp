@@ -11,9 +11,10 @@
 
 #pragma execution_character_set("utf-8")//让能够正常显示中文字符串
 
-GraphicsRectItem::GraphicsRectItem(QGraphicsItem *parent)
+GraphicsRectItem::GraphicsRectItem(QGraphicsRectItem *parent)
+	:QGraphicsRectItem(parent)
 {
-	setCursor(Qt::ArrowCursor);   //改变光标形状,手的形状
+	setCursor(Qt::ClosedHandCursor);   //改变光标形状,手的形状
 
 	initViewer();
 	setAcceptHoverEvents(true);
@@ -43,14 +44,27 @@ void GraphicsRectItem::setROIRect(QRect rect)
 
 QRectF GraphicsRectItem::boundingRect() const
 {
-	return QRectF(m_roiRect.x()-1,m_roiRect.y()-1,m_roiRect.width()+1,m_roiRect.height()+1);
+	return m_roiRect.adjusted(-1,-1,1,1);
 }
 
 void GraphicsRectItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
 	/*if (m_backImage.isNull())
 		return;*/
-
+	//Q_UNUSED(option)
+	//Q_UNUSED(widget)//这个宏是用来把不用到的参数注掉的功能
+	//QGraphicsRectItem::paint(painter, option, widget);
+	m_roiRect = rect().toRect();
+	if (mapToScene(m_roiRect.topLeft()).x() < 0)
+	{
+		setPos(0, 0);
+		//m_roiRect = QRect(m_roiRect.center().x()/2,m_roiRect.y(),m_roiRect.width(),m_roiRect.height());
+	}
+	if(mapToScene(m_roiRect.topLeft()).y() < 0)
+	{
+		setPos(0, 0);
+		m_roiRect = QRect(m_roiRect.x(), m_roiRect.center().y()/2, m_roiRect.width(), m_roiRect.height());
+	}
 	QPixmap rawImg = QPixmap::fromImage(m_backImage);
 	QPointF qPointF = mapToScene(m_roiRect.topLeft().x(), m_roiRect.topLeft().y());
 	QString strPoint = QString("X:%0, Y:%1").arg(qPointF.x()).arg(qPointF.y());           //位置信息
@@ -156,7 +170,7 @@ void GraphicsRectItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 
 		//更新界面
 		update();
-		return;
+		//return;
 	}
 
 	//根据鼠标的位置设置当前的鼠标形状
@@ -232,6 +246,7 @@ void GraphicsRectItem::keyPressEvent(QKeyEvent * event)
 	if (event->key() == Qt::Key_Delete)
 	{
 		m_roiRect = QRect(0, 0, 0, 0);
+		setRect(m_roiRect);
 		update();
 	}
 }
@@ -459,6 +474,7 @@ void GraphicsRectItem::scaleRect(const QPoint & mousePoint)
 
 	m_roiRect = newRect;
 	m_moveStartPoint = mousePoint;  //更新鼠标的起始位置
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::paintRect(const QPoint & mousePoint)
@@ -495,6 +511,7 @@ void GraphicsRectItem::paintRect(const QPoint & mousePoint)
 
 	//设置矩形大小 绝对值 避免反方向的产生的负值
 	m_roiRect.setSize(QSize(abs(width), abs(height)));
+	setRect(m_roiRect);
 }
 
 void GraphicsRectItem::moveRect(const QPoint & mousePoint)
@@ -510,4 +527,5 @@ void GraphicsRectItem::moveRect(const QPoint & mousePoint)
 	ret.setSize(m_roiRect.size());
 	m_roiRect = ret;
 	m_moveStartPoint = mousePoint;
+	setRect(m_roiRect);
 }
