@@ -45,6 +45,7 @@ public:
 	QRect getRoiRect() const;               //获取已经圈选的框 外部调用
 	void setBackImage(const QImage &img);   //设置背景图片  外部调用
 	void setROIRect(QRect rect);
+	void setTitle(QString qstrTitle);
 protected:
 	QRectF boundingRect() const override;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
@@ -77,6 +78,7 @@ private:
 	EmDirection m_emCurDir;        //拖动的方向
 
 	QImage m_backImage;            //背景图
+	QString m_qstrTitle;           //标题
 
 	QMenu *m_pOptMenu;
 	QAction *m_pDelAction;

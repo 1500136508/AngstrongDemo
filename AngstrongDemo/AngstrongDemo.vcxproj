@@ -22,6 +22,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -45,15 +46,17 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <TargetName>Angstrong</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <TargetName>Angstrong</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>..\opencv3.4\build\include;..\opencv3.4\build\include\opencv;..\opencv3.4\build\include\opencv2;..\dense_tencent;..\DirectShow\Include;..\AngstrongDemo;..\xmodemV2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;E:\Work\AngstrongDemo\dense_tencent;..\xmodemV2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\opencv3.4\build\x64\vc15\lib;..\dense_tencent;..\xmodemV2;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_world341.lib;dsense.lib;xmodemV2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -113,18 +116,26 @@
     <ClCompile Include="..\xmodemV2\utilcom.c" />
     <ClCompile Include="..\xmodemV2\xmodem.c" />
     <ClCompile Include="CameraDS.cpp" />
+    <ClCompile Include="common.cpp" />
     <ClCompile Include="displayview.cpp" />
+    <ClCompile Include="EnumSerial.cpp" />
     <ClCompile Include="graphicsrectitem.cpp" />
+    <ClCompile Include="HalerThread.cpp" />
     <ClCompile Include="imageitem.cpp" />
     <ClCompile Include="imagepix.cpp" />
     <ClCompile Include="imagereader.cpp" />
     <ClCompile Include="imagescene.cpp" />
-    <ClCompile Include="logwriter.cpp" />
+    <ClCompile Include="logmanager.cpp" />
+    <ClCompile Include="modelparameter.cpp" />
     <ClCompile Include="outputview.cpp" />
     <ClCompile Include="parameterview.cpp" />
+    <ClCompile Include="SampleGrabberCallback.cpp" />
     <ClCompile Include="savedata.cpp" />
+    <ClCompile Include="setupview.cpp" />
+    <ClCompile Include="titlebar.cpp" />
     <ClCompile Include="usbdevice.cpp" />
     <ClCompile Include="View.cpp" />
+    <ClCompile Include="widgetui.cpp" />
     <ClCompile Include="xmview.cpp" />
     <QtRcc Include="AngstrongDemo.qrc" />
     <QtUic Include="AngstrongDemo.ui" />
@@ -139,6 +150,9 @@
     <QtUic Include="outputview.ui" />
     <QtUic Include="parameterview.ui" />
     <QtUic Include="savedata.ui" />
+    <QtUic Include="setupview.ui" />
+    <QtUic Include="titlebar.ui" />
+    <QtUic Include="widgetui.ui" />
     <QtUic Include="xmview.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -166,21 +180,38 @@
     <ClInclude Include="..\xmodemV2\utilcom.h" />
     <ClInclude Include="..\xmodemV2\xmodem.h" />
     <ClInclude Include="CameraDS.h" />
+    <QtMoc Include="widgetui.h" />
     <QtMoc Include="xmview.h" />
     <QtMoc Include="displayview.h" />
     <QtMoc Include="savedata.h" />
     <QtMoc Include="graphicsrectitem.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="definition_camera.h" />
+    <ClInclude Include="definition_save_data.h" />
+    <ClInclude Include="definition_thread.h" />
+    <ClInclude Include="EnumSerial.h" />
+    <ClInclude Include="HalerThread.h" />
+    <ClInclude Include="HalerThreadDefinition.h" />
+    <ClInclude Include="logmanager.h" />
+    <ClInclude Include="modelparameter.h" />
     <ClInclude Include="resource.h" />
+    <QtMoc Include="titlebar.h" />
+    <ClInclude Include="SampleGrabberCallback.h" />
+    <QtMoc Include="setupview.h" />
     <ClInclude Include="usbdevice.h" />
     <QtMoc Include="imagepix.h" />
     <QtMoc Include="imageitem.h" />
     <ClInclude Include="definitionmenu.h" />
     <QtMoc Include="imagereader.h" />
-    <ClInclude Include="logwriter.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="camera.ico" />
     <Image Include="icon1.ico" />
+    <Image Include="image_ico\放大版摄像头.ico" />
     <Image Include="image_ico\放大版摄像头.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Angstrong.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

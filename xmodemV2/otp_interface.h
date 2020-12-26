@@ -6,8 +6,7 @@
 #define TYPE_P 1
 #define TYPE_T 2
 
- class com_controler 
-{
+ class __declspec(dllexport) com_controler {
  private:
 	 st_app app;
 	 u8 buf[64], sum, x;
@@ -35,14 +34,14 @@
 		int &currentVCSEL, int &dutyVCSEL, int &currentINF, int &dutyINF, int &DIST, int &ITOVAL, float &temperature);
 	int get_flash_id(char* flash_id);
 	int upload_data_to_flash(unsigned char* data, int data_lenght);
-	int upload_data_to_flash_test(unsigned char* data, int data_lenght);
+	//int upload_data_to_flash_test(unsigned char* data, int data_lenght);
 	int download_data_from_flash(unsigned char* data, int data_lenght);
 	int upload_data_to_flash_type(unsigned char* data, int data_lenght, int type);
 	//int download_data_from_flash(unsigned char* data, int data_lenght);
 	int sendDataFix(std::string data, std::string want);
 	int close_comm();
 
-
 	int write_comm(std::string com,std::string &info);
+	int readCom(std::string &data, int &datalen, int waitTime);
 	int readUtilWant(std::string want, int waitTime);
 };

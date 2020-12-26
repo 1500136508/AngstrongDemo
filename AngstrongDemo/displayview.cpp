@@ -1,6 +1,7 @@
-#include <QDebug>
 #include "displayview.h"
 #include "ui_displayview.h"
+#include <QPalette>
+#include <QDebug>
 
 DisplayView::DisplayView(QWidget *parent) :
     QDialog(parent),
@@ -19,11 +20,25 @@ void DisplayView::ReceiveImageGray(int r, int g, int b)
 	ui->m_lab_rgb->setText("(R:" + QString::number(r) + " G:" + QString::number(g)+" B:" + QString::number(b)+")");
 }
 
+void DisplayView::ReceiveAvgDepth(float avg0, float avg1)
+{
+	//QString qstrAvgInfo("");
+	ui->m_lab_avg_depth01->setText(QString::number(avg0));
+	ui->m_lab_avg_depth02->setText(QString::number(avg1));
+}
+
+void DisplayView::ReceiveXMData(QString read_data)
+{
+	ui->m_lab_read_data->setText(read_data);
+}
+
 void DisplayView::ReceiveLocationDepth(int x, int y, float depth)
 {
 	QString info;
 	info.sprintf("%.3f", depth);
+#if DEBUG
 	qDebug() << depth;
+#endif
 	ui->m_lab_mouse_xy->setText("X:" + QString::number(x) + " Y:" + QString::number(y));
 	ui->m_lab_depth->setText(info);
 }

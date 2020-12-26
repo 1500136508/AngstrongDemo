@@ -1,3 +1,4 @@
+
 #include "otp_interface.h"
 #include "utilcom.h"
 #include "comm.h"
@@ -413,7 +414,7 @@ int com_controler::get_flash_id(char* flash_id) {
 		while (1)
 		{
 			if (tick_cmp(tmr, 60) == c_ret_ok) break;
-			if (comm_read(&retLen, &app) == c_ret_ok)
+			if (comm_read(&retLen, &app) == c_ret_ok) 
 			{
 				if (__strstr(app.comm.rbuf, reinterpret_cast<const u8*>("dbgrx:ERROR")) != null)
 					return c_ret_nk;
@@ -481,45 +482,45 @@ int com_controler::upload_data_to_flash(unsigned char* data, int data_lenght) {
 	return c_ret_nk;
 }
 
-int com_controler::upload_data_to_flash_test(unsigned char* data, int data_lenght) {
-
-	int ret = c_ret_nk;
-	int retry = 0;
-	comm_rx_clr(&app);
-
-	if (comm_send(reinterpret_cast<u8*>("HimaxBoot"), sizeof("HimaxBoot") - 1, &app) != c_ret_ok) return c_ret_nk;
-	tmr = tick_get();
-	while (1)
-	{
-		if (tick_cmp(tmr, 11000) == c_ret_ok) break;
-		if (comm_read(&retLen, &app) == c_ret_ok) {
-			if (__strstr(app.comm.rbuf, reinterpret_cast<const u8*>("HimaxBoot OK")) != null) {
-				if (comm_send(reinterpret_cast<u8*>("WRITE PARAM START"), sizeof("WRITE PARAM START") - 1, &app) != c_ret_ok) return c_ret_nk;
-				tmr = tick_get();
-				while (1)
-				{
-					if (tick_cmp(tmr, 11000) == c_ret_ok) return c_ret_nk;
-					if (comm_read(&retLen, &app) == c_ret_ok)
-					{
-						for (x = 0; x < retLen; x++)
-						{
-							if (app.comm.rbuf[x] == c_xmodem_nxk) {
-								app.xmodem_upload_req = 0;
-								app.xmodem_upload_run = 0;
-								app.xmodem_download_req = 1;
-								app.xmodem_download_addr = data;
-								app.xmodem_download_len = data_lenght;
-								return xmodem_download(&app);
-							}
-						}
-					}
-				}
-			}
-		}
-
-	}
-	return c_ret_nk;
-}
+//int com_controler::upload_data_to_flash_test(unsigned char* data, int data_lenght) {
+//
+//	int ret = c_ret_nk;
+//	int retry = 0;
+//	comm_rx_clr(&app);
+//
+//	if (comm_send(reinterpret_cast<u8*>("HimaxBoot"), sizeof("HimaxBoot") - 1, &app) != c_ret_ok) return c_ret_nk;
+//	tmr = tick_get();
+//	while (1)
+//	{
+//		if (tick_cmp(tmr, 11000) == c_ret_ok) break;
+//		if (comm_read(&retLen, &app) == c_ret_ok) {
+//			if (__strstr(app.comm.rbuf, reinterpret_cast<const u8*>("HimaxBoot OK")) != null) {
+//				if (comm_send(reinterpret_cast<u8*>("WRITE PARAM START"), sizeof("WRITE PARAM START") - 1, &app) != c_ret_ok) return c_ret_nk;
+//				tmr = tick_get();
+//				while (1)
+//				{
+//					if (tick_cmp(tmr, 11000) == c_ret_ok) return c_ret_nk;
+//					if (comm_read(&retLen, &app) == c_ret_ok)
+//					{
+//						for (x = 0; x < retLen; x++)
+//						{
+//							if (app.comm.rbuf[x] == c_xmodem_nxk) {
+//								app.xmodem_upload_req = 0;
+//								app.xmodem_upload_run = 0;
+//								app.xmodem_download_req = 1;
+//								app.xmodem_download_addr = data;
+//								app.xmodem_download_len = data_lenght;
+//								return xmodem_download(&app);
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//
+//	}
+//	return c_ret_nk;
+//}
 
 int com_controler::upload_data_to_flash_type(unsigned char* data, int data_lenght, int type) {
 
@@ -545,24 +546,29 @@ int com_controler::upload_data_to_flash_type(unsigned char* data, int data_lengh
 		while (1)
 		{
 			if (tick_cmp(tmr, 11000) == c_ret_ok) break;
-			if (__strstr(app.comm.rbuf, reinterpret_cast<const u8*>("Select")) != null) {
-				tmr = tick_get();
-				while (1) {
-					if (tick_cmp(tmr, 11000) == c_ret_ok) break;
-					if (comm_read(&retLen, &app) == c_ret_ok)
-					{
-						for (x = 0; x < retLen; x++)
+			if (comm_read(&retLen, &app) == c_ret_ok) {
+				if (__strstr(app.comm.rbuf, reinterpret_cast<const u8*>("Select")) != null) {
+					memset(app.comm.rbuf, 0, retLen);
+					comm_rx_clr(&app);
+					tmr = tick_get();
+					while (1) {
+						if (tick_cmp(tmr, 11000) == c_ret_ok) break;
+						Sleep(11);
+						if (comm_read(&retLen, &app) == c_ret_ok)
 						{
-							if (app.comm.rbuf[x] == c_xmodem_nak) {
-								app.xmodem_upload_req = 0;
-								app.xmodem_upload_run = 0;
-								app.xmodem_download_req = 1;
-								app.xmodem_download_addr = data;
-								app.xmodem_download_len = data_lenght;
-								return xmodem_download(&app);
+							for (x = 0; x < retLen; x++)
+							{
+								if (app.comm.rbuf[x] == c_xmodem_nak) {
+									app.xmodem_upload_req = 0;
+									app.xmodem_upload_run = 0;
+									app.xmodem_download_req = 1;
+									app.xmodem_download_addr = data;
+									app.xmodem_download_len = data_lenght;
+									return xmodem_download(&app);
+								}
 							}
+							return c_ret_xk;
 						}
-						return c_ret_xk;
 					}
 				}
 			}
@@ -630,11 +636,14 @@ int com_controler::sendDataFix(std::string data, std::string want)
 }
 
 int com_controler::close_comm() {
-	if (app.comm.open == 1)
+	while (app.comm.open == 1)
 	{
-		if (CloseHandle(app.comm.handle) != 0)
+		if (CloseHandle(app.comm.handle) != 0) {
 			app.comm.open = 0;
+		}
 	}
+	app.comm.handle = NULL;
+	printf("com close success \n");
 	return c_ret_ok;
 }
 
@@ -660,19 +669,44 @@ int com_controler::write_comm(std::string com,std::string &info)
 	return c_ret_tmo;
 }
 
+
+int com_controler::readCom(std::string &data, int &datalen, int waitTime)
+{
+	comm_rx_clr(&app);
+	tmr = tick_get();
+	while (1)
+	{
+		if (tick_cmp(tmr, waitTime) == c_ret_ok) break;
+		if (comm_read(&retLen, &app) == c_ret_ok)
+		{
+			if (retLen > 0) {
+				data = std::string((char*)app.comm.rbuf, retLen);
+				datalen = retLen;
+			}
+		}
+	}
+	return c_ret_tmo;
+
+}
+
+
 int com_controler::readUtilWant(std::string want, int waitTime)
 {
 	comm_rx_clr(&app);
 	tmr = tick_get();
+	int tryTime = 0;
 	while (1)
 	{
 		if (waitTime!=0 && (tick_cmp(tmr, waitTime) == c_ret_ok)) break;
 		if (comm_read(&retLen, &app) == c_ret_ok)
 		{
 			//printf("%s\n", app.comm.rbuf);
-			if (retLen == 0) return c_ret_nk;
+			//if (retLen == 0) return c_ret_nk;
 			if (__strstr(app.comm.rbuf, reinterpret_cast<const u8*>(want.c_str())) != null)
 				return c_ret_ok;
+			Sleep(500);
+			//tryTime++;
+			//printf("retry time %d\n", tryTime);
 		}
 	}
 	return c_ret_nk;
@@ -697,3 +731,4 @@ int com_controler::get_comm_handle(HANDLE & handle)
 	}
 	return 0;
 }
+

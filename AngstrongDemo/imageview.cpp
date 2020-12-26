@@ -5,11 +5,9 @@
 #include <QTimer>
 #include <highgui.hpp>
 #include <imgproc.hpp>
-#include <QDateTime>
-//#include <QDate>
-//#include <QTime>
 #include "imageview.h"
-#include "savedata.h"
+#include "logmanager.h"
+#include "definition_save_data.h"
 
 ImageView::ImageView(QWidget *parent) :
     QDialog(parent),
@@ -42,10 +40,6 @@ ImageView::ImageView(QWidget *parent) :
 	//setWindowFlags(Qt::FramelessWindowHint);
 	setMouseTracking(true);//启动鼠标捕获
 
-	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
-	qRegisterMetaType<cv::Mat>("cv::Mat");
-	//qRegisterMetaType<std::string>("std::string");
-	BuildConnet();//建立信号槽
 	//qss 界面美化
 	QFile file("black.qss");
 	file.open(QFile::ReadOnly);
@@ -55,6 +49,8 @@ ImageView::ImageView(QWidget *parent) :
 	setStyleSheet(stylesheet);
 	ui->statusWidget->setStyleSheet(stylesheet);
 	ui->titleWidget->setStyleSheet(stylesheet);
+
+	BuildConnet();//建立信号槽
 }
 
 ImageView::~ImageView()
@@ -94,45 +90,7 @@ void ImageView::resizeEvent(QResizeEvent *event)
 }
 
 bool ImageView::eventFilter(QObject * obj, QEvent * event)
-{
-	//if (event->type() == QEvent::Wheel)
-	//{
-	//	if (obj == ui->m_gView_ImageView && !m_spPix->pixmap().isNull())
-	//	{
-	//		return QDialog::eventFilter(obj, event);//缩放功能待时现，目前先返回，不启用缩放功能
-	//		QWheelEvent *wheelEvent = static_cast<QWheelEvent *>(event);
-	//		if ((wheelEvent->delta() > 0) && (m_fScale >= 50))//最大放大到原始图像的50倍
-	//		{
-	//			return QDialog::eventFilter(obj, event);;
-	//		}
-	//		else if ((wheelEvent->delta() < 0) && (m_fScale <= 0.5))//图像缩小到自适应大小之后就不继续缩小
-	//		{
-	//			//ResetItemPos();//重置图片大小和位置，使之自适应控件窗口大小
-	//		}
-	//		else
-	//		{
-	//			qreal qrealOriginScale = m_fScale;
-	//			if (wheelEvent->delta() > 0)//鼠标滚轮向前滚动
-	//			{
-	//				m_fScale *= 1.1;//每次放大10%
-	//			}
-	//			else
-	//			{
-	//				m_fScale *= 0.9;//每次缩小10%
-	//			}
-	//			m_spPix->setScale(m_fScale);
-	//			if (wheelEvent->delta() > 0)
-	//			{
-	//				m_spPix->moveBy(-wheelEvent->pos().x()*qrealOriginScale*0.1, -wheelEvent->pos().y()*qrealOriginScale*0.1);//使图片缩放的效果看起来像是以鼠标所在点为中心进行缩放的
-	//			}
-	//			else
-	//			{
-	//				m_spPix->moveBy(wheelEvent->pos().x()*qrealOriginScale*0.1, wheelEvent->pos().y()*qrealOriginScale*0.1);//使图片缩放的效果看起来像是以鼠标所在点为中心进行缩放的
-	//			}
-	//		}
-	//	}
-	//}
-	
+{	
 	return QDialog::eventFilter(obj, event);
 }
 
@@ -234,9 +192,10 @@ void ImageView::ReceiveSaveDataStatus(bool bSave, int eMode, int nSaveCount, QSt
 	emit SendSaveImageInfo(qstrSaveImageInfo);
 }
 
-void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
+void ImageView::ReceiveCameraStatus(ECameraStatus eStatus, int camera_index)
 {
 	//对接收到的相机状态进行处理
+	std::string log_msg("");
 	switch (eStatus)
 	{
 	case ECameraStatus_Unknow:
@@ -248,9 +207,14 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->OpenCamera(0))
+			if (m_pCamera->OpenCamera(camera_index))
 			{
 				emit SendCameraStatus(ECameraStatus_Open);
+				log_msg = "相机打开成功！";
+			}
+			else
+			{
+				log_msg = "相机打开失败！";
 			}
 		}
 	}
@@ -261,7 +225,7 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 		{
 			m_pCamera->CloseCamera();
 			emit SendCameraStatus(ECameraStatus_Close);
-			//ui->m_gView_ImageView->ClearAll();
+			log_msg = "相机关闭成功！";
 		}
 	}
 		break;
@@ -269,11 +233,9 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->IsOpen())
-			{
-				m_pCamera->Live();
-				emit SendCameraStatus(ECameraStatus_Live);
-			}
+			m_pCamera->Live();
+			emit SendCameraStatus(ECameraStatus_Live);
+			log_msg = "Live";
 		}
 	}
 		break;
@@ -281,11 +243,9 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->IsRunning())
-			{
-				m_pCamera->Pause();
-				emit SendCameraStatus(ECameraStatus_Pause);
-			}
+			m_pCamera->Pause();
+			emit SendCameraStatus(ECameraStatus_Pause);
+			log_msg = "Pause";
 		}
 	}
 		break;
@@ -293,33 +253,44 @@ void ImageView::ReceiveCameraStatus(ECameraStatus eStatus)
 	{
 		if (m_pCamera)
 		{
-			if (m_pCamera->IsRunning())
-			{
-				m_pCamera->Stop();
-			}
+			m_pCamera->Stop();
 			emit SendCameraStatus(ECameraStatus_Stop);
+			log_msg = "Stop";
 		}
 	}
 		break;
 	default:
 		break;
 	}
+
+	LogManager::Write(log_msg);
+}
+
+void ImageView::ReceiveImageDisplayMode(EDisplayMode image_display_mode)
+{
+	m_pCamera->set_image_display_mode(image_display_mode);
 }
 
 void ImageView::BuildConnet()
 {
+	//信号槽的参数是自定义的，这时需要用qRegisterMetaType注册一下这种类型
+	qRegisterMetaType<cv::Mat>("cv::Mat");
+	//qRegisterMetaType<std::string>("std::string");
+
 	bool ret = connect(m_pCamera, SIGNAL(sendImage(cv::Mat)), ui->m_gView_ImageView, SLOT(SetImage(cv::Mat)));
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendImageInfo(bool, int, int)), this, SLOT(ReceiveImageInfo(bool, int, int)));//接收图像信息
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), this, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendImageGray(int,int,int)), this, SLOT(ReceiveImageGray(int, int, int)));//接收鼠标对应的图像像素灰度值信息
 	ret = connect(m_pCamera, SIGNAL(sendSaveImageData(cv::Mat,cv::Mat,float*)), this, SLOT(ReceiveSaveImageData(cv::Mat, cv::Mat, float*)));
+	ret = connect(m_pCamera, SIGNAL(SendIsFirstTimeToLive(bool)), ui->m_gView_ImageView, SLOT(ReceiveIsTheFirstTimeToLive(bool)));
 	ret = connect(ui->m_gView_ImageView, SIGNAL(SendMouseInfo(int, int)), m_pCamera, SLOT(ReceiveMouseInfo(int, int)));//接收鼠标在图像上的位置信息
+	connect(ui->m_gView_ImageView, SIGNAL(SendAvgArea(int, QRectF)), m_pCamera, SLOT(ReceiveAvgArea(int, QRectF)));
 }
 
 void ImageView::SaveImageThread()
 {
-	int frameHeightR = 480;
-	int frameWidthR = 848;
+	int frameHeightRGB = 480;
+	int frameWidthRGB = 848;
 	int frameHeight = 400;
 	int frameWidth = 640;
 	FILE *plyfile;
@@ -362,28 +333,20 @@ void ImageView::SaveImageThread()
 			{
 				qstrNameExtra = "0";
 			}
-			//建立时间文件夹
-			QDateTime dt;
-			QTime time;
-			QDate date;
-			dt.setTime(time.currentTime());
-			dt.setDate(date.currentDate());
-			QString currentDate = dt.toString("//yyyy:MM:dd//");
-			QString currentTime = dt.toString("//hh:mm:ss//");
 			
 			try
 			{
 				//先保存IR图
-				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" +currentDate+ qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
+				QString qstrSavePath_IR = m_qstrSavePath + "//ir//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
 				cv::cvtColor(m_cvImageIR[m_nWriteIndex], m_cvImageIR[m_nWriteIndex], cv::COLOR_RGB2GRAY);
 				cv::imwrite(qstrSavePath_IR.toStdString(), m_cvImageIR[m_nWriteIndex]);
 				//保存深度图
 				QString qstrSavePath_Depth = m_qstrSavePath + "//depth//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".png";
 #ifndef KEEP_ORI
-				cv::Mat saveMat = cv::Mat(cv::Size(frameHeightR, frameWidthR), CV_16UC1);
-				for (int x = 0; x < frameHeightR; x++) {
-					for (int y = 0; y < frameWidthR; y++) {
-						saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeightR + x]);
+				cv::Mat saveMat = cv::Mat(cv::Size(frameHeightRGB, frameWidthRGB), CV_16UC1);
+				for (int x = 0; x < frameHeightRGB; x++) {
+					for (int y = 0; y < frameWidthRGB; y++) {
+						saveMat.at<short>(y, x) = short(m_pDataDepth[m_nWriteIndex][y*frameHeightRGB + x]);
 					}
 				}
 #else
@@ -401,21 +364,21 @@ void ImageView::SaveImageThread()
 
 				switch (m_nMode)
 				{
-				case SaveData::ESaveMode_3Pix:
+				case EGrabMode_3Pix:
 				{
 					//doing something.........
 				}
 				break;
-				case SaveData::ESaveMode_4Pix:
+				case EGrabMode_4Pix:
 				{
 					//保存点云图
 					QString qstrSavePath_CloudPoint = m_qstrSavePath + "//pointcloud//" + qstrNameExtra + QString::number(m_nWriteIndex) + ".txt";
 					fopen_s(&plyfile, qstrSavePath_CloudPoint.toStdString().c_str(), "w");
-					for (int x = 0; x < frameHeightR; x++)
+					for (int x = 0; x < frameHeightRGB; x++)
 					{
-						for (int y = 0; y < frameWidthR; y++)
+						for (int y = 0; y < frameWidthRGB; y++)
 						{
-							float z = m_pDataDepth[m_nWriteIndex][y*frameHeightR + x];
+							float z = m_pDataDepth[m_nWriteIndex][y*frameHeightRGB + x];
 							if (z < 10e-6 && z > -10e-6) continue;
 							float x_rw = ((float)x - m_pCamera->cx) * z / m_pCamera->fx;
 							float y_rw = ((float)y - m_pCamera->cy) * z / m_pCamera->fy;
